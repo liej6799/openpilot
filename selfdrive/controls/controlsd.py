@@ -107,7 +107,8 @@ class Controls:
 
     # detect sound card presence and ensure successful init
     sounds_available = HARDWARE.get_sound_card_online()
-
+    print("CP Param")
+    print(self.CP)
     car_recognized = self.CP.carName != 'mock'
 
     controller_available = self.CI.CC is not None and not passive and not self.CP.dashcamOnly

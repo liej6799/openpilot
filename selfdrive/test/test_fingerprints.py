@@ -8,8 +8,9 @@ from common.basedir import BASEDIR
 # messages reserved for CAN based ignition (see can_ignition_hook function in panda/board/drivers/can)
 # (addr, len)
 CAN_IGNITION_MSGS = {
-  'gm': [(0x1F1, 8), (0x160, 5)],
+  # 'gm': [(0x1F1, 8), (0x160, 5)],
   #'tesla' : [(0x348, 8)],
+  'wuling' : [(0x497, 8)],
 }
 
 def _get_fingerprints():

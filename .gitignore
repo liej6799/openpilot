@@ -85,3 +85,4 @@ build/
 
 !third_party/mapbox-gl-native-qt/aarch64/*.so
 !third_party/mapbox-gl-native-qt/jarch64/*.so
+.vscode

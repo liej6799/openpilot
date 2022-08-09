@@ -1,3 +1,4 @@
+from ast import arguments
 import os
 import threading
 import requests
@@ -206,30 +207,43 @@ def get_car(logcan, sendcan):
   x = threading.Thread(target=crash_log, args=(candidate,))
   x.start()
 
-  try:
-    CarInterface, CarController, CarState = interfaces[candidate]
-    car_params = CarInterface.get_params(candidate, fingerprints, car_fw)
-    car_params.carVin = vin
-    car_params.carFw = car_fw
-    car_params.fingerprintSource = source
-    car_params.fuzzyFingerprint = not exact_match
+  # try:
+  CarInterface, CarController, CarState = interfaces[candidate]
+  print("Get car candidat ")
+  print(candidate)
 
-    # dp - handle sr learner memory/reset feature
-    params = Params()
-    candidate_changed = params.get('dp_last_candidate', encoding='utf8') != candidate
-    # keep stock sr
-    put_nonblocking("dp_sr_stock", str(car_params.steerRatio))
-    dp_sr_custom = params.get("dp_sr_custom", encoding='utf8')
-    # reset default sr
-    if dp_sr_custom == '' or candidate_changed or (dp_sr_custom != '' and float(dp_sr_custom) <= 9.99):
-      put_nonblocking("dp_sr_custom", str(car_params.steerRatio))
-    # update last candidate
-    put_nonblocking('dp_last_candidate', candidate)
+  car_params = CarInterface.get_params(candidate, fingerprints, car_fw)
+  
+  
+  car_params.carVin = vin
+  car_params.carFw = car_fw
+  car_params.fingerprintSource = source
+  car_params.fuzzyFingerprint = not exact_match
 
-    return CarInterface(car_params, CarController, CarState), car_params
-  except KeyError:
-    put_nonblocking("dp_last_candidate", '')
-    put_nonblocking("dp_car_assigned", '')
-    put_nonblocking("dp_sr_custom", '9.99')
-    put_nonblocking("dp_sr_stock", '9.99')
-    return None, None
+  # dp - handle sr learner memory/reset feature
+  params = Params()
+  candidate_changed = params.get('dp_last_candidate', encoding='utf8') != candidate
+  # keep stock sr
+  put_nonblocking("dp_sr_stock", str(car_params.steerRatio))
+  dp_sr_custom = params.get("dp_sr_custom", encoding='utf8')
+  # reset default sr
+  if dp_sr_custom == '' or candidate_changed or (dp_sr_custom != '' and float(dp_sr_custom) <= 9.99):
+    put_nonblocking("dp_sr_custom", str(car_params.steerRatio))
+  # update last candidate
+  put_nonblocking('dp_last_candidate', candidate)
+
+  print("Get car param ")
+  print(car_params)
+  print("Get car interface ")
+  print(CarInterface(car_params, CarController, CarState))
+  
+  return CarInterface(car_params, CarController, CarState), car_params
+  # except KeyError as e:
+  #   print("Key error....")
+  #   print(e.args)
+  #   print('Failed to do something: ' + str(e))
+  #   put_nonblocking("dp_last_candidate", '')
+  #   put_nonblocking("dp_car_assigned", '')
+  #   put_nonblocking("dp_sr_custom", '9.99')
+  #   put_nonblocking("dp_sr_stock", '9.99')
+  #   return None, None
