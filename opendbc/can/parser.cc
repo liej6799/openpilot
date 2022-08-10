@@ -9,8 +9,8 @@
 
 #include "common.h"
 
-#define DEBUG(...)
-// #define DEBUG printf
+// #define DEBUG(...)
+#define DEBUG printf
 #define INFO printf
 
 bool MessageState::parse(uint64_t sec, uint8_t * dat) {
@@ -127,6 +127,8 @@ CANParser::CANParser(int abus, const std::string& dbc_name,
     if (op.check_frequency > 0) {
       state.check_threshold = (1000000000ULL / op.check_frequency) * 10;
     }
+
+    INFO("0x%X < MESSAGE\n", op.address);
 
     const Msg* msg = NULL;
     for (int i = 0; i < dbc->num_msgs; i++) {

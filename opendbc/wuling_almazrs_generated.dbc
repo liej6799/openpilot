@@ -67,3 +67,11 @@ BO_ 320 BCMTurnSignals: 3 K9_BCM
  SG_ Intellibeam : 13|1@0+ (1,0) [0|1] "" XXX
  SG_ HighBeamsActive : 7|1@0+ (1,0) [0|1] "" XXX
  SG_ HighBeamsTemporary : 5|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 298 BCMDoorBeltStatus: 8 K9_BCM
+ SG_ FrontRightDoor : 16|1@0+ (1,0) [0|1] "" NEO
+ SG_ RearRightDoor : 23|1@0+ (1,0) [0|0] "" NEO
+ SG_ RightSeatBelt : 53|1@0+ (1,0) [0|0] "" NEO
+ SG_ LeftSeatBelt : 12|1@0+ (1,0) [0|0] "" NEO
+ SG_ FrontLeftDoor : 9|1@0+ (1,0) [0|0] "" NEO
+ SG_ RearLeftDoor : 9|1@0+ (1,0) [0|0] "" NEO

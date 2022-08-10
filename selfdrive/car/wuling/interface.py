@@ -48,22 +48,22 @@ class CarInterface(CarInterfaceBase):
   # returns a car.CarState
   def update(self, c, can_strings, dragonconf):
     self.cp.update_strings(can_strings)
-    self.cp_cam.update_strings(can_strings)
+    self.cp_loopback.update_strings(can_strings)
 
-    ret = self.CS.update(self.cp, self.cp_cam)
+    ret = self.CS.update(self.cp, self.cp_loopback)
     # dp
     self.dragonconf = dragonconf
     ret.cruiseState.enabled = common_interface_atl(ret, dragonconf.dpAtl)
-    ret.canValid = self.cp.can_valid and self.cp_cam.can_valid
+    ret.canValid = self.cp.can_valid and self.cp_loopback.can_valid
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
 
    # events
     events = self.create_common_events(ret)
 
-    if self.CS.lkas_disabled:
-      events.add(EventName.lkasDisabled)
-    elif self.CS.low_speed_alert:
-      events.add(EventName.belowSteerSpeed)
+    # if self.CS.lkas_disabled:
+    #   events.add(EventName.lkasDisabled)
+    # elif self.CS.low_speed_alert:
+    #   events.add(EventName.belowSteerSpeed)
 
     ret.events = events.to_msg()
 
