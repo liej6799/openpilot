@@ -31,7 +31,7 @@ bool MessageState::parse(uint64_t sec, uint8_t * dat) {
       tmp -= (tmp >> (sig.b2-1)) ? (1ULL << sig.b2) : 0; //signed
     }
 
-    DEBUG("parse 0x%X %s -> %lld\n", address, sig.name, tmp);
+    DEBUG("parse 0x%X %s -> %ld\n", address, sig.name, tmp);
 
     if (!ignore_checksum) {
       if (sig.type == SignalType::HONDA_CHECKSUM) {
