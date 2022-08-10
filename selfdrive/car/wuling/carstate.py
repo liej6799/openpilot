@@ -56,7 +56,7 @@ class CarState(CarStateBase):
     
     ret.brakePressed = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
     ret.brake = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
-    ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["PRNDL"], None))
+    ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["TRANSMISSION_STATE"], None))
 
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
     self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]

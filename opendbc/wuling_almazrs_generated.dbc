@@ -99,7 +99,7 @@ BO_ 1001 ECMVehicleSpeed: 8 K20_ECM
 BO_ 1033 ASCMKeepAlive: 7 NEO
  SG_ ASCMKeepAliveAllZero : 7|56@0+ (1,0) [0|0] "" NEO
 
-BO_ 501 ECMPRDNL2: 8 K20_ECM
+BO_ 501 ECMPRDNL: 8 K20_ECM
  SG_ PRNDL2 : 27|4@0+ (1,0) [0|255] "" NEO
  SG_ ManualMode : 41|1@0+ (1,0) [0|1] "" NEO
  SG_ TransmissionState : 48|4@1+ (1,0) [0|7] "" NEO
