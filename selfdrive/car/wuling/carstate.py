@@ -12,6 +12,8 @@ class CarState(CarStateBase):
     super().__init__(CP)
    
     can_define = CANDefine(DBC[CP.carFingerprint]["pt"])
+    self.shifter_values = can_define.dv["ECMPRDNL"]["TRANSMISSION_STATE"]
+
     self.lka_steering_cmd_counter = 0
     self.engineRPM = 0
 
@@ -19,8 +21,9 @@ class CarState(CarStateBase):
 
   def update(self, pt_cp, cp_cam):
     ret = car.CarState.new_message()
+
     self.prev_cruise_buttons = self.cruise_buttons
-    
+
     self.engineRPM = pt_cp.vl["ECMEngineStatus"]['EngineRPM']*0.25
 
     ret.wheelSpeeds = self.get_wheel_speeds(
@@ -46,11 +49,19 @@ class CarState(CarStateBase):
                 pt_cp.vl["BCMDoorBeltStatus"]["RearRightDoor"] == 1)
     
     ret.brakePressed = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
+    ret.brake = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
+    ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["PRNDL"], None))
 
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
 
     # dp - brake lights
     ret.brakeLights = ret.brakePressed
+    
+    ret.cruiseState.enabled = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"] != 0
+    ret.cruiseActualEnabled = ret.cruiseState.enabled
+    ret.cruiseState.available = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"] != 0
+
+    #trans state 15 "PARKING" 1 "DRIVE" 14 "BACKWARD" 13 "NORMAL"
     
     return ret
 
@@ -78,6 +89,8 @@ class CarState(CarStateBase):
       ("CruiseMainOn", "ECMEngineStatus"),
       ("Brake_Pressed", "ECMEngineStatus"),
       ("EPBSTATUS", "EPBStatus"),
+      ("ACCBUTTON", "ASCMActiveCruiseControlStatus"),
+      ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
     ]
 
     checks = [

@@ -79,3 +79,30 @@ BO_ 298 BCMDoorBeltStatus: 8 K9_BCM
 BO_ 560 EPBStatus: 8 EPB
  SG_ EPBClosed : 12|1@0+ (1,0) [0|1] ""  NEO
  SG_ EPBSTATUS : 8|1@0+ (1,0) [0|1] "" XXX
+
+
+BO_ 880 ASCMActiveCruiseControlStatus: 6 K124_ASCM
+ SG_ ACCLeadCar : 44|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ ACCAlwaysOne2 : 32|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ ACCAlwaysOne : 0|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ ACCSpeedSetpoint : 19|12@0+ (1,0) [0|0] "km/h" NEO
+ SG_ ACCGapLevel : 21|2@0+ (1,0) [0|0] "" NEO
+ SG_ ACCResumeButton : 1|1@0+ (1,0) [0|0] "" NEO
+ SG_ ACCCmdActive : 23|1@0+ (1,0) [0|0] "" NEO
+ SG_ FCWAlert : 41|2@0+ (1,0) [0|3] "" XXX
+ SG_ ACCBUTTON : 33|1@0+ (1,0) [0|1] "" XXX
+ SG_ ACCSTATE : 36|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 1001 ECMVehicleSpeed: 8 K20_ECM
+ SG_ VehicleSpeed : 7|16@0+ (0.01,0) [0|0] "mph" NEO
+
+BO_ 1033 ASCMKeepAlive: 7 NEO
+ SG_ ASCMKeepAliveAllZero : 7|56@0+ (1,0) [0|0] "" NEO
+
+BO_ 501 ECMPRDNL2: 8 K20_ECM
+ SG_ PRNDL2 : 27|4@0+ (1,0) [0|255] "" NEO
+ SG_ ManualMode : 41|1@0+ (1,0) [0|1] "" NEO
+ SG_ TransmissionState : 48|4@1+ (1,0) [0|7] "" NEO
+ SG_ TRANSMISSION_STATE : 8|4@1+ (1,0) [0|15] "" XXX
+
+VAL_ 501 TRANSMISSION_STATE 1 "D" 13 "N" 14 "R" 15 "P" 0 "Shifting" ;

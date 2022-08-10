@@ -23,7 +23,7 @@ class CarInterface(CarInterfaceBase):
 
     ret.steerRateCost = 0.7
     ret.steerLimitTimer = 0.4
-    ret.mass = 2031. + STD_CARGO_KG
+    ret.mass = 3000. + STD_CARGO_KG
     ret.wheelbase = 2.75
     ret.centerToFront = ret.wheelbase * 0.5
     ret.steerRatio = 13.5
