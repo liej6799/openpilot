@@ -16,6 +16,12 @@ class CarState(CarStateBase):
 
     self.lka_steering_cmd_counter = 0
     self.engineRPM = 0
+    
+    self.crz_btns_counter = 0
+    self.acc_active_last = False
+    self.low_speed_alert = False
+    self.lkas_allowed_speed = False
+    self.lkas_disabled = False
 
 
 
@@ -53,7 +59,7 @@ class CarState(CarStateBase):
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["PRNDL"], None))
 
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
-
+    self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
     # dp - brake lights
     ret.brakeLights = ret.brakePressed
     
