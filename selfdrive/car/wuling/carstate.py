@@ -36,6 +36,7 @@ class CarState(CarStateBase):
     ret.steeringAngleDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
     ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]
     
+    ret.seatbeltUnlatched = pt_cp.vl["BCMDoorBeltStatus"]["RightSeatBelt"] == 0
     ret.leftBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1
     ret.rightBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2
     
@@ -43,6 +44,13 @@ class CarState(CarStateBase):
                 pt_cp.vl["BCMDoorBeltStatus"]["FrontRightDoor"] == 1 or
                 pt_cp.vl["BCMDoorBeltStatus"]["RearLeftDoor"] == 1 or
                 pt_cp.vl["BCMDoorBeltStatus"]["RearRightDoor"] == 1)
+    
+    ret.brakePressed = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
+
+    self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
+
+    # dp - brake lights
+    ret.brakeLights = ret.brakePressed
     
     return ret
 
@@ -66,6 +74,10 @@ class CarState(CarStateBase):
       ("RearRightDoor", "BCMDoorBeltStatus"),
       ("LeftSeatBelt", "BCMDoorBeltStatus"),
       ("RightSeatBelt", "BCMDoorBeltStatus"),
+      ("EPBClosed", "EPBStatus"),
+      ("CruiseMainOn", "ECMEngineStatus"),
+      ("Brake_Pressed", "ECMEngineStatus"),
+      ("EPBSTATUS", "EPBStatus"),
     ]
 
     checks = [

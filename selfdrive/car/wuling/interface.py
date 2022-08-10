@@ -18,13 +18,13 @@ class CarInterface(CarInterfaceBase):
     ret.radarOffCan = True
     ret.lateralTuning.init('pid')
 
-    ret.dashcamOnly = True
+    # ret.dashcamOnly = False
     # ret.dashcamOnly = candidate not in (CAR.CX5_2022, CAR.CX9_2021)
 
     ret.steerRateCost = 0.7
     ret.steerLimitTimer = 0.4
     ret.mass = 2031. + STD_CARGO_KG
-    ret.wheelbase = 2.89
+    ret.wheelbase = 2.75
     ret.centerToFront = ret.wheelbase * 0.5
     ret.steerRatio = 13.5
     ret.steerActuatorDelay = 0.3   # end-to-end angle controller

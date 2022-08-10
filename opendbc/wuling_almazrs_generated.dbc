@@ -75,3 +75,7 @@ BO_ 298 BCMDoorBeltStatus: 8 K9_BCM
  SG_ LeftSeatBelt : 12|1@0+ (1,0) [0|0] "" NEO
  SG_ FrontLeftDoor : 9|1@0+ (1,0) [0|0] "" NEO
  SG_ RearLeftDoor : 9|1@0+ (1,0) [0|0] "" NEO
+
+BO_ 560 EPBStatus: 8 EPB
+ SG_ EPBClosed : 12|1@0+ (1,0) [0|1] ""  NEO
+ SG_ EPBSTATUS : 8|1@0+ (1,0) [0|1] "" XXX
