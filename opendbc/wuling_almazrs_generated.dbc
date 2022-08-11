@@ -41,11 +41,11 @@ BU_:
 
 BO_ 840 EBCMWheelSpdFront: 4 K17_EBCM
  SG_ FLWheelSpd : 7|16@0+ (0.0311,0) [0|255] "km/h"  NEO
- SG_ FRWheelSpd : 23|16@0+ (0.0311,0) [0|255] "km/h"  NEO
+ SG_ FRWheelSpd : 22|16@0+ (0.0311,17) [0|255] "km/h"  NEO
 
 BO_ 842 EBCMWheelSpdRear: 5 K17_EBCM
  SG_ RLWheelSpd : 7|16@0+ (0.0311,0) [0|255] "km/h"  NEO
- SG_ RRWheelSpd : 23|16@0+ (0.0311,0) [0|255] "km/h"  NEO
+ SG_ RRWheelSpd : 22|16@0+ (0.0311,17) [0|255] "km/h"  NEO
 
 BO_ 485 PSCMSteeringAngle: 8 K43_PSCM
  SG_ SteeringWheelAngle : 15|16@0- (0.0625,0) [-2047|2047] "deg"  NEO
@@ -103,6 +103,6 @@ BO_ 501 ECMPRDNL: 8 K20_ECM
  SG_ PRNDL2 : 27|4@0+ (1,0) [0|255] "" NEO
  SG_ ManualMode : 41|1@0+ (1,0) [0|1] "" NEO
  SG_ TransmissionState : 48|4@1+ (1,0) [0|7] "" NEO
- SG_ TRANSMISSION_STATE : 8|4@1+ (1,0) [0|15] "" XXX
+ SG_ TRANSMISSION_STATE : 8|4@1+ (1,0) [0|15] "" NEO
 
 VAL_ 501 TRANSMISSION_STATE 1 "D" 13 "N" 14 "R" 15 "P" 0 "Shifting" ;

@@ -34,9 +34,9 @@ class CarState(CarStateBase):
 
     ret.wheelSpeeds = self.get_wheel_speeds(
       pt_cp.vl["EBCMWheelSpdFront"]["FLWheelSpd"],
-      pt_cp.vl["EBCMWheelSpdFront"]["FLWheelSpd"],
+      pt_cp.vl["EBCMWheelSpdFront"]["FRWheelSpd"],
       pt_cp.vl["EBCMWheelSpdRear"]["RLWheelSpd"],
-      pt_cp.vl["EBCMWheelSpdRear"]["RLWheelSpd"],
+      pt_cp.vl["EBCMWheelSpdRear"]["RRWheelSpd"],
     )
     ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr])
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
@@ -55,7 +55,7 @@ class CarState(CarStateBase):
                 pt_cp.vl["BCMDoorBeltStatus"]["RearRightDoor"] == 1)
     
     ret.brakePressed = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
-    ret.brake = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
+    # ret.brake = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["TRANSMISSION_STATE"], None))
 
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
@@ -66,6 +66,7 @@ class CarState(CarStateBase):
     ret.cruiseState.enabled = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"] != 0
     ret.cruiseActualEnabled = ret.cruiseState.enabled
     ret.cruiseState.available = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"] != 0
+    ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.MPH_TO_MS
 
     #trans state 15 "PARKING" 1 "DRIVE" 14 "BACKWARD" 13 "NORMAL"
     
@@ -97,6 +98,8 @@ class CarState(CarStateBase):
       ("EPBSTATUS", "EPBStatus"),
       ("ACCBUTTON", "ASCMActiveCruiseControlStatus"),
       ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
+      ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
+      ("TRANSMISSION_STATE", "ECMPRDNL"),
     ]
 
     checks = [
