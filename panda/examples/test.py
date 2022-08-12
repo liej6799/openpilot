@@ -42,7 +42,7 @@ panda = Panda()
 # panda.can_recv()
 panda.set_safety_mode(Panda.SAFETY_ALLOUTPUT)
 panda.set_safety_mode(Panda.SAFETY_GM)
-panda.set_safety_mode(Panda.SAFETY_SILENT)
+panda.set_safety_mode(Panda.SAFETY_WULING)
 panda.set_safety_mode(Panda.SAFETY_NOOUTPUT)
 # panda.set_power_save(0)
 while 1:  
