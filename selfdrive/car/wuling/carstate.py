@@ -45,20 +45,19 @@ class CarState(CarStateBase):
     ret.steeringAngleDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
     ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]
     
-    ret.seatbeltUnlatched = pt_cp.vl["BCMDoorBeltStatus"]["RightSeatBelt"] == 0
+    # ret.seatbeltUnlatched = pt_cp.vl["BCMDoorBeltStatus"]["RightSeatBelt"] == 0
     ret.leftBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1
     ret.rightBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2
     
-    ret.doorOpen = (pt_cp.vl["BCMDoorBeltStatus"]["FrontLeftDoor"] == 1 or
-                pt_cp.vl["BCMDoorBeltStatus"]["FrontRightDoor"] == 1 or
-                pt_cp.vl["BCMDoorBeltStatus"]["RearLeftDoor"] == 1 or
-                pt_cp.vl["BCMDoorBeltStatus"]["RearRightDoor"] == 1)
+    # ret.doorOpen = (pt_cp.vl["BCMDoorBeltStatus"]["FrontLeftDoor"] == 1 or
+    #             pt_cp.vl["BCMDoorBeltStatus"]["FrontRightDoor"] == 1 or
+    #             pt_cp.vl["BCMDoorBeltStatus"]["RearLeftDoor"] == 1 or
+    #             pt_cp.vl["BCMDoorBeltStatus"]["RearRightDoor"] == 1)
     
     ret.brakePressed = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
     # ret.brake = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["TRANSMISSION_STATE"], None))
 
-    print('Gearshift :  %s' %  ret.gearShifter)
 
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
     self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
@@ -69,6 +68,8 @@ class CarState(CarStateBase):
     ret.cruiseActualEnabled = ret.cruiseState.enabled
     ret.cruiseState.available = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"] != 0
     ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.MPH_TO_MS
+
+    print('Cruise speed :  %s' % ret.cruiseState.speed)
 
     #trans state 15 "PARKING" 1 "DRIVE" 14 "BACKWARD" 13 "NORMAL"
     

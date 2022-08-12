@@ -15,7 +15,7 @@
 #include "safety/safety_volkswagen_mqb.h"
 #include "safety/safety_volkswagen_pq.h"
 #include "safety/safety_elm327.h"
-#include "safety/safety_wuling.h""
+#include "safety/safety_wuling.h"
 
 // from cereal.car.CarParams.SafetyModel
 #define SAFETY_SILENT 0U

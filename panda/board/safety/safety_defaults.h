@@ -11,7 +11,7 @@ int default_rx_hook(CANPacket_t *to_push) {
 // *** no output safety mode ***
 
 static const addr_checks* nooutput_init(int16_t param) {
-  UNU SED(param);
+  UNUSED(param);
   controls_allowed = false;
   relay_malfunction_reset();
   return &default_rx_checks;

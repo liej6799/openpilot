@@ -17,9 +17,11 @@ class CarInterface(CarInterfaceBase):
     ret.carName = "wuling"
     ret.radarOffCan = True
     ret.lateralTuning.init('pid')
-
+    ret.pcmCruise = False 
+    
     # ret.dashcamOnly = False
     # ret.dashcamOnly = candidate not in (CAR.CX5_2022, CAR.CX9_2021)
+    ret.openpilotLongitudinalControl = True
 
     ret.steerRateCost = 0.7
     ret.steerLimitTimer = 0.4
@@ -27,10 +29,10 @@ class CarInterface(CarInterfaceBase):
     ret.wheelbase = 2.75
     ret.centerToFront = ret.wheelbase * 0.5
     ret.steerRatio = 13.5
-    ret.steerActuatorDelay = 0.3   # end-to-end angle controller
-    ret.lateralTuning.pid.kf = 0.00003
-    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 20.], [0., 20.]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0025, 0.1], [0.00025, 0.01]]
+    ret.steerActuatorDelay = 0.1   # end-to-end angle controller
+    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
+    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.2], [0.00]]
+    ret.lateralTuning.pid.kf = 0.00004   # full torque for 20 deg at 80mph means 0.00007818594
 
     # TODO: get actual value, for now starting with reasonable value for
     # civic and scaling by mass and wheelbase
