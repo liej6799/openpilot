@@ -50,6 +50,7 @@ BO_ 842 EBCMWheelSpdRear: 5 K17_EBCM
 BO_ 485 PSCMSteeringAngle: 8 K43_PSCM
  SG_ SteeringWheelAngle : 15|16@0- (0.0625,0) [-2047|2047] "deg"  NEO
  SG_ SteeringWheelRate : 27|12@0- (1,0) [-2047|2047] "deg/s"  NEO
+ SG_ SteeringTorque : 48|8@1- (1,0) [0|255] "" XXX
 
 BO_ 201 ECMEngineStatus: 8 K20_ECM
  SG_ EngineTPS : 39|8@0+ (0.392156863,0) [0|100.000000065] "%" NEO

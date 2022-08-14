@@ -75,7 +75,7 @@ static int wuling_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
     // block stock lkas messages and stock acc messages (if OP is doing ACC)
     int addr = GET_ADDR(to_fwd);
     // bool is_lkas_msg = (addr == 0x373) || (addr == 0x370) || (addr == 0x33D);
-    bool is_lkas_msg = (addr == 0xE4) || (addr == 0x194) || (addr == 0x33D);
+    bool is_lkas_msg = (addr == 0x225) || (addr == 0x194) || (addr == 0x33D);
     // bool is_lkas_msg = (addr == 0x225) || (addr == 0x194) || (addr == 0x33D);
     bool is_acc_hud_msg = addr == 0x30C;
     bool is_brake_msg = addr == 0x1FA;

@@ -3,13 +3,18 @@ from cereal import car
 Ecu = car.CarParams.Ecu
 
 class CarControllerParams:
+  STEER_MAX = 300  # Safety limit, not LKA max. Trucks use 600.
+  STEER_STEP = 2  # control frames per command
   STEER_MAX = 261         # 262 faults
   STEER_DELTA_UP = 3      # 3 is stock. 100 is fine. 200 is too much it seems
   STEER_DELTA_DOWN = 3    # no faults on the way down it seems
   STEER_ERROR_MAX = 80
   ADAS_KEEPALIVE_STEP = 100
-  
+  MIN_STEER_SPEED = 3.  # m/s
 
+  STEER_DRIVER_ALLOWANCE = 80
+  STEER_DRIVER_MULTIPLIER = 3    # weight driver torque heavily
+  STEER_DRIVER_FACTOR = 1        # from dbc
 
 class CAR:
   ALMAS_RS_PRO = "WULING ALMAZ RS PRO 2022"

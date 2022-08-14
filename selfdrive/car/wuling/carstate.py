@@ -68,6 +68,7 @@ class CarState(CarStateBase):
     ret.cruiseActualEnabled = ret.cruiseState.enabled
     ret.cruiseState.available = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"] != 0
     ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.MPH_TO_MS
+    ret.steeringTorque = pt_cp.vl["PSCMSteeringAngle"]["STEER_TORQUE_DRIVER"]
 
     print('Cruise speed :  %s' % ret.cruiseState.speed)
 
@@ -83,6 +84,8 @@ class CarState(CarStateBase):
       ("TurnSignals", "BCMTurnSignals"),
       ("SteeringWheelAngle", "PSCMSteeringAngle"),
       ("SteeringWheelRate", "PSCMSteeringAngle"),
+      ("SteeringTorque", "PSCMSteeringAngle"),
+      
       ("FLWheelSpd", "EBCMWheelSpdFront"),
       ("FRWheelSpd", "EBCMWheelSpdFront"),
       ("RLWheelSpd", "EBCMWheelSpdRear"),

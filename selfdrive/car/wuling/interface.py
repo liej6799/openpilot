@@ -15,7 +15,7 @@ class CarInterface(CarInterfaceBase):
     ret = CarInterfaceBase.get_std_params(candidate, fingerprint)
 
     ret.carName = "wuling"
-    # ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.wuling)]
+    ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.wuling)]
 
     ret.radarOffCan = True
     ret.lateralTuning.init('pid')

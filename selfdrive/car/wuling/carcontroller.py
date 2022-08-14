@@ -17,7 +17,7 @@ class CarController():
     # dp
     self.last_blinker_on = False
     self.blinker_end_frame = 0.
-
+    self.enabled_last = False
     self.apply_steer_last = 0
     self.es_distance_cnt = -1
     self.es_lkas_cnt = -1
@@ -44,13 +44,16 @@ class CarController():
 
     can_sends = []
     steer_alert = visual_alert in (VisualAlert.steerRequired, VisualAlert.ldw)
-
+    lkas_active = True
+    
     apply_steer = actuators.steer
     
     if CS.lka_steering_cmd_counter != self.lka_steering_cmd_counter_last:
       self.lka_steering_cmd_counter_last = CS.lka_steering_cmd_counter
     elif (frame % P.STEER_STEP) == 0:
-      lkas_enabled = c.active and not (CS.out.steerWarning or CS.out.steerError) and CS.out.vEgo > P.MIN_STEER_SPEED
+      # lkas_enabled = c.active and not (CS.out.steerWarning or CS.out.steerError) and CS.out.vEgo > P.MIN_STEER_SPEED
+      lkas_enabled = True
+      print('lkas_enabled :  %s' % lkas_enabled)
       if lkas_enabled:
         new_steer = int(round(actuators.steer * P.STEER_MAX))
         apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, P)
@@ -73,9 +76,9 @@ class CarController():
       self.apply_steer_last = apply_steer
       # GM EPS faults on any gap in received message counters. To handle transient OP/Panda safety sync issues at the
       # moment of disengaging, increment the counter based on the last message known to pass Panda safety checks.
+    
       idx = (CS.lka_steering_cmd_counter + 1) % 4
-
-      can_sends.append(wulingcan.create_steering_control(self.packer_pt, CanBus.POWERTRAIN, apply_steer, idx, lkas_enabled))
+      can_sends.append(wulingcan.create_steering_control(self.packer, apply_steer, idx, 1))
 
       
     if (frame % 4) == 0:
