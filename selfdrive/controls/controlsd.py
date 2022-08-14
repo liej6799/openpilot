@@ -639,6 +639,8 @@ class Controls:
     if not self.read_only and self.initialized:
       # send car controls over can
       self.last_actuators, can_sends = self.CI.apply(CC)
+      print('Can sends :  %s' % can_sends)
+
       self.pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=CS.canValid))
       CC.actuatorsOutput = self.last_actuators
 

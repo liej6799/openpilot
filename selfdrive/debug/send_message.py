@@ -18,4 +18,13 @@ sendcan = messaging.pub_sock('sendcan')
 
 command = []
 
-set_panda_safety()
+def lock_door(sendcan):
+  print("locking door")
+  command.append(make_can_msg(0x373, b"\x82\x01\x00\x00\xac\x90\x02\xc1", 0))
+  sendcan.send(can_list_to_can_capnp(command, msgtype='sendcan'))
+  del command[:]
+  
+# set_panda_safety()
+while True:
+  lock_door(sendcan)
+  sleep(1)
