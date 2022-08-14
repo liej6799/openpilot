@@ -29,10 +29,10 @@ class CarInterface(CarInterfaceBase):
     ret.wheelbase = 2.75
     ret.centerToFront = ret.wheelbase * 0.5
     ret.steerRatio = 13.5
-    ret.steerActuatorDelay = 0.1   # end-to-end angle controller
-    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.2], [0.00]]
-    ret.lateralTuning.pid.kf = 0.00004   # full torque for 20 deg at 80mph means 0.00007818594
+    ret.steerActuatorDelay = 0.3   # end-to-end angle controller
+    ret.lateralTuning.pid.kf = 0.00003
+    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 20.], [0., 20.]]
+    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0025, 0.1], [0.00025, 0.01]]
 
     # TODO: get actual value, for now starting with reasonable value for
     # civic and scaling by mass and wheelbase
@@ -96,7 +96,13 @@ class CarInterface(CarInterfaceBase):
   def apply(self, c):
     hud_control = c.hudControl
     ret = self.CC.update(c, c.enabled, self.CS, self.frame, c.actuators,
-                         c.cruiseControl.cancel, hud_control.visualAlert,
-                         hud_control.leftLaneVisible, hud_control.rightLaneVisible, hud_control.leftLaneDepart, hud_control.rightLaneDepart, self.dragonconf)
+                         c.cruiseControl.cancel, 
+                         hud_control.visualAlert,
+                         hud_control.setSpeed,
+                         hud_control.leftLaneVisible, 
+                         hud_control.rightLaneVisible, 
+                         hud_control.leftLaneDepart, 
+                         hud_control.rightLaneDepart,
+                         self.dragonconf)
     self.frame += 1
     return ret
