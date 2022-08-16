@@ -47,6 +47,8 @@ class CarController():
     lkas_active = True
     
     apply_steer = actuators.steer
+    print('Actuator Steer :  %s' % apply_steer)
+
     
     if CS.lka_steering_cmd_counter != self.lka_steering_cmd_counter_last:
       self.lka_steering_cmd_counter_last = CS.lka_steering_cmd_counter

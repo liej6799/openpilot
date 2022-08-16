@@ -72,7 +72,8 @@ class Controls:
       self.camera_packets.append("wideRoadCameraState")
 
     params = Params()
-    self.joystick_mode = params.get_bool("JoystickDebugMode")
+    # self.joystick_mode = params.get_bool("JoystickDebugMode")
+    self.joystick_mode = True
     joystick_packet = ['testJoystick'] if self.joystick_mode else []
 
     self.sm = sm
@@ -514,6 +515,8 @@ class Controls:
     if CS.gasPressed or CS.brakePressed:
       self.LoC.reset(v_pid=CS.vEgo)
 
+    print('joystick_mode %s' % self.joystick_mode)
+    
     if not self.joystick_mode:
       # accel PID loop
       pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, self.v_cruise_kph * CV.KPH_TO_MS)
@@ -532,6 +535,7 @@ class Controls:
       lac_log = log.ControlsState.LateralDebugState.new_message()
       if self.sm.rcv_frame['testJoystick'] > 0 and self.active:
         actuators.accel = 4.0*clip(self.sm['testJoystick'].axes[0], -1, 1)
+        print('receive joystik %s' % actuators.accel)
 
         steer = clip(self.sm['testJoystick'].axes[1], -1, 1)
         # max angle is 45 for angle-based cars
