@@ -42,7 +42,7 @@ def manager_init() -> None:
     ("DisengageOnAccelerator", "1"),
     ("HasAcceptedTerms", "0"),
     ("OpenpilotEnabledToggle", "1"),
-    ("ShowDebugUI", "0"),
+    ("ShowDebugUI", "1"),
     ("SpeedLimitControl", "0"),
     ("SpeedLimitPercOffset", "0"),
     ("TurnSpeedControl", "0"),
