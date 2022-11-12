@@ -21,7 +21,7 @@ confs = [
   {'name': 'dp_atl', 'default': 0, 'type': 'UInt8', 'conf_type': ['param', 'struct'], 'update_once': True},
 
   {'name': 'dp_locale', 'default': 'en-US', 'type': 'Text', 'conf_type': ['param', 'struct'], 'update_once': True},
-  {'name': 'dp_jetson', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
+  {'name': 'dp_jetson', 'default': True, 'type': 'Bool', 'conf_type': ['param']},
 
   # nav service
   {'name': 'dp_otisserv', 'default': False, 'type': 'Bool', 'conf_type': ['param']},
