@@ -34,7 +34,7 @@ def register(show_spinner=False) -> Optional[str]:
 
   pubkey = Path(PERSIST+"/comma/id_rsa.pub")
   if not pubkey.is_file():
-    dongle_id = UNREGISTERED_DONGLE_ID
+    dongle_id = "88888888"
     cloudlog.warning(f"missing public key: {pubkey}")
   elif needs_registration:
     if show_spinner:
@@ -78,7 +78,7 @@ def register(show_spinner=False) -> Optional[str]:
           dongle_id = UNREGISTERED_DONGLE_ID
         else:
           dongleauth = json.loads(resp.text)
-          dongle_id = dongleauth["dongle_id"]
+          dongle_id = "88888888"
         break
       except Exception:
         cloudlog.exception("failed to authenticate")
