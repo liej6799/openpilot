@@ -87,12 +87,14 @@ def register(show_spinner=False) -> Optional[str]:
 
       time_diff = time.monotonic() - start_time
       if time_diff > 29 and show_spinner:
-        timeout = 30 - time_diff
-        spinner.update(f"registering device ({timeout}) - serial: {serial}, IMEI: ({imei1}, {imei2})")
+        pass
+        #timeout = 30 - time_diff
+        #spinner.update(f"registering device ({timeout}) - serial: {serial}, IMEI: ({imei1}, {imei2})")
 
       # go unregistered device
       if time.monotonic() - start_time > 30 and show_spinner:
-        dongle_id = UNREGISTERED_DONGLE_ID
+        pass
+        #dongle_id = UNREGISTERED_DONGLE_ID
         break
 
     if show_spinner:
