@@ -73,8 +73,12 @@ class CarState(CarStateBase):
     ret.brakeLights = ret.brakePressed
     
     ret.cruiseState.enabled = pt_cp.vl["LKAS_HUD"]["LKA_ACTIVE"] != 0 or pt_cp.vl["LKAS_HUD"]["LKAS_STATE"] != 0
+    ret.cruiseState.enabled = True
+    
     ret.cruiseActualEnabled = ret.cruiseState.enabled
     ret.cruiseState.available = pt_cp.vl["LKAS_HUD"]["LKA_ACTIVE"] != 0 or pt_cp.vl["LKAS_HUD"]["LKAS_STATE"] != 0
+    ret.cruiseState.available = True
+
     ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
     ret.steeringTorque = pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]
 
