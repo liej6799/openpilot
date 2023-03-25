@@ -80,10 +80,11 @@ class CarController():
       # moment of disengaging, increment the counter based on the last message known to pass Panda safety checks.
     
       idx = (CS.lka_steering_cmd_counter + 1) % 4
-      can_sends.append(wulingcan.create_steering_control(self.packer, apply_steer, idx, 1))
+      print("Steer command %d" % apply_steer)
+      can_sends.append(wulingcan.create_steering_control(self.packer, (apply_steer * -1), frame))
 
       
-    if (frame % 4) == 0:
+    if (frame % 5) == 0:
       print('UI Command HUD Speed :  %s' % hud_speed)
       # can_sends.append(make_can_msg(0x373, b"\x82\x01\x00\x00\xac\x90\x02\xc1", 0))
 

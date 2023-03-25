@@ -146,6 +146,8 @@ struct CarState {
 
   # car speed
   vEgo @1 :Float32;         # best estimate of speed
+  vEgoCluster @40 :Float32; # best estimate of HUD speed
+
   aEgo @16 :Float32;        # best estimate of acceleration
   vEgoRaw @17 :Float32;     # unfiltered speed from CAN sensors
   yawRate @22 :Float32;     # best estimate of yaw rate

@@ -1,18 +1,28 @@
 import copy
 from cereal import car
+from common.numpy_fast import clip
 from selfdrive.car import make_can_msg
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
-def create_steering_control(packer, apply_steer, frame, steer_step):
+def wuling_checksum(dat):
+  return sum(dat) & 0xFF
 
-  idx = (frame / steer_step) % 16
+def create_steering_control(packer, apply_steer, frame):
 
+  idx = (apply_steer) % 255
   values = {
-    "CHECKSUM": idx,
-    "STEER_TORQUE_CMD": apply_steer,
-    "STEER_REQUEST": 1 if apply_steer != 0 else 0,
+      "STEER_TORQUE_CMD": clip(apply_steer,-45,45),
+      "SET_ME_X0": 0x00,
+      "COUNTER": (frame/2) % 4,
+      "STEER_REQUEST": 1 if apply_steer != 0 else 0,
   }
+  values["COUNTER"] = (values["COUNTER"] + 1) % 0x11
+  
+  dat = packer.make_can_msg("STEERING_LKA", 0, values)[2]
+
+  crc = wuling_checksum(dat[:-1])
+  values["CHECKSUM"] = crc
 
   return packer.make_can_msg("STEERING_LKA", 0, values)
 

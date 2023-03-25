@@ -41,16 +41,18 @@ BU_:
 
 BO_ 840 EBCMWheelSpdFront: 4 K17_EBCM
  SG_ FLWheelSpd : 7|16@0+ (0.0311,0) [0|255] "km/h"  NEO
- SG_ FRWheelSpd : 22|16@0+ (0.0311,17) [0|255] "km/h"  NEO
+ SG_ FRWheelSpd : 22|15@0+ (0.0311,0) [0|255] "km/h"  NEO
 
 BO_ 842 EBCMWheelSpdRear: 5 K17_EBCM
  SG_ RLWheelSpd : 7|16@0+ (0.0311,0) [0|255] "km/h"  NEO
- SG_ RRWheelSpd : 22|16@0+ (0.0311,17) [0|255] "km/h"  NEO
+ SG_ RRWheelSpd : 22|15@0+ (0.0311,0) [0|255] "km/h"  NEO
 
 BO_ 485 PSCMSteeringAngle: 8 K43_PSCM
  SG_ SteeringWheelAngle : 15|16@0- (0.0625,0) [-2047|2047] "deg"  NEO
  SG_ SteeringWheelRate : 27|12@0- (1,0) [-2047|2047] "deg/s"  NEO
- SG_ SteeringTorque : 48|8@1- (1,0) [0|255] "" XXX
+ SG_ SteeringTorque : 48|8@1- (1,0) [-2047|2047] "" XXX
+ SG_ Checksum : 56|8@1- (1,0) [0|255] "" XXX
+
 
 BO_ 201 ECMEngineStatus: 8 K20_ECM
  SG_ EngineTPS : 39|8@0+ (0.392156863,0) [0|100.000000065] "%" NEO
@@ -66,7 +68,7 @@ BO_ 489 EBCMVehicleDynamic: 8 K17_EBCM
 BO_ 320 BCMTurnSignals: 3 K9_BCM
  SG_ TurnSignals : 19|2@0+ (1,0) [0|0] ""  NEO
  SG_ Intellibeam : 13|1@0+ (1,0) [0|1] "" XXX
- SG_ HighBeamsActive : 7|1@0+ (1,0) [0|1] "" XXX
+ SG_ HighBeamsActive : 1|1@0+ (1,0) [0|1] "" XXX
  SG_ HighBeamsTemporary : 5|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 298 BCMDoorBeltStatus: 8 K9_BCM
@@ -86,7 +88,7 @@ BO_ 880 ASCMActiveCruiseControlStatus: 6 K124_ASCM
  SG_ ACCLeadCar : 44|1@0+ (1,0) [0|0] "" Vector__XXX
  SG_ ACCAlwaysOne2 : 32|1@0+ (1,0) [0|0] "" Vector__XXX
  SG_ ACCAlwaysOne : 0|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ ACCSpeedSetpoint : 19|12@0+ (1,0) [0|0] "km/h" NEO
+ SG_ ACCSpeedSetpoint : 19|12@0+ (1,0) [0|200] "km/h" NEO
  SG_ ACCGapLevel : 21|2@0+ (1,0) [0|0] "" NEO
  SG_ ACCResumeButton : 1|1@0+ (1,0) [0|0] "" NEO
  SG_ ACCCmdActive : 23|1@0+ (1,0) [0|0] "" NEO
@@ -107,8 +109,14 @@ BO_ 501 ECMPRDNL: 8 K20_ECM
  SG_ TRANSMISSION_STATE : 8|4@1+ (1,0) [0|15] "" NEO
 
 BO_ 549 STEERING_LKA: 8 XXX
- SG_ STEER_REQUEST : 5|1@0+ (1,0) [0|1] "" NEO
- SG_ CHECKSUM : 56|8@1+ (1,0) [0|255] "" NEO
- SG_ STEER_TORQUE_CMD : 2|11@0- (1,0) [0|2047] "" NEO
+ SG_ STEER_TORQUE_CMD : 2|11@0- (1,0) [0|2047] "" XXX
+ SG_ SET_ME_X0 : 3|2@1+ (1,0) [0|3] "" XXX
+ SG_ STEER_REQUEST : 5|1@0+ (1,0) [0|1] "" XXX
+ SG_ COUNTER : 7|2@0+ (1,0) [0|7] "" XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
 
-VAL_ 501 TRANSMISSION_STATE 1 "D" 13 "N" 14 "R" 15 "P" 0 "Shifting" ;
+BO_ 883 LKAS_HUD: 8 XXX
+ SG_ LKAS_STATE : 10|1@0+ (1,0) [0|1] "" XXX
+ SG_ LKA_ACTIVE : 1|1@0+ (1,0) [0|1] "" XXX
+
+VAL_ 501 TRANSMISSION_STATE 1 "D" 2 "D" 3 "D" 4 "D" 5 "D" 6 "D" 7 "D" 13 "N" 14 "R" 15 "P";

@@ -72,8 +72,8 @@ class Controls:
       self.camera_packets.append("wideRoadCameraState")
 
     params = Params()
-    # self.joystick_mode = params.get_bool("JoystickDebugMode")
-    self.joystick_mode = True
+    self.joystick_mode = params.get_bool("JoystickDebugMode")
+    # self.joystick_mode = True
     joystick_packet = ['testJoystick'] if self.joystick_mode else []
 
     self.sm = sm

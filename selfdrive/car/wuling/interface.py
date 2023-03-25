@@ -27,10 +27,10 @@ class CarInterface(CarInterfaceBase):
 
     ret.steerRateCost = 0.7
     ret.steerLimitTimer = 0.4
-    ret.mass = 3000. + STD_CARGO_KG
+    ret.mass = 1900. + STD_CARGO_KG
     ret.wheelbase = 2.75
     ret.centerToFront = ret.wheelbase * 0.5
-    ret.steerRatio = 13.5
+    ret.steerRatio = 15.4
     ret.steerActuatorDelay = 0.3   # end-to-end angle controller
     ret.lateralTuning.pid.kf = 0.00003
     ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 20.], [0., 20.]]

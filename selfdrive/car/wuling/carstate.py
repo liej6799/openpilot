@@ -5,7 +5,7 @@ from opendbc.can.can_define import CANDefine
 from selfdrive.config import Conversions as CV
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
-from selfdrive.car.wuling.values import DBC, CanBus, STEER_THRESHOLD, CAR, PREGLOBAL_CARS 
+from selfdrive.car.wuling.values import DBC, CanBus,HUD_MULTIPLIER, STEER_THRESHOLD, CAR, PREGLOBAL_CARS 
 
 class CarState(CarStateBase):
   def __init__(self, CP):
@@ -22,6 +22,12 @@ class CarState(CarStateBase):
     self.low_speed_alert = False
     self.lkas_allowed_speed = False
     self.lkas_disabled = False
+    self.cruise_speed = 30 * CV.KPH_TO_MS
+    self.cruise_speed_counter = 0
+    self.is_cruise_latch = False
+    self.rising_edge_since = 0
+    # self.last_frame = time() # todo: existing infra to reuse?
+    self.dt = 0
 
 
 
@@ -58,19 +64,23 @@ class CarState(CarStateBase):
     # ret.brake = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["TRANSMISSION_STATE"], None))
 
+    ret.vEgoCluster = ret.vEgoRaw * HUD_MULTIPLIER
+
 
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
     self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
     # dp - brake lights
     ret.brakeLights = ret.brakePressed
     
-    ret.cruiseState.enabled = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"] != 0
+    ret.cruiseState.enabled = pt_cp.vl["LKAS_HUD"]["LKA_ACTIVE"] != 0 or pt_cp.vl["LKAS_HUD"]["LKAS_STATE"] != 0
     ret.cruiseActualEnabled = ret.cruiseState.enabled
-    ret.cruiseState.available = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"] != 0
-    ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.MPH_TO_MS
+    ret.cruiseState.available = pt_cp.vl["LKAS_HUD"]["LKA_ACTIVE"] != 0 or pt_cp.vl["LKAS_HUD"]["LKAS_STATE"] != 0
+    ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
     ret.steeringTorque = pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]
 
     print('Cruise speed :  %s' % ret.cruiseState.speed)
+    print('Cruise enable :  %s' % ret.cruiseState.enabled)
+
 
     #trans state 15 "PARKING" 1 "DRIVE" 14 "BACKWARD" 13 "NORMAL"
     
@@ -106,12 +116,20 @@ class CarState(CarStateBase):
       ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
       ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
       ("TRANSMISSION_STATE", "ECMPRDNL"),
+      ("LKA_ACTIVE", "LKAS_HUD"),
+      ("LKAS_STATE", "LKAS_HUD"),
     ]
 
     checks = [
       ("BCMTurnSignals", 1),
+      ("ECMEngineStatus", 10),
+      ("EPBStatus", 10),
+      ("LKAS_HUD", 10),
+      ("ECMPRDNL", 10),
+      ("BCMDoorBeltStatus", 10),
       ("EBCMWheelSpdFront", 20),
       ("EBCMWheelSpdRear", 20),
+      ("ASCMActiveCruiseControlStatus", 20),
       ("PSCMSteeringAngle", 100),
     ]
 
