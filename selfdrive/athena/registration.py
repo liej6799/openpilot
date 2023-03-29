@@ -48,8 +48,6 @@ def register(show_spinner=False) -> Optional[str]:
 
     # Block until we get the imei
     serial = HARDWARE.get_serial()
-
-    params.put("IMEI", imei1)
     params.put("HardwareSerial", serial)
 
     backoff = 0
