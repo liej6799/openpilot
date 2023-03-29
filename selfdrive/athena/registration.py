@@ -66,7 +66,7 @@ def register(show_spinner=False) -> Optional[str]:
 
     backoff = 0
     start_time = time.monotonic()
-    while True:
+    while False:
       try:
         register_token = jwt.encode({'register': True, 'exp': datetime.utcnow() + timedelta(hours=1)}, private_key, algorithm='RS256')
         cloudlog.info("getting pilotauth")
