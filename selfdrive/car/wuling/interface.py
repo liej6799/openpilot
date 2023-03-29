@@ -31,10 +31,18 @@ class CarInterface(CarInterfaceBase):
     ret.wheelbase = 2.75
     ret.centerToFront = ret.wheelbase * 0.5
     ret.steerRatio = 15.4
-    ret.steerActuatorDelay = 0.3   # end-to-end angle controller
+    
+    ret.steerActuatorDelay = 0.1  # end-to-end angle controller
+    
     ret.lateralTuning.pid.kf = 0.00003
     ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 20.], [0., 20.]]
     ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0025, 0.1], [0.00025, 0.01]]
+    
+    # ret.longitudinalTuning.kpBP = [5., 35.]
+    # ret.longitudinalTuning.kiBP = [0.]
+    # ret.longitudinalTuning.kpV = [2.4, 1.5]
+    # ret.longitudinalTuning.kiV = [0.36]
+
 
     # TODO: get actual value, for now starting with reasonable value for
     # civic and scaling by mass and wheelbase
@@ -60,6 +68,8 @@ class CarInterface(CarInterfaceBase):
     ret.cruiseState.enabled = common_interface_atl(ret, dragonconf.dpAtl)
     ret.canValid = self.cp.can_valid and self.cp_loopback.can_valid
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
+    print("dp atl : %s" % dragonconf.dpAtl)
+    print('Cruise enable :  %s' % ret.cruiseState.enabled)
 
    # events
     events = self.create_common_events(ret)
@@ -91,6 +101,7 @@ class CarInterface(CarInterfaceBase):
 
 
     ret.events = events.to_msg()
+    print("Events : %s" % events.to_msg())
 
     self.CS.out = ret.as_reader()
     return self.CS.out

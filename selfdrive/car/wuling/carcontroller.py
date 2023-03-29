@@ -53,8 +53,8 @@ class CarController():
     if CS.lka_steering_cmd_counter != self.lka_steering_cmd_counter_last:
       self.lka_steering_cmd_counter_last = CS.lka_steering_cmd_counter
     elif (frame % P.STEER_STEP) == 0:
-      # lkas_enabled = c.active and not (CS.out.steerWarning or CS.out.steerError) and CS.out.vEgo > P.MIN_STEER_SPEED
-      lkas_enabled = True
+      lkas_enabled = c.active and not (CS.out.steerWarning or CS.out.steerError) and CS.out.vEgo > P.MIN_STEER_SPEED
+      # lkas_enabled = True
       print('lkas_enabled :  %s' % lkas_enabled)
       if lkas_enabled:
         new_steer = int(round(actuators.steer * P.STEER_MAX))

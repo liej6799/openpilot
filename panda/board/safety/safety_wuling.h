@@ -1,17 +1,20 @@
 //safety wuling
 #define ENGINE_DATA   0xc9
 #define LKAS_HUD      0x373
+#define STEERING_LKAS      0x225
 
 // CAN bus numbers
 #define BUS_MAIN 0
 #define BUS_RADAR  1
-#define BUS_CAM  2
+#define BUS_CAM  2U
 
 const CanMsg WULING_TX_MSGS[] = {{ENGINE_DATA, 0, 8}, {LKAS_HUD, 0, 8}};
 
 AddrCheckStruct wl_addr_checks[] = {
   {.msg = {{ENGINE_DATA, 0, 5, .expected_timestep = 100000U}, { 0 }, { 0 }}},
-  {.msg = {{LKAS_HUD, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
+  {.msg = {{STEERING_LKAS, 2, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
+  {.msg = {{LKAS_HUD, 2, 8, .expected_timestep = 20000U}, { 0 }, { 0 }}},
+
 };
 
 
@@ -20,7 +23,7 @@ addr_checks wl_rx_checks = {wl_addr_checks, WL_RX_CHECK_LEN};
 
 static const addr_checks* wuling_init(int16_t param) {
   UNUSED(param);
-  controls_allowed = 0;
+  controls_allowed = 1;
   relay_malfunction_reset();
   return &wl_rx_checks;
 }
@@ -75,8 +78,8 @@ static int wuling_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
     // block stock lkas messages and stock acc messages (if OP is doing ACC)
     int addr = GET_ADDR(to_fwd);
     // bool is_lkas_msg = (addr == 0x373) || (addr == 0x370) || (addr == 0x33D);
-    bool is_lkas_msg = (addr == 0x225) || (addr == 0x194) || (addr == 0x33D);
-    // bool is_lkas_msg = (addr == 0x225) || (addr == 0x194) || (addr == 0x33D);
+    // bool is_lkas_msg = (addr == 0x225) || (addr == 0x373) || (addr == 0x370);
+    bool is_lkas_msg = (addr == 0x225) || (addr == 0x370) || (addr == 0x33D);
     bool is_acc_hud_msg = addr == 0x30C;
     bool is_brake_msg = addr == 0x1FA;
     bool block_fwd = is_lkas_msg || is_acc_hud_msg || (is_brake_msg);

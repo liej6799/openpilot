@@ -6,6 +6,7 @@ from selfdrive.config import Conversions as CV
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
 from selfdrive.car.wuling.values import DBC, CanBus,HUD_MULTIPLIER, STEER_THRESHOLD, CAR, PREGLOBAL_CARS 
+from time import time
 
 class CarState(CarStateBase):
   def __init__(self, CP):
@@ -26,7 +27,7 @@ class CarState(CarStateBase):
     self.cruise_speed_counter = 0
     self.is_cruise_latch = False
     self.rising_edge_since = 0
-    # self.last_frame = time() # todo: existing infra to reuse?
+    self.last_frame = time() # todo: existing infra to reuse?
     self.dt = 0
 
 
@@ -44,13 +45,14 @@ class CarState(CarStateBase):
       pt_cp.vl["EBCMWheelSpdRear"]["RLWheelSpd"],
       pt_cp.vl["EBCMWheelSpdRear"]["RLWheelSpd"],
     )
-    ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr])
+    ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr]) * HUD_MULTIPLIER
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.standstill = ret.vEgoRaw < 0.01
 
     ret.steeringAngleDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
     ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]
-    
+    ret.seatbeltUnlatched = False
+    ret.doorOpen = False
     # ret.seatbeltUnlatched = pt_cp.vl["BCMDoorBeltStatus"]["RightSeatBelt"] == 0
     ret.leftBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1
     ret.rightBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2
@@ -64,6 +66,8 @@ class CarState(CarStateBase):
     # ret.brake = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["TRANSMISSION_STATE"], None))
 
+    print('Gear Shifter :  %s' % ret.gearShifter)
+
     ret.vEgoCluster = ret.vEgoRaw * HUD_MULTIPLIER
 
 
@@ -73,18 +77,19 @@ class CarState(CarStateBase):
     ret.brakeLights = ret.brakePressed
     
     ret.cruiseState.enabled = pt_cp.vl["LKAS_HUD"]["LKA_ACTIVE"] != 0 or pt_cp.vl["LKAS_HUD"]["LKAS_STATE"] != 0
-    ret.cruiseState.enabled = True
+    # ret.cruiseState.enabled = True
     
     ret.cruiseActualEnabled = ret.cruiseState.enabled
     ret.cruiseState.available = pt_cp.vl["LKAS_HUD"]["LKA_ACTIVE"] != 0 or pt_cp.vl["LKAS_HUD"]["LKAS_STATE"] != 0
-    ret.cruiseState.available = True
+    # ret.cruiseState.available = True
 
     ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
     ret.steeringTorque = pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]
+    ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
 
     print('Cruise speed :  %s' % ret.cruiseState.speed)
-    print('Cruise enable :  %s' % ret.cruiseState.enabled)
-
+    print('Cruise state enable :  %s' % ret.cruiseState.enabled)
+    print('Cruise state available :  %s' % ret.cruiseState.available)
 
     #trans state 15 "PARKING" 1 "DRIVE" 14 "BACKWARD" 13 "NORMAL"
     
@@ -128,13 +133,13 @@ class CarState(CarStateBase):
       ("BCMTurnSignals", 1),
       ("ECMEngineStatus", 10),
       ("EPBStatus", 10),
-      ("LKAS_HUD", 10),
       ("ECMPRDNL", 10),
       ("BCMDoorBeltStatus", 10),
       ("EBCMWheelSpdFront", 20),
       ("EBCMWheelSpdRear", 20),
       ("ASCMActiveCruiseControlStatus", 20),
       ("PSCMSteeringAngle", 100),
+      ("LKAS_HUD", 20),
     ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.POWERTRAIN)
