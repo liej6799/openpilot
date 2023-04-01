@@ -37,7 +37,7 @@ class CarState(CarStateBase):
 
     self.prev_cruise_buttons = self.cruise_buttons
 
-    self.engineRPM = pt_cp.vl["ECMEngineStatus"]['EngineRPM']*0.25
+    self.engineRPM = pt_cp.vl["ECMEngineStatus"]['EngineRPM'] * 0.25
 
     ret.wheelSpeeds = self.get_wheel_speeds(
       pt_cp.vl["EBCMWheelSpdFront"]["FLWheelSpd"],
@@ -76,11 +76,13 @@ class CarState(CarStateBase):
     # dp - brake lights
     ret.brakeLights = ret.brakePressed
     
-    ret.cruiseState.enabled = pt_cp.vl["LKAS_HUD"]["LKA_ACTIVE"] != 0 or pt_cp.vl["LKAS_HUD"]["LKAS_STATE"] != 0
+    # ret.cruiseState.enabled = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
+    ret.cruiseState.enabled = pt_cp.vl["AccStatus"]["CruiseState"] != 0
     # ret.cruiseState.enabled = True
     
     ret.cruiseActualEnabled = ret.cruiseState.enabled
-    ret.cruiseState.available = pt_cp.vl["LKAS_HUD"]["LKA_ACTIVE"] != 0 or pt_cp.vl["LKAS_HUD"]["LKAS_STATE"] != 0
+    ret.cruiseState.available = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
+    # ret.cruiseState.available =  pt_cp.vl["AccStatus"]["CruiseState"] != 0
     # ret.cruiseState.available = True
 
     ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
@@ -118,15 +120,16 @@ class CarState(CarStateBase):
       ("LeftSeatBelt", "BCMDoorBeltStatus"),
       ("RightSeatBelt", "BCMDoorBeltStatus"),
       ("EPBClosed", "EPBStatus"),
-      ("CruiseMainOn", "ECMEngineStatus"),
       ("Brake_Pressed", "ECMEngineStatus"),
       ("EPBSTATUS", "EPBStatus"),
       ("ACCBUTTON", "ASCMActiveCruiseControlStatus"),
       ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
       ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
       ("TRANSMISSION_STATE", "ECMPRDNL"),
-      ("LKA_ACTIVE", "LKAS_HUD"),
-      ("LKAS_STATE", "LKAS_HUD"),
+      ("LKAS_STATE", "LkasHud"),
+      ("LKA_ACTIVE", "LkasHud"),
+      ("CruiseMainOn", "AccStatus"),
+      ("CruiseState", "AccStatus"),
     ]
 
     checks = [
@@ -139,7 +142,8 @@ class CarState(CarStateBase):
       ("EBCMWheelSpdRear", 20),
       ("ASCMActiveCruiseControlStatus", 20),
       ("PSCMSteeringAngle", 100),
-      ("LKAS_HUD", 20),
+      ("LkasHud", 20),
+      ("AccStatus", 20),
     ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.POWERTRAIN)

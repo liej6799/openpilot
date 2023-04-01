@@ -8,6 +8,7 @@
 #define BUS_RADAR  1
 #define BUS_CAM  2U
 
+const CanMsg WULING_IGNITION_ID = {0x225, 0, 8};
 const CanMsg WULING_TX_MSGS[] = {{ENGINE_DATA, 0, 8}, {LKAS_HUD, 0, 8}};
 
 AddrCheckStruct wl_addr_checks[] = {
@@ -16,6 +17,7 @@ AddrCheckStruct wl_addr_checks[] = {
   {.msg = {{LKAS_HUD, 2, 8, .expected_timestep = 20000U}, { 0 }, { 0 }}},
 
 };
+// AddrCheckStruct wl_addr_checks[] = {};
 
 
 #define WL_RX_CHECK_LEN (sizeof(wl_addr_checks) / sizeof(wl_addr_checks[0]))
@@ -33,11 +35,36 @@ static int wuling_rx_hook(CANPacket_t *to_send) {
   UNUSED(to_send);
 
   bool valid = addr_safety_check(to_send, &wl_rx_checks, NULL, NULL, NULL);
+	// bool valid = true;
 
    if (valid && ((int)GET_BUS(to_send) == BUS_MAIN)) {
       int addr = GET_ADDR(to_send);
 
-      generic_rx_checks((addr == LKAS_HUD));
+      if (addr == 842) {
+        vehicle_moving = GET_BYTE(to_send, 0) | GET_BYTE(to_send, 1);
+      }
+      
+      if (addr == 201) {
+        brake_pressed = GET_BIT(to_send, 40U) != 0U;
+      }
+
+      if (addr == 0x191) {
+        gas_pressed = GET_BYTE(to_send, 6) != 0U;
+      }
+
+      if ((addr == 0x263)) {
+        acc_main_on = GET_BIT(to_send, 38U) != 0U;
+        if (!acc_main_on) {
+          if (!cruise_engaged_prev) {
+            controls_allowed = 1;
+          }
+        }else {
+          controls_allowed = 0;
+        }
+        cruise_engaged_prev = acc_main_on;
+      }
+
+      generic_rx_checks((addr == LKAS_HUD || addr == STEERING_LKAS));
    }
 
   controls_allowed = 1;

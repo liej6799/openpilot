@@ -21,12 +21,14 @@ class CarInterface(CarInterfaceBase):
     ret.lateralTuning.init('pid')
     ret.pcmCruise = False 
     
+    tire_stiffness_factor = 0.5328
+
     # ret.dashcamOnly = False
     # ret.dashcamOnly = candidate not in (CAR.CX5_2022, CAR.CX9_2021)
-    ret.openpilotLongitudinalControl = True
+    ret.openpilotLongitudinalControl = False
 
-    ret.steerRateCost = 0.7
-    ret.steerLimitTimer = 0.4
+    ret.steerRateCost = 1
+    ret.steerLimitTimer = 1
     ret.mass = 1900. + STD_CARGO_KG
     ret.wheelbase = 2.75
     ret.centerToFront = ret.wheelbase * 0.5
@@ -34,9 +36,36 @@ class CarInterface(CarInterfaceBase):
     
     ret.steerActuatorDelay = 0.1  # end-to-end angle controller
     
-    ret.lateralTuning.pid.kf = 0.00003
-    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 20.], [0., 20.]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0025, 0.1], [0.00025, 0.01]]
+    ret.lateralTuning.pid.kf = 0.00004
+    #ret.lateralTuning.pid.kf = 0.00003
+    # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0, 0], [0, 0]]
+    # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 1.], [0., 1.]]
+    
+    # v1
+    # ret.lateralTuning.pid.kpBP = [0., 30.]
+    # ret.lateralTuning.pid.kpV = [0.0025, 0.08]
+    # ret.lateralTuning.pid.kiBP = [0., 30.]
+    # ret.lateralTuning.pid.kiV = [0., 0.60]
+    
+    # ret.lateralTuning.pid.kpBP = [0., 30.]
+    # ret.lateralTuning.pid.kpV = [0.0025, 0.08]
+    # ret.lateralTuning.pid.kiBP = [0., 30.]
+    # ret.lateralTuning.pid.kiV = [0., 0.60]
+    
+    #v2
+    # ret.lateralTuning.pid.kpBP = [0.,40.]
+    # ret.lateralTuning.pid.kiBP = [0., 40.]
+    # ret.lateralTuning.pid.kpV = [0.0005, 0.07]
+    # ret.lateralTuning.pid.kiV = [0.25, 0.05]
+    
+    ret.lateralTuning.pid.kpBP = [0.,50.]
+    ret.lateralTuning.pid.kiBP = [0., 50.]
+    ret.lateralTuning.pid.kpV = [0.2, 0.03]
+    ret.lateralTuning.pid.kiV = [0., 0.65]
+
+    # ret.lateralTuning.pid.kiBP = [0., 0]
+    # ret.lateralTuning.pid.kiV = [0., 0]
+    
     
     # ret.longitudinalTuning.kpBP = [5., 35.]
     # ret.longitudinalTuning.kiBP = [0.]
@@ -50,7 +79,8 @@ class CarInterface(CarInterfaceBase):
 
     # TODO: start from empirically derived lateral slip stiffness for the civic and scale by
     # mass and CG position, so all cars will have approximately similar dyn behaviors
-    ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront)
+    ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
+                                                                         tire_stiffness_factor=tire_stiffness_factor)
 
     # dp
     ret = common_interface_get_params_lqr(ret)
