@@ -29,14 +29,14 @@ class CarInterface(CarInterfaceBase):
 
     ret.steerRateCost = 1
     ret.steerLimitTimer = 1
-    ret.mass = 1900. + STD_CARGO_KG
+    ret.mass = 1950. + STD_CARGO_KG
     ret.wheelbase = 2.75
     ret.centerToFront = ret.wheelbase * 0.5
     ret.steerRatio = 15.4
     
     ret.steerActuatorDelay = 0.3  # end-to-end angle controller
     
-    ret.lateralTuning.pid.kf = 0.00004
+    ret.lateralTuning.pid.kf = 0
     #ret.lateralTuning.pid.kf = 0.00003
     # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0, 0], [0, 0]]
     # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 1.], [0., 1.]]
@@ -58,11 +58,13 @@ class CarInterface(CarInterfaceBase):
     # ret.lateralTuning.pid.kpV = [0.0005, 0.07]
     # ret.lateralTuning.pid.kiV = [0.25, 0.05]
     
-    ret.lateralTuning.pid.kpBP = [0.,50.]
-    ret.lateralTuning.pid.kiBP = [0., 50.]
-    ret.lateralTuning.pid.kpV = [0.02, 0.03]
-    ret.lateralTuning.pid.kiV = [0., 0.65]
+    # ret.lateralTuning.pid.kpBP = [0.,40.]
+    # ret.lateralTuning.pid.kiBP = [0., 40.]
+    # ret.lateralTuning.pid.kpV = [0.02, 0.03]
+    # ret.lateralTuning.pid.kiV = [0., 0.65]
 
+    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
+    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.25], [0.05]]
     # ret.lateralTuning.pid.kiBP = [0., 0]
     # ret.lateralTuning.pid.kiV = [0., 0]
     
