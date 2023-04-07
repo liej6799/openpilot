@@ -108,8 +108,8 @@ class Controls:
 
     # detect sound card presence and ensure successful init
     sounds_available = HARDWARE.get_sound_card_online()
-    print("CP Param")
-    print(self.CP)
+    # print("CP Param")
+    # print(self.CP)
     car_recognized = self.CP.carName != 'mock'
 
     controller_available = self.CI.CC is not None and not passive and not self.CP.dashcamOnly
@@ -162,6 +162,13 @@ class Controls:
     self.button_timers = {ButtonEvent.Type.decelCruise: 0, ButtonEvent.Type.accelCruise: 0}
     self.last_actuators = car.CarControl.Actuators.new_message()
 
+    self._params = params
+
+    self.params_check_last_t = 0.0
+    self.params_check_freq = 0.3
+    self.op_params_override_lateral = self._params.get_bool('OPParamsLateralOverride')
+
+    
     self.led_state = False
     self.led_state_prev = False
 
@@ -213,6 +220,13 @@ class Controls:
       self.events.add_from_msg(self.sm['driverMonitoringState'].events)
     self.events.add_from_msg(self.sm['longitudinalPlan'].eventsDEPRECATED)
 
+    t = sec_since_boot()
+    if t - self.params_check_last_t > self.params_check_freq:
+      if self.op_params_override_lateral:
+        self.LaC.update_op_params()
+        print("Update OP Param")
+      self.params_check_last_t = t
+    
     # Create events for battery, temperature, disk space, and memory
     # if EON and (self.sm['peripheralState'].pandaType != PandaType.uno) and \
     #    self.sm['deviceState'].batteryPercent < 1 and self.sm['deviceState'].chargingError:

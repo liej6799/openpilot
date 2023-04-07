@@ -4,6 +4,8 @@ from selfdrive.car.wuling.values import CAR, CruiseButtons,AccState
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, gen_empty_fingerprint, get_safety_config
 from selfdrive.car.interfaces import CarInterfaceBase
 from common.dp_common import common_interface_atl, common_interface_get_params_lqr
+from selfdrive.config import Conversions as CV
+from common.op_params import opParams
 
 ButtonType = car.CarState.ButtonEvent.Type
 EventName = car.CarEvent.EventName
@@ -21,23 +23,23 @@ class CarInterface(CarInterfaceBase):
     ret.lateralTuning.init('pid')
     ret.pcmCruise = False 
     
-    tire_stiffness_factor = 0.5328
+    tire_stiffness_factor = 0.444
 
     # ret.dashcamOnly = False
     # ret.dashcamOnly = candidate not in (CAR.CX5_2022, CAR.CX9_2021)
     ret.openpilotLongitudinalControl = False
 
-    ret.steerRateCost = 1
-    ret.steerLimitTimer = 1
-    ret.mass = 1950. + STD_CARGO_KG
+    ret.steerRateCost = 0.7
+    ret.steerLimitTimer = 0.1
+    ret.mass = 1900. + STD_CARGO_KG
     ret.wheelbase = 2.75
     ret.centerToFront = ret.wheelbase * 0.5
-    ret.steerRatio = 15.4
+    ret.steerRatio = 18.3
     
-    ret.steerActuatorDelay = 0.3  # end-to-end angle controller
+    ret.steerActuatorDelay = 0.30  # end-to-end angle controller
     
     ret.lateralTuning.pid.kf = 0
-    #ret.lateralTuning.pid.kf = 0.00003
+    # ret.lateralTuning.pid.kf = 0.00003
     # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0, 0], [0, 0]]
     # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 1.], [0., 1.]]
     
@@ -58,16 +60,32 @@ class CarInterface(CarInterfaceBase):
     # ret.lateralTuning.pid.kpV = [0.0005, 0.07]
     # ret.lateralTuning.pid.kiV = [0.25, 0.05]
     
-    # ret.lateralTuning.pid.kpBP = [0.,40.]
-    # ret.lateralTuning.pid.kiBP = [0., 40.]
-    # ret.lateralTuning.pid.kpV = [0.02, 0.03]
-    # ret.lateralTuning.pid.kiV = [0., 0.65]
+    ret.lateralTuning.pid.kpBP = [0.,40.]
+    ret.lateralTuning.pid.kiBP = [0., 40.]
+    ret.lateralTuning.pid.kpV = [0.006, 0.025]
+    ret.lateralTuning.pid.kiV = [0.10, 0.60]
 
-    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.25], [0.05]]
+    op_params = opParams("wuling car_interface.py for lateral override")
+
+    bp = [i * CV.MPH_TO_MS for i in op_params.get("TUNE_LAT_PID_bp_mph", force_update=True)]
+    kpV = [i for i in op_params.get("TUNE_LAT_PID_kp", force_update=True)]
+    kiV = [i for i in op_params.get("TUNE_LAT_PID_ki", force_update=True)]
+    ret.lateralTuning.pid.kpV = kpV
+    ret.lateralTuning.pid.kiV = kiV
+    # ret.lateralTuning.pid.kdV = op_params.get("TUNE_LAT_PID_kd", force_update=True)
+    ret.lateralTuning.pid.kpBP = bp
+    ret.lateralTuning.pid.kiBP = bp
+    # ret.lateralTuning.pid.kdBP = bp
+    # ret.lateralTuning.pid.kf = op_params.get('TUNE_LAT_PID_kf', force_update=True)
+
+    print('KP Param :  %s' % ret.lateralTuning.pid.kpV)
+    print('KI Param :  %s' % ret.lateralTuning.pid.kiV)
+    print('KF Param :  %s' % ret.lateralTuning.pid.kf)
+
+    # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.,0.], [0.,0.]]
+    # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0,0.0], [0.0,0.0]]
     # ret.lateralTuning.pid.kiBP = [0., 0]
     # ret.lateralTuning.pid.kiV = [0., 0]
-    
     
     # ret.longitudinalTuning.kpBP = [5., 35.]
     # ret.longitudinalTuning.kiBP = [0.]
@@ -100,8 +118,8 @@ class CarInterface(CarInterfaceBase):
     ret.cruiseState.enabled = common_interface_atl(ret, dragonconf.dpAtl)
     ret.canValid = self.cp.can_valid and self.cp_loopback.can_valid
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
-    print("dp atl : %s" % dragonconf.dpAtl)
-    print('Cruise enable :  %s' % ret.cruiseState.enabled)
+    # print("dp atl : %s" % dragonconf.dpAtl)
+    # print('Cruise enable :  %s' % ret.cruiseState.enabled)
 
    # events
     events = self.create_common_events(ret)
@@ -133,7 +151,7 @@ class CarInterface(CarInterfaceBase):
 
 
     ret.events = events.to_msg()
-    print("Events : %s" % events.to_msg())
+    # print("Events : %s" % events.to_msg())
 
     self.CS.out = ret.as_reader()
     return self.CS.out

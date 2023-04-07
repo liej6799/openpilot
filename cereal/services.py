@@ -68,7 +68,7 @@ services = {
   "navThumbnail": (True, 0.),
 
   # debug
-  "testJoystick": (False, 0.),
+  "testJoystick": (True, 0.),
 
   # dp
   "thermal": (True, 2., 1),

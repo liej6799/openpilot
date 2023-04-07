@@ -9,8 +9,8 @@
 
 #include "common.h"
 
-// #define DEBUG(...)
-#define DEBUG printf
+#define DEBUG(...)
+// #define DEBUG printf
 #define INFO printf
 
 bool MessageState::parse(uint64_t sec, uint8_t * dat) {

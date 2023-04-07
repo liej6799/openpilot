@@ -69,6 +69,7 @@ class CarController():
         self.blinker_end_frame = 0
       if self.last_blinker_on and not blinker_on:
         self.blinker_end_frame = frame + dragonconf.dpSignalOffDelay
+      
       apply_steer = common_controller_ctrl(enabled,
                                            dragonconf,
                                            blinker_on or frame < self.blinker_end_frame,

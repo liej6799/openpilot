@@ -50,7 +50,7 @@ class CarState(CarStateBase):
     ret.standstill = ret.vEgoRaw < 0.01
 
     ret.steeringAngleDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
-    ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]
+    # ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]
     ret.seatbeltUnlatched = False
     ret.doorOpen = False
     # ret.seatbeltUnlatched = pt_cp.vl["BCMDoorBeltStatus"]["RightSeatBelt"] == 0
