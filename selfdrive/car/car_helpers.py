@@ -238,13 +238,19 @@ def get_car(logcan, sendcan, experimental_long_allowed, num_pandas=1):
   x.start()
 
   try:
+    print("Get Car interface ")
     CarInterface, CarController, CarState = interfaces[candidate]
     CP = CarInterface.get_params(candidate, fingerprints, car_fw, experimental_long_allowed)
     CP.carVin = vin
     CP.carFw = car_fw
     CP.fingerprintSource = source
     CP.fuzzyFingerprint = not exact_match
+    
+    print("Car Param")
+    print(CP)
 
     return CarInterface(CP, CarController, CarState), CP
-  except KeyError:
+  except KeyError as e:
+    print("error car interface")
+    print ('I got a KeyError - reason "%s"' % str(e))
     return None, None

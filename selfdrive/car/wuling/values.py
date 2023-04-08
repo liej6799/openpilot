@@ -71,7 +71,6 @@ CAR_INFO: Dict[str, Union[GMCarInfo, List[GMCarInfo]]] = {
   CAR.ALMAS_RS_PRO: GMCarInfo("Wuling Almaz RS Pro 2022"),
 }
 
-
 class CruiseButtons:
   INIT = 0
   UNPRESS = 1

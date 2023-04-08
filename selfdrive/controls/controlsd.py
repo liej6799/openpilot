@@ -103,18 +103,25 @@ class Controls:
                                      'driverMonitoringState', 'longitudinalPlan', 'lateralPlan', 'liveLocationKalman',
                                      'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters', 'dragonConf', 'testJoystick'] + self.camera_packets,
                                     ignore_alive=ignore, ignore_avg_freq=['radarState', 'longitudinalPlan','testJoystick', 'dragonConf'])
-
+    print("Get Car.")
     if CI is None:
       # wait for one pandaState and one CAN packet
       print("Waiting for CAN messages...")
+    
       get_one_can(self.can_sock)
 
       num_pandas = len(messaging.recv_one_retry(self.sm.sock['pandaStates']).pandaStates)
       experimental_long_allowed = self.params.get_bool("ExperimentalLongitudinalEnabled") and not is_release_branch()
       self.CI, self.CP = get_car(self.can_sock, self.pm.sock['sendcan'], experimental_long_allowed, num_pandas)
+      print("Get Car. CI")
+      print(self.CI)
+      print("Get param. CI")
+
+      print(self.CP)
     else:
       self.CI, self.CP = CI, CI.CP
 
+    print(self.CP)
     self.joystick_mode = self.params.get_bool("JoystickDebugMode") or self.CP.notCar
 
     # set alternative experiences from parameters

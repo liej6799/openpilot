@@ -61,18 +61,21 @@ class CarState(CarStateBase):
     ret.leftBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1
     ret.rightBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2
     
-    print('Gear Shifter :  %s' % ret.gearShifter)
+    ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["TRANSMISSION_STATE"], None))
 
-    self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
-    self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
+    # print('Gear Shifter :  %s' % ret.gearShifter)
+
+    self.parkingBrake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
+    # self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
+    
     # dp - brake lights
-    ret.brakeLights = ret.brakePressed
+    # ret.brakeLights = ret.brakePressed
     
     # ret.cruiseState.enabled = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
     ret.cruiseState.enabled = pt_cp.vl["AccStatus"]["CruiseState"] != 0
     # ret.cruiseState.enabled = True
     
-    ret.cruiseActualEnabled = ret.cruiseState.enabled
+    # ret.cruiseActualEnabled = ret.cruiseState.enabled
     ret.cruiseState.available = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
     # ret.cruiseState.available =  pt_cp.vl["AccStatus"]["CruiseState"] != 0
     # ret.cruiseState.available = True
@@ -81,12 +84,13 @@ class CarState(CarStateBase):
     ret.steeringTorque = pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
     ret.cruiseState.standstill = ret.cruiseState.enabled == 0 and ret.cruiseState.enabled != 0
+    self.lkas_status = 0
 
     self.steeringTorqueSamples.append(ret.steeringTorque)
 
-    print('Cruise speed :  %s' % ret.cruiseState.speed)
-    print('Cruise state enable :  %s' % ret.cruiseState.enabled)
-    print('Cruise state available :  %s' % ret.cruiseState.available)
+    # print('Cruise speed :  %s' % ret.cruiseState.speed)
+    # print('Cruise state enable :  %s' % ret.cruiseState.enabled)
+    # print('Cruise state available :  %s' % ret.cruiseState.available)
 
     #trans state 15 "PARKING" 1 "DRIVE" 14 "BACKWARD" 13 "NORMAL"
     return ret
@@ -97,15 +101,10 @@ class CarState(CarStateBase):
     checks = []
     if CP.networkLocation == NetworkLocation.fwdCamera:
       signals += [
-        ("AEBCmdActive", "AEBCmd"),
-        ("RollingCounter", "ASCMLKASteeringCmd"),
-        ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
-        ("ACCCruiseState", "ASCMActiveCruiseControlStatus"),
+        
       ]
       checks += [
-        ("AEBCmd", 10),
-        ("ASCMLKASteeringCmd", 10),
-        ("ASCMActiveCruiseControlStatus", 25),
+       
       ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.CAMERA)
@@ -157,26 +156,12 @@ class CarState(CarStateBase):
       ("LkasHud", 20),
       ("AccStatus", 20),
     ]
-
-    # Used to read back last counter sent to PT by camera
-    if CP.networkLocation == NetworkLocation.fwdCamera:
-      signals += [
-        ("RollingCounter", "ASCMLKASteeringCmd"),
-      ]
-      checks += [
-        ("ASCMLKASteeringCmd", 0),
-      ]
-
-    if CP.transmissionType == TransmissionType.direct:
-      signals.append(("RegenPaddle", "EBCMRegenPaddle"))
-      checks.append(("EBCMRegenPaddle", 50))
-
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.POWERTRAIN)
 
   @staticmethod
   def get_loopback_can_parser(CP):
     signals = [
-      ("RollingCounter", "ASCMLKASteeringCmd"),
+      ("RollingCounter", "PSCMSteeringAngle"),
     ]
 
     checks = [
