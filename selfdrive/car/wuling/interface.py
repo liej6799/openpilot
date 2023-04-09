@@ -38,9 +38,10 @@ class CarInterface(CarInterfaceBase):
     ret.mass = 1950. + STD_CARGO_KG
     ret.wheelbase = 2.75
     ret.steerRatio = 17.7  # Stock 15.7, LiveParameters
-    tire_stiffness_factor = 0.469  # Stock Michelin Energy Saver A/S, LiveParameters
+    tire_stiffness_factor = 1  # Stock Michelin Energy Saver A/S, LiveParameters
     ret.centerToFront = ret.wheelbase * 0.5 
-    
+    ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 500], [0, 500]]
+
     ret.steerLimitTimer = 0.4
     ret.steerActuatorDelay = 0.1
 
@@ -50,8 +51,8 @@ class CarInterface(CarInterfaceBase):
     CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
     
     ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 41.0], [0., 41.0]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.001, 0.004], [0.04, 0.7]]
-    ret.lateralTuning.pid.kf = 0.00004   # full torque for 20 deg at 80mph means 0.00007818594
+    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0002, 0.004], [0.1, 0.7]]
+    ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
     ret.steerActuatorDelay = 0.1  # Default delay, not measured yet
     tire_stiffness_factor = 0.444  # not optimized yet
     

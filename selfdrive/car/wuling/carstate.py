@@ -22,7 +22,7 @@ class CarState(CarStateBase):
     self.shifter_values = can_define.dv["ECMPRDNL"]["TRANSMISSION_STATE"]
     self.cluster_speed_hyst_gap = CV.KPH_TO_MS / 2.
     self.cluster_min_speed = CV.KPH_TO_MS / 2.
-
+    self.is_cruise_latch = False
     self.steeringTorqueSamples = deque(TORQUE_SAMPLES*[0], TORQUE_SAMPLES)
 
     self.loopback_lka_steering_cmd_updated = False
@@ -144,7 +144,7 @@ class CarState(CarStateBase):
     ]
 
     checks = [
-      ("BCMTurnSignals", 1),
+      ("BCMTurnSignals", 100),
       ("ECMEngineStatus", 10),
       ("EPBStatus", 10),
       ("ECMPRDNL", 10),

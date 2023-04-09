@@ -12,9 +12,9 @@
 const CanMsg WULING_TX_MSGS[] = {{ENGINE_DATA, 0, 8}, {LKAS_HUD, 0, 8}};
 
 AddrCheckStruct wl_addr_checks[] = {
-  {.msg = {{ENGINE_DATA, 0, 5, .expected_timestep = 100000U}, { 0 }, { 0 }}},
-  {.msg = {{STEERING_LKAS, 2, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
-  {.msg = {{LKAS_HUD, 2, 8, .expected_timestep = 20000U}, { 0 }, { 0 }}},
+  {.msg = {{ENGINE_DATA, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U}, { 0 }, { 0 }}},
+  // {.msg = {{STEERING_LKAS, 2, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
+  // {.msg = {{LKAS_HUD, 2, 8, .expected_timestep = 20000U}, { 0 }, { 0 }}},
 };
 #define WL_RX_CHECK_LEN (sizeof(wl_addr_checks) / sizeof(wl_addr_checks[0]))
 addr_checks wl_rx_checks = {wl_addr_checks, WL_RX_CHECK_LEN};
@@ -54,8 +54,8 @@ static int wuling_rx_hook(CANPacket_t *to_push) {
    }
 
   controls_allowed = 1;
-  
-  return valid;
+
+  return false;
 }
 
 static int wuling_tx_hook(CANPacket_t *to_send) {

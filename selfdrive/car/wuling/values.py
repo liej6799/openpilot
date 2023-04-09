@@ -10,7 +10,7 @@ Ecu = car.CarParams.Ecu
 
 
 class CarControllerParams:
-  STEER_MAX = 300  # GM limit is 3Nm. Used by carcontroller to generate LKA output
+  STEER_MAX = 500  # GM limit is 3Nm. Used by carcontroller to generate LKA output
   STEER_STEP = 2 # Active control frames per command (~33hz)
   INACTIVE_STEER_STEP = 10  # Inactive control frames per command (10hz)
   STEER_DELTA_UP = 10  # Delta rates require review due to observed EPS weakness
@@ -49,6 +49,12 @@ class CarControllerParams:
 
     self.BRAKE_LOOKUP_BP = [self.ACCEL_MIN, max_regen_acceleration]
     self.BRAKE_LOOKUP_V = [self.MAX_BRAKE, 0.]
+    
+    assert(CP.lateralParams.torqueBP[0] == 0)
+    assert(CP.lateralParams.torqueBP[0] == 0)
+    self.STEER_LOOKUP_BP = [v * -1 for v in CP.lateralParams.torqueBP][1:][::-1] + list(CP.lateralParams.torqueBP)
+    self.STEER_LOOKUP_V = [v * -1 for v in CP.lateralParams.torqueV][1:][::-1] + list(CP.lateralParams.torqueV)
+    
 
 
 class CAR:
