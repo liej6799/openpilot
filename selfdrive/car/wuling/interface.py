@@ -15,15 +15,18 @@ class CarInterface(CarInterfaceBase):
   @staticmethod
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), car_fw=None):
     ret = CarInterfaceBase.get_std_params(candidate, fingerprint)
+    op_params = opParams("wuling car_interface.py for lateral override")
 
     ret.carName = "wuling"
     ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.wuling)]
 
     ret.radarOffCan = True
     ret.lateralTuning.init('pid')
-    ret.pcmCruise = False 
+    ret.pcmCruise = True
     
     tire_stiffness_factor = 0.444
+
+    ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0.], [530]]
 
     # ret.dashcamOnly = False
     # ret.dashcamOnly = candidate not in (CAR.CX5_2022, CAR.CX9_2021)
@@ -33,12 +36,13 @@ class CarInterface(CarInterfaceBase):
     ret.steerLimitTimer = 0.1
     ret.mass = 1900. + STD_CARGO_KG
     ret.wheelbase = 2.75
-    ret.centerToFront = ret.wheelbase * 0.5
-    ret.steerRatio = 18.3
+    ret.centerToFront = ret.wheelbase * 0.4
+    # ret.steerRatio = 16.3
+    ret.steerRatio = op_params.get('steer_ratio', force_update=True)
     
-    ret.steerActuatorDelay = 0.30  # end-to-end angle controller
+    ret.steerActuatorDelay = 0.3 # end-to-end angle controller
     
-    ret.lateralTuning.pid.kf = 0
+    # ret.lateralTuning.pid.kf = 0
     # ret.lateralTuning.pid.kf = 0.00003
     # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0, 0], [0, 0]]
     # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 1.], [0., 1.]]
@@ -60,27 +64,19 @@ class CarInterface(CarInterfaceBase):
     # ret.lateralTuning.pid.kpV = [0.0005, 0.07]
     # ret.lateralTuning.pid.kiV = [0.25, 0.05]
     
-    ret.lateralTuning.pid.kpBP = [0.,40.]
-    ret.lateralTuning.pid.kiBP = [0., 40.]
-    ret.lateralTuning.pid.kpV = [0.006, 0.025]
-    ret.lateralTuning.pid.kiV = [0.10, 0.60]
-
-    op_params = opParams("wuling car_interface.py for lateral override")
+    # ret.lateralTuning.pid.kpBP = [0.,40.]
+    # ret.lateralTuning.pid.kiBP = [0., 40.]
+    # ret.lateralTuning.pid.kpV = [0.006, 0.025]
+    # ret.lateralTuning.pid.kiV = [0.10, 0.60]
 
     bp = [i * CV.MPH_TO_MS for i in op_params.get("TUNE_LAT_PID_bp_mph", force_update=True)]
     kpV = [i for i in op_params.get("TUNE_LAT_PID_kp", force_update=True)]
     kiV = [i for i in op_params.get("TUNE_LAT_PID_ki", force_update=True)]
     ret.lateralTuning.pid.kpV = kpV
     ret.lateralTuning.pid.kiV = kiV
-    # ret.lateralTuning.pid.kdV = op_params.get("TUNE_LAT_PID_kd", force_update=True)
     ret.lateralTuning.pid.kpBP = bp
     ret.lateralTuning.pid.kiBP = bp
-    # ret.lateralTuning.pid.kdBP = bp
-    # ret.lateralTuning.pid.kf = op_params.get('TUNE_LAT_PID_kf', force_update=True)
-
-    print('KP Param :  %s' % ret.lateralTuning.pid.kpV)
-    print('KI Param :  %s' % ret.lateralTuning.pid.kiV)
-    print('KF Param :  %s' % ret.lateralTuning.pid.kf)
+    ret.lateralTuning.pid.kf = op_params.get('TUNE_LAT_PID_kf', force_update=True)
 
     # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.,0.], [0.,0.]]
     # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0,0.0], [0.0,0.0]]

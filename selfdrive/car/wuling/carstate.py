@@ -46,6 +46,7 @@ class CarState(CarStateBase):
       pt_cp.vl["EBCMWheelSpdRear"]["RLWheelSpd"],
     )
     ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr]) * HUD_MULTIPLIER
+    # ret.vEgoRaw = (ret.wheelSpeeds.fl + ret.wheelSpeeds.fr + ret.wheelSpeeds.rl + ret.wheelSpeeds.rr) / 4.
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.standstill = ret.vEgoRaw < 0.01
 
@@ -70,24 +71,41 @@ class CarState(CarStateBase):
 
     ret.vEgoCluster = ret.vEgoRaw * HUD_MULTIPLIER
 
+    ret.cruiseState.available = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
+    self.is_cruise_latch = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
+
+    if pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 and ret.brakePressed:
+      self.is_cruise_latch = False
+    else:
+      pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 and not ret.brakePressed
+      self.is_cruise_latch = True
 
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
     self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
     # dp - brake lights
     ret.brakeLights = ret.brakePressed
     
+    if not ret.cruiseState.available:
+      self.is_cruise_latch = False
+      
     # ret.cruiseState.enabled = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
-    ret.cruiseState.enabled = pt_cp.vl["AccStatus"]["CruiseState"] != 0
+    ret.cruiseState.enabled = self.is_cruise_latch
     # ret.cruiseState.enabled = True
     
     ret.cruiseActualEnabled = ret.cruiseState.enabled
-    ret.cruiseState.available = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
     # ret.cruiseState.available =  pt_cp.vl["AccStatus"]["CruiseState"] != 0
     # ret.cruiseState.available = True
 
     ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
     ret.steeringTorque = pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]
+    ret.steeringTorqueEps = pt_cp.vl["STEER_RELATED"]["STEER_TORQUE"]
+
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
+
+    print("Steering torque : %d" % ret.steeringTorque)
+
+    if ret.steeringPressed:
+      print("Steering pressed")
 
     print('Cruise speed :  %s' % ret.cruiseState.speed)
     print('Cruise state enable :  %s' % ret.cruiseState.enabled)
@@ -130,6 +148,7 @@ class CarState(CarStateBase):
       ("LKA_ACTIVE", "LkasHud"),
       ("CruiseMainOn", "AccStatus"),
       ("CruiseState", "AccStatus"),
+      ("STEER_TORQUE", "STEER_RELATED"),
     ]
 
     checks = [

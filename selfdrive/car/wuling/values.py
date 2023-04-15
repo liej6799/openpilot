@@ -5,7 +5,6 @@ Ecu = car.CarParams.Ecu
 class CarControllerParams:
   STEER_MAX = 300  # Safety limit, not LKA max. Trucks use 600.
   STEER_STEP = 2  # control frames per command
-  STEER_MAX = 261         # 262 faults
   STEER_DELTA_UP = 3      # 3 is stock. 100 is fine. 200 is too much it seems
   STEER_DELTA_DOWN = 3    # no faults on the way down it seems
   STEER_ERROR_MAX = 80
@@ -46,6 +45,14 @@ class CarControllerParams:
 
   GAS_LOOKUP_V = [MAX_ACC_REGEN, ZERO_GAS, MAX_GAS]
   BRAKE_LOOKUP_V = [MAX_BRAKE, 0.]
+  
+  def __init__(self, CP):
+    # mirror of list (assuming first item is zero) for interp of signed request values
+    assert(CP.lateralParams.torqueBP[0] == 0)
+    assert(CP.lateralParams.torqueBP[0] == 0)
+    self.STEER_LOOKUP_BP = [v * -1 for v in CP.lateralParams.torqueBP][1:][::-1] + list(CP.lateralParams.torqueBP)
+    self.STEER_LOOKUP_V = [v * -1 for v in CP.lateralParams.torqueV][1:][::-1] + list(CP.lateralParams.torqueV)
+
 class CAR:
   ALMAS_RS_PRO = "WULING ALMAZ RS PRO 2022"
 class CruiseButtons:
@@ -80,7 +87,7 @@ DBC = {
   CAR.ALMAS_RS_PRO: dbc_dict('wuling_almazrs_generated', None),
 }
 
-STEER_THRESHOLD = 0
+STEER_THRESHOLD = 70
 HUD_MULTIPLIER = 0.70
 
 PREGLOBAL_CARS = []

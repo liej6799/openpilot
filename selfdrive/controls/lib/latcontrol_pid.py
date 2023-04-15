@@ -26,7 +26,6 @@ class LatControlPID(LatControl):
     bp = [i * CV.MPH_TO_MS for i in self._op_params.get(f"TUNE_LAT_PID_bp_mph")]
     self.pid._k_p = [bp, self._op_params.get("TUNE_LAT_PID_kp")]
     self.pid._k_i = [bp, self._op_params.get("TUNE_LAT_PID_ki")]
-    # self.pid._k_d = [bp, self._op_params.get("TUNE_LAT_PID_kd")]
     self.pid.k_f = self._op_params.get('TUNE_LAT_PID_kf')
     
   def reset(self):

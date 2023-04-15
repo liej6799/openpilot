@@ -168,7 +168,6 @@ class Controls:
     self.params_check_freq = 0.3
     self.op_params_override_lateral = self._params.get_bool('OPParamsLateralOverride')
 
-    
     self.led_state = False
     self.led_state_prev = False
 

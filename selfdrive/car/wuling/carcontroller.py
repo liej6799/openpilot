@@ -4,6 +4,7 @@ from selfdrive.car.wuling.values import DBC, CanBus, PREGLOBAL_CARS, CarControll
 from selfdrive.car import apply_std_steer_torque_limits
 from common.dp_common import common_controller_ctrl
 from selfdrive.car import make_can_msg
+from common.numpy_fast import interp
 
 from opendbc.can.packer import CANPacker
 from common.dp_common import common_controller_ctrl
@@ -35,7 +36,7 @@ class CarController():
     print(CP.carFingerprint)
     print(DBC[CP.carFingerprint])
     
-    self.p = CarControllerParams()
+    self.p = CarControllerParams(CP)
     self.packer = CANPacker(DBC[CP.carFingerprint]['pt'])
 
   def update(self, c, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert, hud_speed, left_line, right_line, left_lane_depart, right_lane_depart, dragonconf):
@@ -48,7 +49,6 @@ class CarController():
     
     apply_steer = actuators.steer
     print('Actuator Steer :  %s' % apply_steer)
-
     
     if CS.lka_steering_cmd_counter != self.lka_steering_cmd_counter_last:
       self.lka_steering_cmd_counter_last = CS.lka_steering_cmd_counter
@@ -58,7 +58,10 @@ class CarController():
       print('lkas_enabled :  %s' % lkas_enabled)
       if lkas_enabled:
         new_steer = int(round(actuators.steer * P.STEER_MAX))
-        apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, P)
+        # apply_steer = int(interp(-actuators.steer *self.p.STEER_MAX, self.p.STEER_LOOKUP_BP, self.p.STEER_LOOKUP_V))
+        # new_steer = int(round(apply_steer))
+        
+        apply_steer = apply_std_steer_torque_limits(-new_steer, self.apply_steer_last, CS.out.steeringTorque, P)
         self.steer_rate_limited = new_steer != apply_steer
       else:
         apply_steer = 0
@@ -82,7 +85,7 @@ class CarController():
     
       idx = (CS.lka_steering_cmd_counter + 1) % 4
       print("Steer command %d" % apply_steer)
-      can_sends.append(wulingcan.create_steering_control(self.packer, (apply_steer * -1), frame))
+      can_sends.append(wulingcan.create_steering_control(self.packer, apply_steer, frame))
 
       
     if (frame % 5) == 0:
