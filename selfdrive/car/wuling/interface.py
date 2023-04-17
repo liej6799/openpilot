@@ -40,7 +40,7 @@ class CarInterface(CarInterfaceBase):
     # ret.steerRatio = 16.3
     ret.steerRatio = op_params.get('steer_ratio', force_update=True)
     
-    ret.steerActuatorDelay = 0.3 # end-to-end angle controller
+    ret.steerActuatorDelay = 0.2 # end-to-end angle controller
     
     # ret.lateralTuning.pid.kf = 0
     # ret.lateralTuning.pid.kf = 0.00003

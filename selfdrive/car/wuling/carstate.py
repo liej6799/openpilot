@@ -50,7 +50,7 @@ class CarState(CarStateBase):
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.standstill = ret.vEgoRaw < 0.01
 
-    ret.steeringAngleDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
+    ret.steeringAngleDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"] * -1
     # ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]
     ret.seatbeltUnlatched = False
     ret.doorOpen = False
@@ -67,9 +67,9 @@ class CarState(CarStateBase):
     # ret.brake = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["TRANSMISSION_STATE"], None))
 
-    print('Gear Shifter :  %s' % ret.gearShifter)
+    # print('Gear Shifter :  %s' % ret.gearShifter)
 
-    ret.vEgoCluster = ret.vEgoRaw * HUD_MULTIPLIER
+    ret.vEgoCluster = ret.vEgoRaw
 
     ret.cruiseState.available = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
     self.is_cruise_latch = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
@@ -102,14 +102,14 @@ class CarState(CarStateBase):
 
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
 
-    print("Steering torque : %d" % ret.steeringTorque)
+    # print("Steering torque : %d" % ret.steeringTorque)
 
     if ret.steeringPressed:
       print("Steering pressed")
 
-    print('Cruise speed :  %s' % ret.cruiseState.speed)
-    print('Cruise state enable :  %s' % ret.cruiseState.enabled)
-    print('Cruise state available :  %s' % ret.cruiseState.available)
+    # print('Cruise speed :  %s' % ret.cruiseState.speed)
+    # print('Cruise state enable :  %s' % ret.cruiseState.enabled)
+    # print('Cruise state available :  %s' % ret.cruiseState.available)
 
     #trans state 15 "PARKING" 1 "DRIVE" 14 "BACKWARD" 13 "NORMAL"
     

@@ -497,7 +497,7 @@ class Controls:
 
     # Check if openpilot is engaged
     self.enabled = self.active or self.state == State.preEnabled
-    print('State enable :  %s' % self.state)
+    # print('State enable :  %s' % self.state)
 
 
   def state_control(self, CS):
@@ -530,7 +530,7 @@ class Controls:
     if CS.gasPressed or CS.brakePressed:
       self.LoC.reset(v_pid=CS.vEgo)
 
-    print('joystick_mode %s' % self.joystick_mode)
+    # print('joystick_mode %s' % self.joystick_mode)
     
     if not self.joystick_mode:
       # accel PID loop
@@ -658,7 +658,7 @@ class Controls:
     if not self.read_only and self.initialized:
       # send car controls over can
       self.last_actuators, can_sends = self.CI.apply(CC)
-      print('Can sends :  %s' % can_sends)
+      # print('Can sends :  %s' % can_sends)
 
       self.pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=CS.canValid))
       CC.actuatorsOutput = self.last_actuators
