@@ -33,14 +33,14 @@ class CarInterface(CarInterfaceBase):
     ret.openpilotLongitudinalControl = False
 
     ret.steerRateCost = 0.7
-    ret.steerLimitTimer = 0.1
+    ret.steerLimitTimer = 0.4
     ret.mass = 1900. + STD_CARGO_KG
     ret.wheelbase = 2.75
     ret.centerToFront = ret.wheelbase * 0.4
     # ret.steerRatio = 16.3
     ret.steerRatio = op_params.get('steer_ratio', force_update=True)
     
-    ret.steerActuatorDelay = 0.2 # end-to-end angle controller
+    ret.steerActuatorDelay = 0.3 # end-to-end angle controller
     
     # ret.lateralTuning.pid.kf = 0
     # ret.lateralTuning.pid.kf = 0.00003
@@ -117,6 +117,8 @@ class CarInterface(CarInterfaceBase):
     # print("dp atl : %s" % dragonconf.dpAtl)
     # print('Cruise enable :  %s' % ret.cruiseState.enabled)
 
+    #dp
+    ret.engineRPM = self.CS.engineRPM
    # events
     events = self.create_common_events(ret)
 

@@ -19,6 +19,7 @@ from numpy.linalg import solve
 
 from cereal import car
 from common.params import Params
+from common.op_params import opParams
 
 ACCELERATION_DUE_TO_GRAVITY = 9.8
 
@@ -39,15 +40,21 @@ class VehicleModel:
 
     self.cF_orig = CP.tireStiffnessFront
     self.cR_orig = CP.tireStiffnessRear
-    self.sR = CP.steerRatio
+    # self.sR = CP.steerRatio
+    self.op_params = opParams()
+
     self.update_params(1.0, CP.steerRatio)
 
   def update_params(self, stiffness_factor: float, steer_ratio: float) -> None:
     """Update the vehicle model with a new stiffness factor and steer ratio"""
     self.cF = stiffness_factor * self.cF_orig
     self.cR = stiffness_factor * self.cR_orig
-    # print("Steer ratio : %.2f" % self.sR)
-    # self.sR = steer_ratio
+    self.sR = steer_ratio
+    # steer_ratio_param = self.op_params.get('steer_ratio')
+    # if type(steer_ratio_param) in [int, float]:
+    #   self.sR = max(float(steer_ratio_param), 0.01)
+    # else:
+    #   self.sR = steer_ratio
 
   def steady_state_sol(self, sa: float, u: float, roll: float) -> np.ndarray:
     """Returns the steady state solution.
