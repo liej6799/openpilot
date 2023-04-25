@@ -150,6 +150,18 @@ panda.can_send(0x260, b"\x8f\xbb\x00\x00\x00\x14\xf4\x52", 0)
 # 43 b0 00 1e 70 00 60 e1
 panda.can_send(0x370, b"\x43\xb0\x00\x1e\x70\x00\x60\xe1", 0)
 
+# work resume button adas
+panda.can_send(0x370, b"\x42\xb0\x00\x00\x03\x00\x20\x15", 0)
+
+#set cruise on off
+panda.can_send(0x370, b"\x42\xb0\x00\x00\x0c\x00\x00\xfe", 0)
+panda.can_send(0x370, b"\xc2\xb0\x00\x00\x00\x00\x00\x72", 0)
+
+# testing gas
+panda.can_send(0x260, b"\x80\x5d\x00\x80\x04\x0b\xd8\x44", 0)
+# testing brake 
+panda.can_send(0x269, b"\x80\x00\x15\x50\x00\x2d\x40\x52", 0)
+
 
 #warning stiir work after adas enable
 # 85 3d 01 00 ac 90 02 01

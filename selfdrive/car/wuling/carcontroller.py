@@ -54,6 +54,7 @@ class CarController():
       self.lka_steering_cmd_counter_last = CS.lka_steering_cmd_counter
     elif (frame % P.STEER_STEP) == 0:
       lkas_enabled = c.active and not (CS.out.steerWarning or CS.out.steerError) and CS.out.vEgo > P.MIN_STEER_SPEED
+      # Joystick mode / debugging
       # lkas_enabled = True
       # print('lkas_enabled :  %s' % lkas_enabled)
       if lkas_enabled:
@@ -87,7 +88,24 @@ class CarController():
       # print("Steer command %d" % apply_steer)
       can_sends.append(wulingcan.create_steering_control(self.packer, apply_steer, frame))
 
-      
+    # for debug
+    # c.active = True
+    # enabled = 1
+    # Gas/regen and brakes - all at 50Hz
+    if frame % 2 == 0 and CS.CP.openpilotLongitudinalControl:
+      if not c.active:
+        self.apply_gas = 0
+        self.apply_brake = 0
+      else:
+        self.apply_gas = int(round(interp(actuators.accel, P.GAS_LOOKUP_BP, P.GAS_LOOKUP_V)))
+        self.apply_brake = int(round(interp(actuators.accel, P.BRAKE_LOOKUP_BP, P.BRAKE_LOOKUP_V)))
+
+      idx = (frame // 2) % 4
+      at_full_stop = enabled and CS.out.standstill
+      # print("Apply Gas %d" % self.apply_gas)
+      can_sends.append(wulingcan.create_gas_command(self.packer, self.apply_gas, idx, enabled, at_full_stop))
+      can_sends.append(wulingcan.create_brake_command(self.packer, self.apply_brake, idx, enabled, at_full_stop))
+    
     # if (frame % 5) == 0:
     #   print('UI Command HUD Speed :  %s' % hud_speed)
       # can_sends.append(make_can_msg(0x373, b"\x82\x01\x00\x00\xac\x90\x02\xc1", 0))

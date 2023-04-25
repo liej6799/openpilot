@@ -31,6 +31,34 @@ def create_steering_status(packer, apply_steer, frame, steer_step):
   return packer.make_can_msg("ES_LKAS_State", 0, {})
 
 
+def create_gas_command(packer,throttle, idx, acc_engaged, at_full_stop):
+  values = {
+    "ENABLE": acc_engaged,
+    "COUNTER": idx,
+    "COUNTER_2": idx,
+    "GAS_CMD": throttle,
+    "NEW_SIGNAL_2": 0x04,
+    "NEW_SIGNAL_1": 0x0b,
+  }
+
+  return packer.make_can_msg("GasCmd", 0, values)
+
+def create_brake_command(packer, apply_brake, idx, acc_engaged, at_full_stop):
+  values = {
+    "ENABLE": acc_engaged,
+    "COUNTER": idx,
+    "COUNTER_2": idx,
+    "BRAKE_CMD": apply_brake,
+    "NEW_SIGNAL_8": 0x50,
+    "NEW_SIGNAL_5": 0x15,
+    "NEW_SIGNAL_4": 0x01,
+    "NEW_SIGNAL_2": 0x06,
+    "NEW_SIGNAL_6": 0x01,
+  }
+
+  return packer.make_can_msg("BRAKE_MODULE", 0, values)
+
+
 def create_acc_dashboard_command(packer, bus, acc_engaged, target_speed_kph, lead_car_in_sight, fcw):
   # Not a bit shift, dash can round up based on low 4 bits.
   target_speed = int(target_speed_kph * 16) & 0xfff

@@ -108,7 +108,8 @@ static int wuling_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
     int addr = GET_ADDR(to_fwd);
     // bool is_lkas_msg = (addr == 0x373) || (addr == 0x370) || (addr == 0x33D);
     // bool is_lkas_msg = (addr == 0x225) || (addr == 0x373) || (addr == 0x370);
-    bool is_lkas_msg = (addr == 0x225) || (addr == 0x269) || (addr == 0x260) || (addr == 0x191) || (addr == 0x1c3);
+    // bool is_lkas_msg = (addr == 0x225) || (addr == 0x269) || (addr == 0x260) || (addr == 0x191) || (addr == 0x1c3);
+    bool is_lkas_msg = (addr == 0x225);
     bool is_acc_hud_msg = addr == 0x30C;
     bool is_brake_msg = addr == 0x610;
     bool is_gas_msg = addr == 0x415;

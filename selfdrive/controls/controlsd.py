@@ -223,7 +223,6 @@ class Controls:
     if t - self.params_check_last_t > self.params_check_freq:
       if self.op_params_override_lateral:
         self.LaC.update_op_params()
-        print("Update OP Param")
       self.params_check_last_t = t
     
     # Create events for battery, temperature, disk space, and memory
@@ -530,7 +529,6 @@ class Controls:
     if CS.gasPressed or CS.brakePressed:
       self.LoC.reset(v_pid=CS.vEgo)
 
-    # print('joystick_mode %s' % self.joystick_mode)
     
     if not self.joystick_mode:
       # accel PID loop
@@ -547,8 +545,9 @@ class Controls:
       actuators.steer, actuators.steeringAngleDeg, lac_log = self.LaC.update(lat_active, CS, self.CP, self.VM, params, self.last_actuators,
                                                                              desired_curvature, desired_curvature_rate)
     else:
+      # print('joystick_mode %s' % self.joystick_mode)
       lac_log = log.ControlsState.LateralDebugState.new_message()
-      if self.sm.rcv_frame['testJoystick'] > 0 and self.active:
+      if self.sm.rcv_frame['testJoystick'] > 0 :
         actuators.accel = 4.0*clip(self.sm['testJoystick'].axes[0], -1, 1)
         print('receive joystik %s' % actuators.accel)
 
@@ -658,7 +657,9 @@ class Controls:
     if not self.read_only and self.initialized:
       # send car controls over can
       self.last_actuators, can_sends = self.CI.apply(CC)
-      # print('Can sends :  %s' % can_sends)
+      
+      if self.joystick_mode:
+        print('Can sends :  %s' % can_sends)
 
       self.pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=CS.canValid))
       CC.actuatorsOutput = self.last_actuators

@@ -22,8 +22,8 @@ class CarControllerParams:
   
   # Volt gasbrake lookups
   # TODO: These values should be confirmed on non-Volt vehicles
-  MAX_GAS = 3072  # Safety limit, not ACC max. Stock ACC >4096 from standstill.
-  ZERO_GAS = 2048  # Coasting
+  MAX_GAS = 255  # Safety limit, not ACC max. Stock ACC >4096 from standstill.
+  ZERO_GAS = 0  # Coasting
   MAX_BRAKE = 350  # ~ -3.5 m/s^2 with regen
   MAX_ACC_REGEN = 1404  # Max ACC regen is slightly less than max paddle regen
 
@@ -43,7 +43,7 @@ class CarControllerParams:
   GAS_LOOKUP_BP = [-0.1, 0., ACCEL_MAX]
   BRAKE_LOOKUP_BP = [ACCEL_MIN, -0.1]
 
-  GAS_LOOKUP_V = [MAX_ACC_REGEN, ZERO_GAS, MAX_GAS]
+  GAS_LOOKUP_V = [ZERO_GAS, MAX_GAS]
   BRAKE_LOOKUP_V = [MAX_BRAKE, 0.]
   
   def __init__(self, CP):
@@ -87,7 +87,7 @@ DBC = {
   CAR.ALMAS_RS_PRO: dbc_dict('wuling_almazrs_generated', None),
 }
 
-STEER_THRESHOLD = 35
+STEER_THRESHOLD = 50
 HUD_MULTIPLIER = 0.70
 
 PREGLOBAL_CARS = []

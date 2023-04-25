@@ -48,27 +48,33 @@ class CarState(CarStateBase):
     ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr]) * HUD_MULTIPLIER
     # ret.vEgoRaw = (ret.wheelSpeeds.fl + ret.wheelSpeeds.fr + ret.wheelSpeeds.rl + ret.wheelSpeeds.rr) / 4.
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
-    ret.standstill = ret.vEgoRaw < 0.01
+    ret.standstill = ret.vEgoRaw < 0.1
 
     ret.steeringAngleDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"] * -1
-    # ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]
-    ret.seatbeltUnlatched = False
-    ret.doorOpen = False
-    # ret.seatbeltUnlatched = pt_cp.vl["BCMDoorBeltStatus"]["RightSeatBelt"] == 0
+    # ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]    
+    ret.seatbeltUnlatched = pt_cp.vl["BCMDoorBelt"]["RIGHTSEATBEALT"] == 0
+    
     ret.leftBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1
     ret.rightBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2
     
-    # ret.doorOpen = (pt_cp.vl["BCMDoorBeltStatus"]["FrontLeftDoor"] == 1 or
-    #             pt_cp.vl["BCMDoorBeltStatus"]["FrontRightDoor"] == 1 or
-    #             pt_cp.vl["BCMDoorBeltStatus"]["RearLeftDoor"] == 1 or
-    #             pt_cp.vl["BCMDoorBeltStatus"]["RearRightDoor"] == 1)
+    # ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(40, pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1,
+    #                                                                   pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2)
+
+    
+    ret.doorOpen = (pt_cp.vl["BCMDoorBeltStatus"]["FrontLeftDoor"] == 1 or
+                pt_cp.vl["BCMDoorBeltStatus"]["FrontRightDoor"] == 1 or
+                pt_cp.vl["BCMDoorBeltStatus"]["RearLeftDoor"] == 1 or
+                pt_cp.vl["BCMDoorBeltStatus"]["RearRightDoor"] == 1)
     
     ret.brakePressed = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
+    ret.brakeHoldActive = pt_cp.vl["EPBStatus"]["AVH_STATUS"] != 0
     # ret.brake = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["TRANSMISSION_STATE"], None))
 
     # print('Gear Shifter :  %s' % ret.gearShifter)
-
+    ret.gas = pt_cp.vl["GAS_PEDAL"]["GAS_POS"]
+    ret.gasPressed = ret.gas > 0
+    
     ret.vEgoCluster = ret.vEgoRaw
 
     ret.cruiseState.available = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
@@ -101,6 +107,7 @@ class CarState(CarStateBase):
     ret.steeringTorqueEps = pt_cp.vl["STEER_RELATED"]["STEER_TORQUE"]
 
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
+    ret.genericToggle = bool(pt_cp.vl["BCMTurnSignals"]["HighBeamsActive"])
 
     # print("Steering torque : %d" % ret.steeringTorque)
 
@@ -121,6 +128,7 @@ class CarState(CarStateBase):
       # sig_name, sig_address
       
       ("TurnSignals", "BCMTurnSignals"),
+      ("HighBeamsActive", "BCMTurnSignals"),
       ("SteeringWheelAngle", "PSCMSteeringAngle"),
       ("SteeringWheelRate", "PSCMSteeringAngle"),
       ("SteeringTorque", "PSCMSteeringAngle"),
@@ -137,9 +145,12 @@ class CarState(CarStateBase):
       ("RearRightDoor", "BCMDoorBeltStatus"),
       ("LeftSeatBelt", "BCMDoorBeltStatus"),
       ("RightSeatBelt", "BCMDoorBeltStatus"),
+      ("RIGHTSEATBEALT", "BCMDoorBelt"),
+      ("LEFTSEATBEALT", "BCMDoorBelt"),
       ("EPBClosed", "EPBStatus"),
       ("Brake_Pressed", "ECMEngineStatus"),
       ("EPBSTATUS", "EPBStatus"),
+      ("AVH_STATUS", "EPBStatus"),
       ("ACCBUTTON", "ASCMActiveCruiseControlStatus"),
       ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
       ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
@@ -149,6 +160,7 @@ class CarState(CarStateBase):
       ("CruiseMainOn", "AccStatus"),
       ("CruiseState", "AccStatus"),
       ("STEER_TORQUE", "STEER_RELATED"),
+      ("GAS_POS", "GAS_PEDAL"),
     ]
 
     checks = [
@@ -157,12 +169,14 @@ class CarState(CarStateBase):
       ("EPBStatus", 10),
       ("ECMPRDNL", 10),
       ("BCMDoorBeltStatus", 10),
+      ("BCMDoorBelt", 10),
       ("EBCMWheelSpdFront", 20),
       ("EBCMWheelSpdRear", 20),
       ("ASCMActiveCruiseControlStatus", 20),
       ("PSCMSteeringAngle", 100),
       ("LkasHud", 20),
       ("AccStatus", 20),
+      ("GAS_PEDAL", 10),
     ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.POWERTRAIN)

@@ -66,40 +66,43 @@ BO_ 489 EBCMVehicleDynamic: 8 K17_EBCM
 BO_ 320 BCMTurnSignals: 3 K9_BCM
  SG_ TurnSignals : 19|2@0+ (1,0) [0|0] ""  NEO
  SG_ Intellibeam : 13|1@0+ (1,0) [0|1] "" NEO
- SG_ HighBeamsActive : 1|1@0+ (1,0) [0|1] "" NEO
+ SG_ HighBeamsActive : 7|1@0+ (1,0) [0|1] "" NEO
  SG_ HighBeamsTemporary : 5|1@0+ (1,0) [0|1] "" NEO
 
 BO_ 298 BCMDoorBeltStatus: 8 K9_BCM
  SG_ FrontRightDoor : 16|1@0+ (1,0) [0|1] "" NEO
- SG_ RearRightDoor : 23|1@0+ (1,0) [0|0] "" NEO
+ SG_ FrontLeftDoor : 18|1@0+ (1,0) [0|0] "" NEO
+ SG_ RearLeftDoor : 20|1@0+ (1,0) [0|0] "" NEO
+ SG_ RearRightDoor : 22|1@0+ (1,0) [0|0] "" NEO
  SG_ RightSeatBelt : 53|1@0+ (1,0) [0|0] "" NEO
  SG_ LeftSeatBelt : 12|1@0+ (1,0) [0|0] "" NEO
- SG_ FrontLeftDoor : 9|1@0+ (1,0) [0|0] "" NEO
- SG_ RearLeftDoor : 9|1@0+ (1,0) [0|0] "" NEO
 
 BO_ 560 EPBStatus: 8 EPB
- SG_ EPBClosed : 12|1@0+ (1,0) [0|1] ""  NEO
  SG_ EPBSTATUS : 8|1@0+ (1,0) [0|1] "" XXX
+ SG_ AVH_STATUS : 35|1@0+ (1,0) [0|1] "" XXX
+ SG_ EPBClosed : 12|1@0+ (1,0) [0|1] "" NEO
 
 BO_ 608 GasCmd: 8 XXX
  SG_ NEW_SIGNAL_4 : 16|1@0+ (1,0) [0|1] "" XXX
- SG_ ENABLE : 31|1@0+ (1,0) [0|1] "" XXX
- SG_ COUNTER : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ NEW_SIGNAL_3 : 48|14@1+ (1,0) [0|4095] "" XXX
- SG_ NEW_SIGNAL_1 : 39|16@0+ (1,0) [0|65535] "" XXX
- SG_ NEW_SIGNAL_2 : 8|8@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_1 : 47|8@0+ (1,0) [0|65535] "" XXX
+ SG_ COUNTER_2 : 63|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_2 : 32|3@1+ (1,0) [0|7] "" XXX
+ SG_ COUNTER : 7|2@0+ (1,0) [0|3] "" XXX
+ SG_ ENABLE : 31|1@0+ (1,0) [0|1] "" XXX
+ SG_ GAS_CMD : 8|8@1- (1,0) [0|255] "" XXX
 
 BO_ 880 ASCMActiveCruiseControlStatus: 6 K124_ASCM
  SG_ ACCLeadCar : 44|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ ACCAlwaysOne2 : 32|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ ACCAlwaysOne : 0|1@0+ (1,0) [0|0] "" Vector__XXX
  SG_ ACCSpeedSetpoint : 19|12@0+ (1,0) [0|200] "km/h" NEO
- SG_ ACCGapLevel : 21|2@0+ (1,0) [0|0] "" NEO
- SG_ ACCResumeButton : 1|1@0+ (1,0) [0|0] "" NEO
- SG_ ACCCmdActive : 23|1@0+ (1,0) [0|0] "" NEO
  SG_ FCWAlert : 41|2@0+ (1,0) [0|3] "" XXX
- SG_ ACCBUTTON : 33|1@0+ (1,0) [0|1] "" XXX
  SG_ ACCSTATE : 36|1@0+ (1,0) [0|1] "" XXX
+ SG_ ACCBUTTON : 34|1@0+ (1,0) [0|1] "" XXX
+ SG_ ACCAlwaysOne : 15|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ ACCAlwaysOne2 : 12|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ ACCCmdActive : 23|1@0+ (1,0) [0|0] "" NEO
+ SG_ ACCResumeButton : 32|1@0+ (1,0) [0|1] "" XXX
+ SG_ ACCGapLevel : 0|3@1+ (1,0) [0|7] "" XXX
 
 BO_ 1001 ECMVehicleSpeed: 8 K20_ECM
  SG_ VehicleSpeed : 7|16@0+ (0.01,0) [0|0] "mph" NEO
@@ -146,9 +149,18 @@ BO_ 617 BRAKE_MODULE: 8 XXX
  SG_ NEW_SIGNAL_4 : 55|2@0+ (1,0) [0|3] "" XXX
  SG_ BRAKE_PRESSED : 37|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_7 : 32|4@1+ (1,0) [0|15] "" XXX
- SG_ NEW_SIGNAL_1 : 40|8@1+ (1,0) [0|255] "" XXX
- SG_ NEW_SIGNAL_2 : 8|8@1+ (1,0) [0|255] "" XXX
- SG_ NEW_SIGNAL_6 : 5|1@0+ (1,0) [0|1] "" XXX
  SG_ ENABLE : 21|1@0+ (1,0) [0|1] "" XXX
+ SG_ COUNTER : 7|2@0+ (1,0) [0|3] "" XXX
+ SG_ COUNTER_2 : 63|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_6 : 5|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_2 : 0|3@1+ (1,0) [0|7] "" XXX
+ SG_ NEW_SIGNAL_5 : 16|5@1+ (1,0) [0|31] "" XXX
+ SG_ NEW_SIGNAL_8 : 24|8@1+ (1,0) [0|255] "" XXX
+ SG_ BRAKE_CMD : 15|8@0+ (1,0) [0|2047] "" XXX
+ SG_ BRAKE_CMD_2 : 40|8@1+ (1,0) [0|255] "" XXX
+
+BO_ 225 BCMDoorBelt: 8 XXX
+ SG_ RIGHTSEATBEALT : 11|1@0+ (1,0) [0|1] "" XXX
+ SG_ LEFTSEATBEALT : 23|1@0+ (1,0) [0|1] "" XXX
 
 VAL_ 501 TRANSMISSION_STATE 1 "D" 2 "D" 3 "D" 4 "D" 5 "D" 6 "D" 7 "D" 13 "N" 14 "R" 15 "P";
