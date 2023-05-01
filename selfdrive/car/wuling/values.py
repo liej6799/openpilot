@@ -10,7 +10,7 @@ Ecu = car.CarParams.Ecu
 
 
 class CarControllerParams:
-  STEER_MAX = 500  # GM limit is 3Nm. Used by carcontroller to generate LKA output
+  STEER_MAX = 600  # GM limit is 3Nm. Used by carcontroller to generate LKA output
   STEER_STEP = 2 # Active control frames per command (~33hz)
   INACTIVE_STEER_STEP = 10  # Inactive control frames per command (10hz)
   STEER_DELTA_UP = 10  # Delta rates require review due to observed EPS weakness
@@ -113,8 +113,7 @@ DBC = {
   CAR.ALMAS_RS_PRO: dbc_dict('wuling_almazrs_generated', None),
 }
 
-HUD_MULTIPLIER = 0.70
-
-STEER_THRESHOLD = 50.0
+STEER_THRESHOLD = 60
+HUD_MULTIPLIER = 0.68
 
 PREGLOBAL_CARS = []

@@ -3,6 +3,8 @@
 #define ENGINE_DATA   0xc9
 #define LKAS_HUD      0x373
 #define STEERING_LKAS      0x225
+#define BRAKE_DATA      0x269
+#define GAS_DATA      0x260
 
 // CAN bus numbers
 #define BUS_MAIN 0
@@ -12,10 +14,11 @@
 const CanMsg WULING_TX_MSGS[] = {{ENGINE_DATA, 0, 8}, {LKAS_HUD, 0, 8}};
 
 AddrCheckStruct wl_addr_checks[] = {
-  {.msg = {{ENGINE_DATA, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U}, { 0 }, { 0 }}},
-  // {.msg = {{STEERING_LKAS, 2, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
-  // {.msg = {{LKAS_HUD, 2, 8, .expected_timestep = 20000U}, { 0 }, { 0 }}},
+  {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
+  {.msg = {{BRAKE_DATA, 0, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
+  {.msg = {{GAS_DATA, 0, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
 };
+
 #define WL_RX_CHECK_LEN (sizeof(wl_addr_checks) / sizeof(wl_addr_checks[0]))
 addr_checks wl_rx_checks = {wl_addr_checks, WL_RX_CHECK_LEN};
 // track msgs coming from OP so that we know what CAM msgs to drop and what to forward
@@ -26,9 +29,15 @@ static int wuling_rx_hook(CANPacket_t *to_push) {
    if (valid && ((int)GET_BUS(to_push) == BUS_MAIN)) {
       int addr = GET_ADDR(to_push);
 
-      if (addr == 842) {
+      if (addr == 840) {
         vehicle_moving = GET_BYTE(to_push, 0) | GET_BYTE(to_push, 1);
       }
+
+      if (addr == 485) {
+        int torque_driver_new = GET_BYTE(to_push, 6);
+        // update array of samples
+        update_sample(&torque_driver, torque_driver_new);
+       }
       
       if (addr == 201) {
         brake_pressed = GET_BIT(to_push, 40U) != 0U;
@@ -50,12 +59,11 @@ static int wuling_rx_hook(CANPacket_t *to_push) {
         cruise_engaged_prev = acc_main_on;
       }
 
-      generic_rx_checks((addr == LKAS_HUD || addr == STEERING_LKAS));
+      generic_rx_checks((addr == STEERING_LKAS));
    }
 
   controls_allowed = 1;
-
-  return false;
+  return valid;
 }
 
 static int wuling_tx_hook(CANPacket_t *to_send) {
@@ -68,16 +76,16 @@ static int wuling_tx_hook(CANPacket_t *to_send) {
 
   UNUSED(addr);
   UNUSED(bus);
+  controls_allowed = 1;
 
   // 1 allows the message through
   return tx;
 }
 
-static int wuling_fwd_hook(int bus, CANPacket_t *to_fwd) {
+static int wuling_fwd_hook(int bus, int addr) {
   // fwd from car to camera. also fwd certain msgs from camera to car
 
   int bus_fwd = -1;
-  int addr = GET_ADDR(to_fwd);
 
   if (bus == BUS_MAIN) {
     bus_fwd = BUS_CAM;
@@ -96,7 +104,9 @@ static int wuling_fwd_hook(int bus, CANPacket_t *to_fwd) {
 
 static const addr_checks* wuling_init(uint16_t param) {
   UNUSED(param);
-  return &mazda_rx_checks;
+  controls_allowed = 1;
+  relay_malfunction_reset();
+  return &wl_rx_checks;
 }
 
 const safety_hooks wuling_hooks = {
