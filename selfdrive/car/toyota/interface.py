@@ -3,24 +3,15 @@ from cereal import car
 from common.conversions import Conversions as CV
 from panda import Panda
 from selfdrive.car.toyota.values import Ecu, CAR, DBC, ToyotaFlags, CarControllerParams, TSS2_CAR, RADAR_ACC_CAR, NO_DSU_CAR, \
-                                        MIN_ACC_SPEED, EPS_SCALE, EV_HYBRID_CAR, UNSUPPORTED_DSU_CAR, NO_STOP_TIMER_CAR, ANGLE_CONTROL_CAR
+  MIN_ACC_SPEED, EPS_SCALE, EV_HYBRID_CAR, UNSUPPORTED_DSU_CAR, NO_STOP_TIMER_CAR, ANGLE_CONTROL_CAR
 from selfdrive.car import STD_CARGO_KG, scale_tire_stiffness, get_safety_config
 from selfdrive.car.interfaces import CarInterfaceBase
 from common.params import Params
 
 EventName = car.CarEvent.EventName
 
-CRUISE_OVERRIDE_SPEED_MIN = 5 * CV.KPH_TO_MS
-
 
 class CarInterface(CarInterfaceBase):
-  def __init__(self, CP, CarController, CarState):
-    super().__init__(CP, CarController, CarState)
-
-    self.dp_cruise_speed = 0. # km/h
-    self.dp_override_speed_last = 0. # km/h
-    self.dp_override_speed = 0. # m/s
-
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
     return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX
@@ -277,19 +268,6 @@ class CarInterface(CarInterfaceBase):
   # returns a car.CarState
   def _update(self, c):
     ret = self.CS.update(self.cp, self.cp_cam)
-
-    # low speed re-write
-    if self.dragonconf.dpToyotaCruiseOverride:
-      if self.dragonconf.dpToyotaCruiseOverrideSpeed != self.dp_override_speed_last:
-        self.dp_override_speed = self.dragonconf.dpToyotaCruiseOverrideSpeed * CV.KPH_TO_MS
-        self.dp_override_speed_last = self.dragonconf.dpToyotaCruiseOverrideSpeed
-      if self.CP.openpilotLongitudinalControl and ret.cruiseState.speed <= self.dp_override_speed:
-        if self.dp_cruise_speed == 0.:
-          self.dp_cruise_speed = self.dp_cruise_speed = max(CRUISE_OVERRIDE_SPEED_MIN, ret.vEgo)
-        else:
-          ret.cruiseState.speed = self.dp_cruise_speed
-      else:
-        self.dp_cruise_speed = 0.
 
     # events
     events = self.create_common_events(ret)

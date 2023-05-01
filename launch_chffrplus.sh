@@ -9,6 +9,20 @@ source "$BASEDIR/launch_env.sh"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 function two_init {
+  if [ -f /EON ]; then
+    if [ ! -f /system/fonts/NotoSansCJKtc-Regular.otf ]; then
+      mount -o remount,rw /system
+      rm -fr /system/fonts/NotoSansTC*.otf
+      rm -fr /system/fonts/NotoSansSC*.otf
+      rm -fr /system/fonts/NotoSansKR*.otf
+      rm -fr /system/fonts/NotoSansJP*.otf
+      cp -rf /data/openpilot/selfdrive/assets/fonts/NotoSansCJKtc-* /system/fonts/
+      cp -rf /data/openpilot/selfdrive/assets/fonts/fonts.xml /system/etc/fonts.xml
+      chmod 644 /system/etc/fonts.xml
+      chmod 644 /system/fonts/NotoSansCJKtc-*
+      mount -o remount,r /system
+    fi
+  fi
 
   dt=$(date +%s)
 

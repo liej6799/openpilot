@@ -35,7 +35,6 @@ class LateralPlanner:
     self.LP = LanePlanner(Params().get_bool('WideCameraOnly'))
     self.dp_lanelines_enable = False
     self.dp_lanelines_active = False
-    self.dp_lanelines_active_tmp = False
     self.dp_camera_offset = 4 if TICI else -6
     self.dp_path_offset = 4 if TICI else 0
 
@@ -84,6 +83,7 @@ class LateralPlanner:
       # dp - when laneline mode enabled, we use old logic (including lane changing)
       d_path_xyz = self.lanelines_mode(md, sm['carState'], sm['carControl'].latActive, sm['dragonConf'])
     else:
+      self.dp_lanelines_active = False
       # dp -- tab spacing begin (stock logic) --
       # Lane change logic
       desire_state = md.meta.desireState
@@ -152,7 +152,7 @@ class LateralPlanner:
     lateralPlan.solverExecutionTime = self.lat_mpc.solve_time
 
     lateralPlan.desire = self.DH.desire
-    lateralPlan.useLaneLines = self.dp_lanelines_enable and self.dp_lanelines_active
+    lateralPlan.useLaneLines = self.dp_lanelines_active
     lateralPlan.laneChangeState = self.DH.lane_change_state
     lateralPlan.laneChangeDirection = self.DH.lane_change_direction
 
@@ -177,8 +177,7 @@ class LateralPlanner:
       self.LP.rll_prob *= self.DH.lane_change_ll_prob
 
     # dynamic laneline/laneless logic
-    self.dp_lanelines_active_tmp = get_lane_laneless_mode(self.LP.lll_prob, self.LP.rll_prob, self.dp_lanelines_active_tmp)
-    self.dp_lanelines_active = self.dp_lanelines_active_tmp
+    self.dp_lanelines_active = get_lane_laneless_mode(self.LP.lll_prob, self.LP.rll_prob, self.dp_lanelines_active)
 
     # Calculate final driving path and set MPC costs
     if self.dp_lanelines_active:

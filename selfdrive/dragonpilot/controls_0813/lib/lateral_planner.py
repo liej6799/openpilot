@@ -80,10 +80,13 @@ class LateralPlanner:
 
     # dynamic laneline/laneless logic
     # decide if we want to use lanelines or laneless
-    self.dp_lanelines_active = get_lane_laneless_mode(self.LP.lll_prob, self.LP.rll_prob, self.dp_lanelines_active)
+    if self.dp_lanelines_enable:
+      self.dp_lanelines_active = get_lane_laneless_mode(self.LP.lll_prob, self.LP.rll_prob, self.dp_lanelines_active)
+    else:
+      self.dp_lanelines_active = False
 
     # Calculate final driving path and set MPC costs
-    if self.dp_lanelines_enable and self.dp_lanelines_active:
+    if self.dp_lanelines_active:
       self.d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
       self.lat_mpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, self.steer_rate_cost)
     else:
@@ -139,7 +142,7 @@ class LateralPlanner:
     lateralPlan.solverExecutionTime = self.lat_mpc.solve_time
 
     lateralPlan.desire = self.DH.desire
-    lateralPlan.useLaneLines = self.dp_lanelines_enable and self.dp_lanelines_active
+    lateralPlan.useLaneLines = self.dp_lanelines_active
     lateralPlan.laneChangeState = self.DH.lane_change_state
     lateralPlan.laneChangeDirection = self.DH.lane_change_direction
 

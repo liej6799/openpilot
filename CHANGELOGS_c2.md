@@ -18,7 +18,10 @@ dragonpilot [Latest] - EON/C2 Release
   * TWEAK: DM reverted to 0.8.13 model and algorithm.
   * TWEAK: E2E Initial speed matches ACC initial speed. (105 -> 40)
   * FIXED: Fixed Reverse message not showing issue.
-  * FIXED: Honda ALKA not working. @loveloveses
+  * FIXED: Honda - ALKA not working. @loveloveses
+  * FIXED: Display Mode.
+  * FIXED: Toyota - Speed Override.
+  * FIXED: Re-include CJK system font for EON/C2.
 
 dragonpilot 2023.02.08 - EON/C2 Release
 ========================
