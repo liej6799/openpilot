@@ -50,6 +50,15 @@ class CarController():
     apply_steer = actuators.steer
     # print('Actuator Steer :  %s' % apply_steer)
     
+    if c.active:
+      if CS.out.standstill and frame % 5 == 0 and CS.resume_alert:
+        
+        # Wuling Stop and Go requires a RES button (or gas) press if the car stops more than 3 seconds
+        # Send Resume button at 20hz if we're engaged at standstill to support full stop and go!
+        idx = (frame // 2) % 4
+        can_sends.append(wulingcan.create_resume_cmd(self.packer, CS.crz_btns_counter, 1))
+        print("Send resume")
+      
     if CS.lka_steering_cmd_counter != self.lka_steering_cmd_counter_last:
       self.lka_steering_cmd_counter_last = CS.lka_steering_cmd_counter
     elif (frame % P.STEER_STEP) == 0:
@@ -103,22 +112,21 @@ class CarController():
       idx = (frame // 2) % 4
       at_full_stop = enabled and CS.out.standstill
       # print("Apply Gas %d" % self.apply_gas)
-      can_sends.append(wulingcan.create_gas_command(self.packer, self.apply_gas, idx, enabled, at_full_stop))
+      print("Apply Brake %f" % self.apply_brake)
+      # can_sends.append(wulingcan.create_gas_command(self.packer, self.apply_gas, idx, enabled, at_full_stop))
       can_sends.append(wulingcan.create_brake_command(self.packer, self.apply_brake, idx, enabled, at_full_stop))
     
     # if (frame % 5) == 0:
     #   print('UI Command HUD Speed :  %s' % hud_speed)
       # can_sends.append(make_can_msg(0x373, b"\x82\x01\x00\x00\xac\x90\x02\xc1", 0))
-
-      # can_sends.append(wulingcan.create_acc_dashboard_command(self.packer, CanBus.POWERTRAIN, enabled, hud_speed * CV.MS_TO_KPH, 0, 0))
-
+      
     new_actuators = actuators.copy()
     new_actuators.steer = self.apply_steer_last / self.p.STEER_MAX
     
     # print('Last enable :  %s' % self.enabled_last)
     
-    if (enabled):
-        print('enable adas')
+    # if (enabled):
+    #     print('enable adas')
 
     # if enabled and  (frame % 100) == 0:
       #  can_sends.append(make_can_msg(0x373, b"\xc6\x3d\x01\x00\xac\x90\x02\x42", 0))

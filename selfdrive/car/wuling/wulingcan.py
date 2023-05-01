@@ -49,33 +49,51 @@ def create_brake_command(packer, apply_brake, idx, acc_engaged, at_full_stop):
     "COUNTER": idx,
     "COUNTER_2": idx,
     "BRAKE_CMD": apply_brake,
+    "BRAKE_CMD_2": 27,
     "NEW_SIGNAL_8": 0x50,
     "NEW_SIGNAL_5": 0x15,
     "NEW_SIGNAL_4": 0x01,
     "NEW_SIGNAL_2": 0x06,
     "NEW_SIGNAL_6": 0x01,
+    "NEW_SIGNAL_3": 0x35,
   }
 
   return packer.make_can_msg("BRAKE_MODULE", 0, values)
 
 
-def create_acc_dashboard_command(packer, bus, acc_engaged, target_speed_kph, lead_car_in_sight, fcw):
+def create_acc_dashboard_command(packer, acc_engaged, idx, target_speed_kph, resume_button, lead_car_in_sight, fcw):
   # Not a bit shift, dash can round up based on low 4 bits.
-  target_speed = int(target_speed_kph * 16) & 0xfff
+  target_speed = int(target_speed_kph) & 0xfff
 
   values = {
     "ACCAlwaysOne" : 1,
-    "ACCResumeButton" : 0,
+    "COUNTER_1" : idx,
+    "COUNTER_2" : (idx+1) % 4,
+    "ACCSTATE" : acc_engaged,
+    "ACCResumeButton" : resume_button,
     "ACCSpeedSetpoint" : target_speed,
-    "ACCGapLevel" : 3 * acc_engaged,  # 3 "far", 0 "inactive"
+    "ACCGapLevel" : 6 * acc_engaged,  # 3 "far", 0 "inactive"
     "ACCCmdActive" : acc_engaged,
-    "ACCAlwaysOne2" : 1,
+    "ACCAlwaysOne2" : 3,
     "ACCLeadCar" : lead_car_in_sight,
+    "SET_ME_X16" : 0x16,
     "FCWAlert": 0x3 if fcw else 0
   }
 
-  return packer.make_can_msg("ASCMActiveCruiseControlStatus", bus, values)
+  return packer.make_can_msg("ASCMActiveCruiseControlStatus", 0, values)
 
+
+def create_resume_cmd(packer, idx, resume):
+  values = {
+    "CRZ_BTN_1" : 1,
+    "CRZ_BTN_2" : 1,
+    "RESUME_BTN_1" : 1,
+    "RESUME_BTN_2" : 1,
+    "COUNTER_1" : idx,
+    "COUNTER_2" : idx,
+  }
+
+  return packer.make_can_msg("STEER_BTN", 0, values)
 
 def create_adas_time_status(bus, tt, idx):
   dat = [(tt >> 20) & 0xff, (tt >> 12) & 0xff, (tt >> 4) & 0xff,

@@ -15,12 +15,9 @@ const CanMsg WULING_TX_MSGS[] = {{ENGINE_DATA, 0, 8}, {LKAS_HUD, 0, 8}};
 
 AddrCheckStruct wl_addr_checks[] = {
   {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
-  {.msg = {{STEERING_LKAS, 2, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
-  {.msg = {{LKAS_HUD, 2, 8, .expected_timestep = 20000U}, { 0 }, { 0 }}},
-
+  {.msg = {{BRAKE_DATA, 0, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
+  {.msg = {{GAS_DATA, 0, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
 };
-// AddrCheckStruct wl_addr_checks[] = {};
-
 
 #define WL_RX_CHECK_LEN (sizeof(wl_addr_checks) / sizeof(wl_addr_checks[0]))
 addr_checks wl_rx_checks = {wl_addr_checks, WL_RX_CHECK_LEN};
@@ -34,7 +31,6 @@ static const addr_checks* wuling_init(int16_t param) {
 
 // track msgs coming from OP so that we know what CAM msgs to drop and what to forward
 static int wuling_rx_hook(CANPacket_t *to_send) {
-  UNUSED(to_send);
 
   bool valid = addr_safety_check(to_send, &wl_rx_checks, NULL, NULL, NULL);
 	// bool valid = true;
@@ -42,9 +38,16 @@ static int wuling_rx_hook(CANPacket_t *to_send) {
    if (valid && ((int)GET_BUS(to_send) == BUS_MAIN)) {
       int addr = GET_ADDR(to_send);
 
-      if (addr == 842) {
+      if (addr == 840) {
         vehicle_moving = GET_BYTE(to_send, 0) | GET_BYTE(to_send, 1);
       }
+
+      if (addr == 485) {
+        int torque_driver_new = GET_BYTE(to_send, 6);
+        // update array of samples
+        update_sample(&torque_driver, torque_driver_new);
+       }
+
       
       if (addr == 201) {
         brake_pressed = GET_BIT(to_send, 40U) != 0U;
@@ -66,12 +69,10 @@ static int wuling_rx_hook(CANPacket_t *to_send) {
         cruise_engaged_prev = acc_main_on;
       }
 
-      generic_rx_checks((addr == LKAS_HUD || addr == STEERING_LKAS));
+      generic_rx_checks((addr == STEERING_LKAS));
    }
-
   controls_allowed = 1;
-  
-  return true;
+  return valid;
 }
 
 // all commands: gas, brake and steering
@@ -109,7 +110,7 @@ static int wuling_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
     // bool is_lkas_msg = (addr == 0x373) || (addr == 0x370) || (addr == 0x33D);
     // bool is_lkas_msg = (addr == 0x225) || (addr == 0x373) || (addr == 0x370);
     // bool is_lkas_msg = (addr == 0x225) || (addr == 0x269) || (addr == 0x260) || (addr == 0x191) || (addr == 0x1c3);
-    bool is_lkas_msg = (addr == 0x225);
+    bool is_lkas_msg = (addr == 0x225) ;
     bool is_acc_hud_msg = addr == 0x30C;
     bool is_brake_msg = addr == 0x610;
     bool is_gas_msg = addr == 0x415;

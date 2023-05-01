@@ -29,7 +29,7 @@ class CarState(CarStateBase):
     self.rising_edge_since = 0
     self.last_frame = time() # todo: existing infra to reuse?
     self.dt = 0
-
+    self.resume_alert = False
 
 
   def update(self, pt_cp, cp_cam):
@@ -46,11 +46,9 @@ class CarState(CarStateBase):
       pt_cp.vl["EBCMWheelSpdRear"]["RLWheelSpd"],
     )
     ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr]) * HUD_MULTIPLIER
-    # ret.vEgoRaw = (ret.wheelSpeeds.fl + ret.wheelSpeeds.fr + ret.wheelSpeeds.rl + ret.wheelSpeeds.rr) / 4.
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.standstill = ret.vEgoRaw < 0.1
-
-    ret.steeringAngleDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"] * -1
+    
     # ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]    
     ret.seatbeltUnlatched = pt_cp.vl["BCMDoorBelt"]["RIGHTSEATBEALT"] == 0
     
@@ -60,7 +58,6 @@ class CarState(CarStateBase):
     # ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(40, pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1,
     #                                                                   pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2)
 
-    
     ret.doorOpen = (pt_cp.vl["BCMDoorBeltStatus"]["FrontLeftDoor"] == 1 or
                 pt_cp.vl["BCMDoorBeltStatus"]["FrontRightDoor"] == 1 or
                 pt_cp.vl["BCMDoorBeltStatus"]["RearLeftDoor"] == 1 or
@@ -88,6 +85,7 @@ class CarState(CarStateBase):
 
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
     self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
+    self.resume_alert = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCResumeAlert"]
     # dp - brake lights
     ret.brakeLights = ret.brakePressed
     
@@ -103,12 +101,15 @@ class CarState(CarStateBase):
     # ret.cruiseState.available = True
 
     ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
-    ret.steeringTorque = pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]
-    ret.steeringTorqueEps = pt_cp.vl["STEER_RELATED"]["STEER_TORQUE"]
+    
+    ret.steeringAngleDeg = -pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
+    ret.steeringTorque = -pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]
+    ret.steeringTorqueEps = -pt_cp.vl["STEER_RELATED"]["STEER_TORQUE"]
 
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
     ret.genericToggle = bool(pt_cp.vl["BCMTurnSignals"]["HighBeamsActive"])
 
+    self.crz_btns_counter = pt_cp.vl["ASCMActiveCruiseControlStatus"]["COUNTER_1"];
     # print("Steering torque : %d" % ret.steeringTorque)
 
     if ret.steeringPressed:
@@ -154,6 +155,8 @@ class CarState(CarStateBase):
       ("ACCBUTTON", "ASCMActiveCruiseControlStatus"),
       ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
       ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
+      ("ACCResumeAlert", "ASCMActiveCruiseControlStatus"),
+      ("COUNTER_1", "ASCMActiveCruiseControlStatus"),
       ("TRANSMISSION_STATE", "ECMPRDNL"),
       ("LKAS_STATE", "LkasHud"),
       ("LKA_ACTIVE", "LkasHud"),
@@ -164,7 +167,6 @@ class CarState(CarStateBase):
     ]
 
     checks = [
-      ("BCMTurnSignals", 1),
       ("ECMEngineStatus", 10),
       ("EPBStatus", 10),
       ("ECMPRDNL", 10),
@@ -177,6 +179,7 @@ class CarState(CarStateBase):
       ("LkasHud", 20),
       ("AccStatus", 20),
       ("GAS_PEDAL", 10),
+      ("BCMTurnSignals", 30),
     ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.POWERTRAIN)

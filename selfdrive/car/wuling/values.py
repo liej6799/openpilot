@@ -3,7 +3,7 @@ from cereal import car
 Ecu = car.CarParams.Ecu
 
 class CarControllerParams:
-  STEER_MAX = 300  # Safety limit, not LKA max. Trucks use 600.
+  STEER_MAX = 600  # Safety limit, not LKA max. Trucks use 600.
   STEER_STEP = 2  # control frames per command
   STEER_DELTA_UP = 3      # 3 is stock. 100 is fine. 200 is too much it seems
   STEER_DELTA_DOWN = 3    # no faults on the way down it seems
@@ -87,7 +87,7 @@ DBC = {
   CAR.ALMAS_RS_PRO: dbc_dict('wuling_almazrs_generated', None),
 }
 
-STEER_THRESHOLD = 50
+STEER_THRESHOLD = 60
 HUD_MULTIPLIER = 0.70
 
 PREGLOBAL_CARS = []

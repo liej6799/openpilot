@@ -159,8 +159,11 @@ panda.can_send(0x370, b"\xc2\xb0\x00\x00\x00\x00\x00\x72", 0)
 
 # testing gas
 panda.can_send(0x260, b"\x80\x5d\x00\x80\x04\x0b\xd8\x44", 0)
+panda.can_send(0x260, b"\x40\x32\x00\x80\x0a\x12\xfe\x0c", 0)
 # testing brake 
 panda.can_send(0x269, b"\x80\x00\x15\x50\x00\x2d\x40\x52", 0)
+panda.can_send(0x269, b"\x00\x00\x35\x50\x2f\x95\xc0\x09", 0)
+panda.can_send(0x269, b"\x00\x00\x35\x50\x2f\xb2\xc0\x26", 0)
 
 
 #warning stiir work after adas enable
@@ -180,6 +183,16 @@ def set_panda_safety():
 319.94  0x1e1 (481)     +b'80 20 00 00 00 00 00 a0'
 320.16  0x373 (883)     -b'40 01 00 00 ac 90 02 7f'
 panda.can_send(0x1e1, b"\x80\x20\x00\x00\x00\x00\x00\xa0", 0)
+
+# kirim resume
+panda.can_send(0x1e1, b"\x84\x00\x00\x00\x00\x00\x00\x84", 0)
+
+panda.can_send(0x1e1, b"\x88\x08\x00\x00\x00\x00\x00\x90", 0)
+
+# send resume pedal to user
+panda.can_send(0x370, b"\xc0\xb0\x00\x1e\x39\x00\xc0\x87", 0)
+
+
 
 
 
