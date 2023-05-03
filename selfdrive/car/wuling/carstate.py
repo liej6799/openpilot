@@ -23,6 +23,8 @@ class CarState(CarStateBase):
     self.cluster_speed_hyst_gap = CV.KPH_TO_MS / 2.
     self.cluster_min_speed = CV.KPH_TO_MS / 2.
     self.is_cruise_latch = False
+    
+    self.lka_steering_cmd_counter = 0
 
     self.loopback_lka_steering_cmd_updated = False
     self.loopback_lka_steering_cmd_ts_nanos = 0
@@ -34,6 +36,7 @@ class CarState(CarStateBase):
     self.resume_alert = False
         
     self.crz_btns_counter = 0
+    self.is_cruise_latch = False
 
 
   def update(self, pt_cp, cam_cp, loopback_cp):
@@ -64,7 +67,8 @@ class CarState(CarStateBase):
     ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr]) * HUD_MULTIPLIER
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     # sample rear wheel speeds, standstill=True if ECM allows engagement with brake
-    ret.standstill = ret.wheelSpeeds.rl <= STANDSTILL_THRESHOLD and ret.wheelSpeeds.rr <= STANDSTILL_THRESHOLD
+    # ret.standstill = ret.wheelSpeeds.rl <= STANDSTILL_THRESHOLD and ret.wheelSpeeds.rr <= STANDSTILL_THRESHOLD
+    ret.standstill = ret.vEgoRaw < 0.1
 
     ret.steeringAngleDeg = -pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
     ret.steeringTorque = -pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]
@@ -81,8 +85,10 @@ class CarState(CarStateBase):
     ret.brakePressed = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
     ret.brakeHoldActive = pt_cp.vl["EPBStatus"]["AVH_STATUS"] != 0
 
-    ret.leftBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1
-    ret.rightBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2
+    # ret.leftBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1
+    # ret.rightBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2
+    
+    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50,  pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1, pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2)
     
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["TRANSMISSION_STATE"], None))
 
@@ -90,31 +96,40 @@ class CarState(CarStateBase):
     ret.gas = pt_cp.vl["GAS_PEDAL"]["GAS_POS"]
     ret.gasPressed = ret.gas > 0
     
-    ret.parkingBrake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
+    ret.parkingBrake = bool(pt_cp.vl["EPBStatus"]["EPBSTATUS"])
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
     self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
-    # self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
     
-    # ret.cruiseState.enabled = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
-    ret.cruiseState.enabled = pt_cp.vl["AccStatus"]["CruiseState"] != 0
-    # ret.cruiseState.enabled = True
-    
-    # ret.cruiseActualEnabled = ret.cruiseState.enabled
     ret.cruiseState.available = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
-    # ret.cruiseState.available =  pt_cp.vl["AccStatus"]["CruiseState"] != 0
-    # ret.cruiseState.available = True
+    ret.cruiseState.enabled = pt_cp.vl["AccStatus"]["CruiseState"] != 0
+    
+    self.is_cruise_latch = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
+
+    if pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 and ret.brakePressed:
+      self.is_cruise_latch = False
+    else:
+      pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 and not ret.brakePressed
+      self.is_cruise_latch = True
+      
+    if not ret.cruiseState.available:
+      self.is_cruise_latch = False
+      
+    ret.cruiseState.enabled = self.is_cruise_latch
+
     self.resume_alert = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCResumeAlert"]
 
     ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
     ret.genericToggle = bool(pt_cp.vl["BCMTurnSignals"]["HighBeamsActive"])
 
-    ret.cruiseState.standstill = ret.cruiseState.enabled == 0 and ret.cruiseState.enabled != 0
+    ret.cruiseState.standstill = ret.cruiseState.enabled == 0 and ret.cruiseState.available != 0
     self.lkas_status = 0
     self.crz_btns_counter = pt_cp.vl["ASCMActiveCruiseControlStatus"]["COUNTER_1"];
+    ret.brakeLightsDEPRECATED = bool(ret.brakePressed or ret.brakeHoldActive)
 
     # self.steeringTorqueSamples.append(ret.steeringTorque)
-
+    # if ret.steeringPressed:
+    #   print("Steering pressed")
     # print('Cruise speed :  %s' % ret.cruiseState.speed)
     # print('Cruise state enable :  %s' % ret.cruiseState.enabled)
     # print('Cruise state available :  %s' % ret.cruiseState.available)
@@ -171,6 +186,12 @@ class CarState(CarStateBase):
       ("EPBSTATUS", "EPBStatus"),
       ("AVH_STATUS", "EPBStatus"),
       
+      ("ACCBUTTON", "ASCMActiveCruiseControlStatus"),
+      ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
+      ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
+      ("ACCResumeAlert", "ASCMActiveCruiseControlStatus"),
+      ("COUNTER_1", "ASCMActiveCruiseControlStatus"),
+      
       ("TRANSMISSION_STATE", "ECMPRDNL"),
       ("LKAS_STATE", "LkasHud"),
       ("LKA_ACTIVE", "LkasHud"),
@@ -180,6 +201,7 @@ class CarState(CarStateBase):
       ("GAS_POS", "GAS_PEDAL"),
       ("BRAKE_POS", "BRAKE_PEDAL"),
       
+      ("ACC_BTN_1", "STEER_BTN"),
       ("COUNTER_1", "STEER_BTN"),
     ]
 
@@ -194,11 +216,24 @@ class CarState(CarStateBase):
       ("PSCMSteeringAngle", 100),
       ("LkasHud", 20),
       ("AccStatus", 20),
-      ("GAS_PEDAL", 100),
+      ("GAS_PEDAL", 10),
       ("BRAKE_PEDAL", 50),
       ("BCMTurnSignals", 30),
       ("STEER_BTN", 50),
+      ("ASCMActiveCruiseControlStatus", 20),
+
     ]
+    
+     # Used to read back last counter sent to PT by camera
+    if CP.networkLocation == NetworkLocation.fwdCamera:
+      signals += [
+        ("COUNTER", "STEERING_LKA"),
+      ]
+      checks += [
+        ("STEERING_LKA", 0),
+      ]
+
+
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.POWERTRAIN)
 
   @staticmethod

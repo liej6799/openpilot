@@ -48,15 +48,8 @@ static int wuling_rx_hook(CANPacket_t *to_push) {
       }
 
       if ((addr == 0x263)) {
-        acc_main_on = GET_BIT(to_push, 38U) != 0U;
-        if (!acc_main_on) {
-          if (!cruise_engaged_prev) {
-            controls_allowed = 1;
-          }
-        }else {
-          controls_allowed = 0;
-        }
-        cruise_engaged_prev = acc_main_on;
+        bool cruise_engaged = GET_BIT(to_push, 38U) != 0U;
+        pcm_cruise_check(cruise_engaged);
       }
 
       generic_rx_checks((addr == STEERING_LKAS));
@@ -91,7 +84,7 @@ static int wuling_fwd_hook(int bus, int addr) {
     bus_fwd = BUS_CAM;
   } else if (bus == BUS_CAM) {
     // bool block = (addr == LKAS_HUD) || (addr == STEERING_LKAS);
-    bool block =  (addr == STEERING_LKAS);
+    bool block =  (addr == STEERING_LKAS) || (addr == BRAKE_DATA)  || (addr == GAS_DATA);
     if (!block) {
       bus_fwd = BUS_MAIN;
     }

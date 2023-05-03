@@ -115,6 +115,7 @@ class Controls:
     else:
       self.CI, self.CP = CI, CI.CP
 
+    print("Car param %s" % self.CP)
     self.joystick_mode = self.params.get_bool("JoystickDebugMode") or self.CP.notCar
 
     # set alternative experiences from parameters
@@ -190,6 +191,7 @@ class Controls:
     elif self.CP.lateralTuning.which() == 'lqr':
       self.LaC = LatControlLQR(self.CP, self.CI)
 
+    print("Lateral Type : %s" % self.CP.lateralTuning.which())
     # dp, keep the original LaC for alt lac ctrl
     self.LaC_default = self.LaC
 
@@ -216,6 +218,11 @@ class Controls:
     self.experimental_mode = False
     self.v_cruise_helper = VCruiseHelper(self.CP)
 
+
+    self.params_check_last_t = 0.0
+    self.params_check_freq = 0.3
+    self.op_params_override_lateral = True
+    
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
     self.can_log_mono_time = 0
@@ -274,6 +281,7 @@ class Controls:
           elif self.sm['dragonConf'].dpLateralAltCtrl == 3 and not isinstance(self.LaC, LatControlTorque):
             self.CP.lateralTuning.torque = self.CP.latTuneCollection.torque
             self.LaC = LatControlTorque(self.CP, self.CI)
+            print("Dp Set lateral torque")
           self.LaC.reset()
       self.dp_lateral_alt_v_cruise_kph_prev = self.dp_lateral_alt_v_cruise_kph
 
@@ -331,6 +339,13 @@ class Controls:
     if CS.canValid:
       self.events.add_from_msg(CS.events)
 
+    if self.CP.lateralTuning.which() == 'pid':
+      t = sec_since_boot()
+      if t - self.params_check_last_t > self.params_check_freq:
+        if self.op_params_override_lateral:
+          self.LaC.update_op_params()
+        self.params_check_last_t = t
+      
     # Create events for temperature, disk space, and memory
     if self.dp_temp_check and self.sm['deviceState'].thermalStatus >= ThermalStatus.red:
       self.events.add(EventName.overheat)
