@@ -27,7 +27,9 @@ class CarControllerParams:
   # Heartbeat for dash "Service Adaptive Cruise" and "Service Front Camera"
   ADAS_KEEPALIVE_STEP = 100
   CAMERA_KEEPALIVE_STEP = 100
-
+  STEER_THRESHOLD = 60
+  HUD_MULTIPLIER = 0.685
+  
   # Allow small margin below -3.5 m/s^2 from ISO 15622:2018 since we
   # perform the closed loop control, and might need some
   # to apply some more braking if we're on a downhill slope.
@@ -116,8 +118,5 @@ FW_VERSIONS = {
 DBC = {
   CAR.ALMAS_RS_PRO: dbc_dict('wuling_almazrs_generated', None),
 }
-
-STEER_THRESHOLD = 60
-HUD_MULTIPLIER = 0.685
 
 PREGLOBAL_CARS = []

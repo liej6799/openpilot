@@ -53,7 +53,7 @@ class CarInterface(CarInterfaceBase):
     ret.openpilotLongitudinalControl = False
 
     ret.steerLimitTimer = 0.4
-    ret.steerActuatorDelay = 0.2
+    ret.steerActuatorDelay = 0.1
 
     ret.transmissionType = TransmissionType.automatic
 
@@ -73,7 +73,8 @@ class CarInterface(CarInterfaceBase):
     ret.lateralTuning.pid.kiBP = bp
     ret.lateralTuning.pid.kf = op_params.get('TUNE_LAT_PID_kf', force_update=True)
         
-    ret.minEnableSpeed = -1
+    ret.minEnableSpeed = 18 * CV.MPH_TO_MS
+    ret.minSteerSpeed = 7 * CV.MPH_TO_MS
     
     params = Params()
     if int(params.get("dp_atl").decode('utf-8')) == 1:
@@ -93,17 +94,15 @@ class CarInterface(CarInterfaceBase):
     ret = self.CS.update(self.cp, self.cp_cam, self.cp_loopback)
     ret.engineRPM = self.CS.engineRPM
     
-    if self.CS.cruise_buttons != self.CS.prev_cruise_buttons and self.CS.prev_cruise_buttons != CruiseButtons.INIT:
-      buttonEvents = [create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS)]
-      # Handle ACCButtons changing buttons mid-press
-      if self.CS.cruise_buttons != CruiseButtons.UNPRESS and self.CS.prev_cruise_buttons != CruiseButtons.UNPRESS:
-        buttonEvents.append(create_button_event(CruiseButtons.UNPRESS, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS))
+    # if self.CS.cruise_buttons != self.CS.prev_cruise_buttons and self.CS.prev_cruise_buttons != CruiseButtons.INIT:
+    #   buttonEvents = [create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS)]
+    #   # Handle ACCButtons changing buttons mid-press
+    #   if self.CS.cruise_buttons != CruiseButtons.UNPRESS and self.CS.prev_cruise_buttons != CruiseButtons.UNPRESS:
+    #     buttonEvents.append(create_button_event(CruiseButtons.UNPRESS, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS))
 
-      ret.buttonEvents = buttonEvents
+    #   ret.buttonEvents = buttonEvents
 
-    events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.low,
-                                                         GearShifter.eco, GearShifter.manumatic],
-                                       pcm_enable=self.CP.pcmCruise, enable_buttons=(ButtonType.decelCruise,))
+    events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.low, GearShifter.eco, GearShifter.manumatic], pcm_enable=self.CP.pcmCruise)
     # Enabling at a standstill with brake is allowed
     # TODO: verify 17 Volt can enable for the first time at a stop and allow for all GMs
     below_min_enable_speed = ret.vEgo < self.CP.minEnableSpeed
@@ -113,8 +112,8 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.parkBrake)
     if ret.cruiseState.standstill:
       events.add(EventName.resumeRequired)
-    if ret.vEgo < self.CP.minSteerSpeed:
-      events.add(EventName.belowSteerSpeed)
+    # if ret.vEgo < self.CP.minSteerSpeed:
+    #   events.add(EventName.belowSteerSpeed)
 
     ret.events = events.to_msg()
     return ret

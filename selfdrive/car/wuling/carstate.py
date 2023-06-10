@@ -7,7 +7,7 @@ from common.numpy_fast import mean
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
 from selfdrive.car.interfaces import CarStateBase
-from selfdrive.car.wuling.values import DBC, AccState, CanBus,HUD_MULTIPLIER, STEER_THRESHOLD, CAR, PREGLOBAL_CARS 
+from selfdrive.car.wuling.values import DBC, AccState, CanBus, CAR, PREGLOBAL_CARS,CarControllerParams
 
 TransmissionType = car.CarParams.TransmissionType
 NetworkLocation = car.CarParams.NetworkLocation
@@ -37,6 +37,8 @@ class CarState(CarStateBase):
         
     self.crz_btns_counter = 0
     self.is_cruise_latch = False
+    self.params = CarControllerParams(CP)
+
 
 
   def update(self, pt_cp, cam_cp, loopback_cp):
@@ -64,7 +66,7 @@ class CarState(CarStateBase):
       pt_cp.vl["EBCMWheelSpdRear"]["RLWheelSpd"],
     )
     
-    ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr]) * HUD_MULTIPLIER
+    ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr]) * self.params.HUD_MULTIPLIER
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     # sample rear wheel speeds, standstill=True if ECM allows engagement with brake
     # ret.standstill = ret.wheelSpeeds.rl <= STANDSTILL_THRESHOLD and ret.wheelSpeeds.rr <= STANDSTILL_THRESHOLD
@@ -119,7 +121,9 @@ class CarState(CarStateBase):
     self.resume_alert = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCResumeAlert"]
 
     ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
-    ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
+    # ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
+    ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > self.params.STEER_THRESHOLD, 5)
+
     ret.genericToggle = bool(pt_cp.vl["BCMTurnSignals"]["HighBeamsActive"])
 
     ret.cruiseState.standstill = ret.cruiseState.enabled == 0 and ret.cruiseState.available != 0
