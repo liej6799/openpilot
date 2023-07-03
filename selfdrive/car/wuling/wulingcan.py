@@ -132,3 +132,8 @@ def create_adas_headlights_status(packer, bus):
 def create_lka_icon_command(bus, active, critical, steer):
   dat = b"\xc6\x3d\x01\x00\xac\x90\x02\x42"
   return make_can_msg(0x104c006c, dat, bus)
+
+def create_resume_button(bus, active, critical, steer):
+  dat = b"\x48\x08\x00\x00\x00\x00\x00\x50"
+  return make_can_msg(0x1e1, dat, bus)
+

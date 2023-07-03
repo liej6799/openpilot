@@ -90,7 +90,7 @@ class CarState(CarStateBase):
     # ret.leftBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1
     # ret.rightBlinker = pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2
     
-    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50,  pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1, pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2)
+    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(40,  pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 1, pt_cp.vl["BCMTurnSignals"]["TurnSignals"] == 2)
     
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["TRANSMISSION_STATE"], None))
 
@@ -116,7 +116,8 @@ class CarState(CarStateBase):
     if not ret.cruiseState.available:
       self.is_cruise_latch = False
       
-    ret.cruiseState.enabled = self.is_cruise_latch
+    
+    # ret.cruiseState.enabled = self.is_cruise_latch
 
     self.resume_alert = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCResumeAlert"]
 
