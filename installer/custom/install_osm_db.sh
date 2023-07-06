@@ -23,7 +23,7 @@ else
   # Remove current db dir if existing
   rm -rf ${DB_DIR}/db
   if [ -d ${OSM_DIR}/${OSM_LOCATION_TEXT} ]; then
-    rm -rf ${OSM_DIR}/${OSM_LOCATION_TEXT}
+    rm -rf ${OSM_DIR}/${OSM_LOCATION_TEXT}  
   fi
   # Decompressing
   tar -vxf ${XZ_MAP_FILE_NAME}

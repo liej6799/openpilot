@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+from collections import defaultdict
+from typing import Any, Dict, List, Set
+from tqdm import tqdm
+
+import panda.python.uds as uds
+from cereal import car
+from common.params import Params
+from selfdrive.car.ecu_addrs import EcuAddrBusType, get_ecu_addrs
+from selfdrive.car.interfaces import get_interface_attr
+from selfdrive.car.fingerprints import FW_VERSIONS
 from selfdrive.car.isotp_parallel_query import IsoTpParallelQuery
 from system.swaglog import cloudlog
 
@@ -36,6 +47,7 @@ def disable_ecu(logcan, sendcan, bus=0, addr=0x7d0, com_cont_req=b'\x28\x83\x01'
   return False
 
 
+
 if __name__ == "__main__":
   import time
   import cereal.messaging as messaging
@@ -43,8 +55,6 @@ if __name__ == "__main__":
   logcan = messaging.sub_sock('can')
   time.sleep(1)
 
-  # honda bosch radar disable
-  # disabled = disable_ecu(logcan, sendcan, bus=1, addr=0x18DAB0F1, com_cont_req=b'\x28\x83\x03', timeout=0.5, debug=False)
-  disabled = disable_ecu(logcan, sendcan, bus=1, addr=0x7d0, com_cont_req=b'\x28\x83\x03', timeout=0.5, debug=True)
-  
+  disabled = disable_ecu(logcan, sendcan, bus=0, addr=0x7d0, com_cont_req=b'\x28\x83\x03', timeout=0.5, debug=True)
+
   print(f"disabled: {disabled}")

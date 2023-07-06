@@ -175,6 +175,94 @@
       }
     ]
   },
+  "ID": {
+    "Default": [
+      {
+        "speed": "90",
+        "tags": {
+          "highway": "motorway"
+        }
+      },
+      {
+        "speed": "90",
+        "tags": {
+          "highway": "trunk"
+        }
+      },
+      {
+        "speed": "90",
+        "tags": {
+          "highway": "primary"
+        }
+      },
+      {
+        "speed": "50",
+        "tags": {
+          "highway": "secondary"
+        }
+      },
+      {
+        "speed": "50",
+        "tags": {
+          "highway": "tertiary"
+        }
+      },
+      {
+        "speed": "90",
+        "tags": {
+          "highway": "unclassified"
+        }
+      },
+      {
+        "speed": "40",
+        "tags": {
+          "highway": "residential"
+        }
+      },
+      {
+        "speed": "40",
+        "tags": {
+          "highway": "service"
+        }
+      },
+      {
+        "speed": "90",
+        "tags": {
+          "highway": "motorway_link"
+        }
+      },
+      {
+        "speed": "70",
+        "tags": {
+          "highway": "trunk_link"
+        }
+      },
+      {
+        "speed": "70",
+        "tags": {
+          "highway": "primary_link"
+        }
+      },
+      {
+        "speed": "50",
+        "tags": {
+          "highway": "secondary_link"
+        }
+      },
+      {
+        "speed": "50",
+        "tags": {
+          "highway": "tertiary_link"
+        }
+      },
+      {
+        "speed": "20",
+        "tags": {
+          "highway": "living_street"
+        }
+      }
+    ]
+  },
   "CA": {
     "Default": [
       {

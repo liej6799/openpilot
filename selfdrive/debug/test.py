@@ -1,6 +1,5 @@
 from selfdrive.car import make_can_msg
 from panda import Panda
-
 panda = Panda()
 panda.set_safety_mode(Panda.SAFETY_WULING)
 # dat = b"\x20\x00\xe0\x00\x00\x00\x2e"
