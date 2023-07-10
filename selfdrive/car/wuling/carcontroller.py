@@ -53,26 +53,28 @@ class CarController:
       # will disable the crz 'main on'. crz ctrl msg runs at 50hz. 70ms allows us to
       # read 3 messages and most likely sync state before we attempt cancel.
       self.brake_counter = self.brake_counter + 1
-      # if self.frame % 10 == 0 and not (CS.out.brakePressed and self.brake_counter < 7):
-      #   # Cancel Stock ACC if it's enabled while OP is disengaged
-      #   # Send at a rate of 10hz until we sync with stock ACC state
-      #   can_sends.append(mazdacan.create_button_cmd(self.packer, self.CP.carFingerprint, CS.crz_btns_counter, Buttons.CANCEL))
+      # if (self.frame % CarControllerParams.BUTTONS_STEP) == 0:
+      #   if CS.resume_alert == 1 or CS.out.steeringPressed:
+      #   # Send Resume button when planner wants car to move
+      #     can_sends.append(wulingcan.create_resume_cmd(self.packer_pt, CS.crz_btns_counter+1, 1))
+      #     print("Send Resume %d" % (CS.crz_btns_counter+1))
+      #     self.last_button_frame = self.frame
     else:
       self.brake_counter = 0
 #      print("Cruize button %s " % CC.cruiseControl.resume)
       # print("Resule Alert %s " % CS.resume_alert)
-      if self.frame % 5 == 0 and CS.resume_alert == 1:
-        # Mazda Stop and Go requires a RES button (or gas) press if the car stops more than 3 seconds
+      if self.frame % 2 == 0:
+        if CS.resume_alert == 1 or CC.cruiseControl.resume:
         # Send Resume button when planner wants car to move
-        can_sends.append(wulingcan.create_resume_cmd(self.packer_pt, CS.crz_btns_counter, 1))
-        print("Send Resume")
-
+          can_sends.append(wulingcan.create_resume_cmd(self.packer_pt, CS.crz_btns_counter+1, 1))
+          print("Send Resume %d" % (CS.crz_btns_counter+1))
+          self.last_button_frame = self.frame
     # if CS.steeringPressed:
     #     can_sends.append(wulingcan.create_resume_button())
     #     print("Send Resume")
     # Steering (Active: 50Hz
     steer_step = self.params.STEER_STEP
-
+ 
     self.lka_steering_cmd_counter += 1 if CS.loopback_lka_steering_cmd_updated else 0
 
     # Avoid GM EPS faults when transmitting messages too close together: skip this transmit if we

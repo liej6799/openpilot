@@ -79,6 +79,8 @@ procs = [
   PythonProcess("systemd", "selfdrive.dragonpilot.systemd", offroad=True),
   PythonProcess("gpxd", "selfdrive.dragonpilot.gpxd"),
   PythonProcess("otisserv", "selfdrive.dragonpilot.otisserv", offroad=True),
+  PythonProcess("fleet_manager", "system.fleetmanager.fleet_manager", onroad=False, offroad=True),
+
 ]
 
 managed_processes = {p.name: p for p in procs}

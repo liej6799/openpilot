@@ -85,12 +85,14 @@ def create_acc_dashboard_command(packer, acc_engaged, idx, target_speed_kph, res
 
 def create_resume_cmd(packer, idx, resume):
   values = {
-    "CRZ_BTN_1" : 1,
-    "CRZ_BTN_2" : 1,
+    "CRZ_BTN_1" : 0,
     "RESUME_BTN_1" : 1,
+    "ACC_BTN_1" : 0,
+    "CRZ_BTN_2" : 0,
     "RESUME_BTN_2" : 1,
-    "COUNTER_1" : idx,
-    "COUNTER_2" : idx,
+    "ACC_BTN_2" : 1,
+    "COUNTER_1" : idx % 0x11,
+    "COUNTER_2" : idx % 0x11,
   }
 
   return packer.make_can_msg("STEER_BTN", 0, values)
@@ -133,7 +135,7 @@ def create_lka_icon_command(bus, active, critical, steer):
   dat = b"\xc6\x3d\x01\x00\xac\x90\x02\x42"
   return make_can_msg(0x104c006c, dat, bus)
 
-def create_resume_button(bus, active, critical, steer):
+def create_resume_button(bus, active, steer):
   dat = b"\x48\x08\x00\x00\x00\x00\x00\x50"
   return make_can_msg(0x1e1, dat, bus)
 

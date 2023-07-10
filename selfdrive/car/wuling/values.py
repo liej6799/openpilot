@@ -11,13 +11,15 @@ Ecu = car.CarParams.Ecu
 
 class CarControllerParams:
 
-  STEER_MAX = 350  # Safety limit, not LKA max. Trucks use 600.
   STEER_STEP = 2  # control frames per command
+  BUTTONS_STEP = 2
+  
+  STEER_MAX = 350  # Safety limit, not LKA max. Trucks use 600.
   STEER_DELTA_UP = 3      # 3 is stock. 100 is fine. 200 is too much it seems
   STEER_DELTA_DOWN = 3    # no faults on the way down it seems
   STEER_ERROR_MAX = 80
   MIN_STEER_SPEED = 3.  # m/s
-
+  
   STEER_DRIVER_ALLOWANCE = 80
   STEER_DRIVER_MULTIPLIER = 3    # weight driver torque heavily
   STEER_DRIVER_FACTOR = 1        # from dbc
@@ -56,10 +58,10 @@ class CarControllerParams:
     self.BRAKE_LOOKUP_BP = [self.ACCEL_MIN, max_regen_acceleration]
     self.BRAKE_LOOKUP_V = [self.MAX_BRAKE, 0.]
     
-    assert(CP.lateralParams.torqueBP[0] == 0)
-    assert(CP.lateralParams.torqueBP[0] == 0)
-    self.STEER_LOOKUP_BP = [v * -1 for v in CP.lateralParams.torqueBP][1:][::-1] + list(CP.lateralParams.torqueBP)
-    self.STEER_LOOKUP_V = [v * -1 for v in CP.lateralParams.torqueV][1:][::-1] + list(CP.lateralParams.torqueV)
+    # assert(CP.lateralParams.torqueBP[0] == 0)
+    # assert(CP.lateralParams.torqueBP[0] == 0)
+    # self.STEER_LOOKUP_BP = [v * -1 for v in CP.lateralParams.torqueBP][1:][::-1] + list(CP.lateralParams.torqueBP)
+    # self.STEER_LOOKUP_V = [v * -1 for v in CP.lateralParams.torqueV][1:][::-1] + list(CP.lateralParams.torqueV)
     
 
 
