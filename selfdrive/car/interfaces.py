@@ -491,7 +491,9 @@ def get_interface_attr(attr: str, combine_brands: bool = False, ignore_none: boo
   for car_folder in sorted([x[0] for x in os.walk(BASEDIR + '/selfdrive/car')]):
     try:
       brand_name = car_folder.split('/')[-1]
+      print(brand_name)
       brand_values = __import__(f'selfdrive.car.{brand_name}.values', fromlist=[attr])
+      print(brand_values)
       if hasattr(brand_values, attr) or not ignore_none:
         attr_data = getattr(brand_values, attr, None)
       else:

@@ -69,6 +69,7 @@ def _get_interface_names() -> Dict[str, List[str]]:
   # returns a dict of brand name and its respective models
   brand_names = {}
   for brand_name, model_names in get_interface_attr("CAR").items():
+    print(brand_name, model_names)
     model_names = [getattr(model_names, c) for c in model_names.__dict__.keys() if not c.startswith("__")]
     brand_names[brand_name] = model_names
 
@@ -240,6 +241,7 @@ def get_car(logcan, sendcan, experimental_long_allowed, num_pandas=1):
   x.start()
 
   try:
+    print(interface_names)
     CarInterface, CarController, CarState = interfaces[candidate]
     CP = CarInterface.get_params(candidate, fingerprints, car_fw, experimental_long_allowed, docs=False)
     CP.carVin = vin
@@ -249,4 +251,5 @@ def get_car(logcan, sendcan, experimental_long_allowed, num_pandas=1):
 
     return CarInterface(CP, CarController, CarState), CP
   except KeyError:
+    print(KeyError.getMessage)
     return None, None
