@@ -448,6 +448,9 @@ struct CarParams {
   enableDsu @5 :Bool;        # driving support unit
   enableBsm @56 :Bool;       # blind spot monitoring
   flags @64 :UInt32;         # flags for car specific quirks
+  
+  pcmCruiseSpeed @74 :Bool;  # is openpilot's state tied to the PCM's cruise speed?
+
   experimentalLongitudinalAvailable @71 :Bool;
   #dp: enable torque interceptor
   enableTorqueInterceptor @72 :Bool;

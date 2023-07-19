@@ -409,6 +409,8 @@ def thermald_thread(end_event, hw_queue):
     # report to server once every 10 minutes
     rising_edge_started = should_start and not should_start_prev
     if rising_edge_started or (count % int(600. / DT_TRML)) == 0:
+      print("panda states")
+      print(pandaStates)
       dat = {
         'count': count,
         'pandaStates': [strip_deprecated_keys(p.to_dict()) for p in pandaStates],

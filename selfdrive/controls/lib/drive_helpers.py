@@ -41,6 +41,10 @@ CRUISE_INTERVAL_SIGN = {
   ButtonType.decelCruise: -1,
 }
 
+MAZDA_V_CRUISE_MIN = {
+  True: 30,
+  False: int(20 * CV.MPH_TO_KPH),
+}
 # Constants for Limit controllers.
 LIMIT_ADAPT_ACC = -0.8  # (closer to zero ealier it decel) m/s^2 Ideal acceleration for the adapting (braking) phase when approaching speed limits.
 LIMIT_MIN_ACC = -1.4    # m/s^2 Maximum deceleration allowed for limit controllers to provide.

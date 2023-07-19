@@ -6,6 +6,9 @@ from opendbc.can.packer import CANPacker
 from selfdrive.car import apply_driver_steer_torque_limits
 from selfdrive.car.wuling import wulingcan
 from selfdrive.car.wuling.values import DBC, CanBus, PREGLOBAL_CARS, CarControllerParams
+from selfdrive.controls.lib.drive_helpers import MAZDA_V_CRUISE_MIN
+import cereal.messaging as messaging
+from common.params import Params, put_bool_nonblocking
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 NetworkLocation = car.CarParams.NetworkLocation
@@ -37,6 +40,36 @@ class CarController:
 
     self.params = CarControllerParams(self.CP)
     self.packer_pt = CANPacker(DBC[self.CP.carFingerprint]['pt'])
+    self.param_s = Params()
+
+    self.sm = messaging.SubMaster(['longitudinalPlan'])
+    self.is_metric = self.param_s.get_bool("IsMetric")
+    self.speed_limit_control_enabled = False
+    self.last_speed_limit_sign_tap = False
+    self.last_speed_limit_sign_tap_prev = False
+    self.speed_limit = 0.
+    self.speed_limit_offset = 0
+    self.timer = 0
+    self.final_speed_kph = 0
+    self.init_speed = 0
+    self.current_speed = 0
+    self.v_set_dis = 0
+    self.v_cruise_min = 0
+    self.button_type = 0
+    self.button_select = 0
+    self.button_count = 0
+    self.target_speed = 0
+    self.t_interval = 7
+    self.slc_active_stock = False
+    self.sl_force_active_timer = 0
+    self.v_tsc_state = 0
+    self.slc_state = 0
+    self.m_tsc_state = 0
+    self.cruise_button = None
+    self.speed_diff = 0
+    self.v_tsc = 0
+    self.m_tsc = 0
+    self.steady_speed = 0
 
   def update(self, CC, CS, now_nanos):
     actuators = CC.actuators
@@ -44,9 +77,40 @@ class CarController:
     hud_alert = hud_control.visualAlert
     hud_v_cruise = hud_control.setSpeed
     
+    # if not self.CP.pcmCruiseSpeed:
+    #   self.sm.update(0)
+
+    #   if self.sm.updated['longitudinalPlan']:
+    #     self.v_tsc_state = self.sm['longitudinalPlan'].visionTurnControllerState
+    #     self.slc_state = self.sm['longitudinalPlan'].speedLimitControlState
+    #     self.m_tsc_state = self.sm['longitudinalPlan'].turnSpeedControlState
+    #     self.speed_limit = self.sm['longitudinalPlan'].speedLimit
+    #     self.speed_limit_offset = self.sm['longitudinalPlan'].speedLimitOffset
+    #     self.v_tsc = self.sm['longitudinalPlan'].visionTurnSpeed
+    #     self.m_tsc = self.sm['longitudinalPlan'].turnSpeed
+
+    #   if self.frame % 200 == 0:
+    #     self.speed_limit_control_enabled = self.param_s.get_bool("SpeedLimitControl")
+    #     self.is_metric = self.param_s.get_bool("IsMetric")
+    #   self.last_speed_limit_sign_tap = self.param_s.get_bool("LastSpeedLimitSignTap")
+    #   self.v_cruise_min = MAZDA_V_CRUISE_MIN[self.is_metric] * (CV.KPH_TO_MPH if not self.is_metric else 1)
+
     # Send CAN commands.
     can_sends = []
 
+    # if not self.CP.pcmCruiseSpeed:
+    #       if not self.last_speed_limit_sign_tap_prev and self.last_speed_limit_sign_tap:
+    #         self.sl_force_active_timer = self.frame
+    #         put_bool_nonblocking("LastSpeedLimitSignTap", False)
+    #       self.last_speed_limit_sign_tap_prev = self.last_speed_limit_sign_tap
+
+    #       sl_force_active = self.speed_limit_control_enabled and (self.frame < (self.sl_force_active_timer * DT_CTRL + 2.0))
+    #       sl_inactive = not sl_force_active and (not self.speed_limit_control_enabled or (True if self.slc_state == 0 else False))
+    #       sl_temp_inactive = not sl_force_active and (self.speed_limit_control_enabled and (True if self.slc_state == 1 else False))
+    #       slc_active = not sl_inactive and not sl_temp_inactive
+
+    #       self.slc_active_stock = slc_active
+          
     if CC.cruiseControl.cancel:
       # If brake is pressed, let us wait >70ms before trying to disable crz to avoid
       # a race condition with the stock system, where the second cancel from openpilot
