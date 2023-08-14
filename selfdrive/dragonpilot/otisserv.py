@@ -122,7 +122,8 @@ class OtisServ(BaseHTTPRequestHandler):
     self.end_headers()
 
     if use_amap:
-      # amap token
+      # 
+      # token
       if self.get_amap_key() is None or self.get_amap_key_2() is None:
         if postvars is None or \
                 ("amap_key_val" not in postvars or postvars.get("amap_key_val")[0] == "") or \

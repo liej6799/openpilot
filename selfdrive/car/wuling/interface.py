@@ -77,8 +77,8 @@ class CarInterface(CarInterfaceBase):
     CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
     CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
 
-    ret.minEnableSpeed = 5 * CV.MPH_TO_MS
-    ret.minSteerSpeed = 0 * CV.MPH_TO_MS
+    ret.minEnableSpeed = -1 * CV.MPH_TO_MS
+    ret.minSteerSpeed = -1 * CV.MPH_TO_MS
     
     params = Params()
     if int(params.get("dp_atl").decode('utf-8')) == 1:

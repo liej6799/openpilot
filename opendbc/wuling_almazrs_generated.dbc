@@ -46,9 +46,9 @@ BO_ 842 EBCMWheelSpdRear: 5 K17_EBCM
  SG_ RRWheelSpd : 22|15@0+ (0.0647,0) [0|255] "km/h"  NEO
 
 BO_ 485 PSCMSteeringAngle: 8 K43_PSCM
- SG_ SteeringWheelAngle : 15|16@0- (0.0625,0) [-2047|2047] "deg"  NEO
+ SG_ SteeringWheelAngle : 15|16@0- (-0.0625,0) [-2047|2047] "deg"  NEO
  SG_ SteeringWheelRate : 27|12@0- (1,0) [-2047|2047] "deg/s"  NEO
- SG_ SteeringTorque : 48|8@1- (1,0) [-2047|2047] "" XXX
+ SG_ SteeringTorque : 48|8@1- (-1,0) [-2047|2047] "" XXX
  SG_ Checksum : 56|8@1- (1,0) [0|255] "" XXX
 
 BO_ 201 ECMEngineStatus: 8 K20_ECM
@@ -146,7 +146,7 @@ BO_ 413 STEER_RELATED: 8 XXX
  SG_ NEW_SIGNAL_2 : 47|16@0+ (1,0) [0|65535] "" XXX
  SG_ NEW_SIGNAL_3 : 56|8@1+ (1,0) [0|255] "" XXX
  SG_ NEW_SIGNAL_4 : 19|12@0+ (1,0) [0|4095] "" XXX
- SG_ STEER_TORQUE : 15|8@0- (1,0) [-255|255] "" XXX
+ SG_ STEER_TORQUE : 15|8@0- (-1,0) [-255|255] "" XXX
 
 BO_ 617 BRAKE_MODULE: 8 XXX
  SG_ NEW_SIGNAL_3 : 56|6@1+ (1,0) [0|63] "" XXX
@@ -182,4 +182,4 @@ BO_ 296 BRAKE_PEDAL: 8 XXX
  SG_ NEW_SIGNAL_2 : 0|6@1+ (1,0) [0|255] "" XXX
  SG_ BRAKE_POS : 24|8@1- (1,0) [-255|255] "" XXX
 
-VAL_ 501 TRANSMISSION_STATE 1 "D" 2 "D" 3 "D" 4 "D" 5 "D" 6 "D" 7 "D" 13 "N" 14 "R" 15 "P";
+VAL_ 501 TRANSMISSION_STATE 1 "D" 2 "D" 3 "D" 4 "D" 5 "D" 6 "D" 7 "D" 8 "D" 13 "N" 14 "R" 15 "P";
