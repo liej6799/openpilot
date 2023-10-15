@@ -204,9 +204,6 @@ class CarInterfaceBase(ABC):
     self.belowSteerSpeed_shown = False
     self.disable_belowSteerSpeed = False
 
-    self.frogpilot_toggles_updated = False
-    self.update_frogpilot_params()
-
   def get_ff_nn(self, x):
     return self.lat_torque_nn_model.evaluate(x)
 
@@ -337,11 +334,7 @@ class CarInterfaceBase(ABC):
   def _update(self, c: car.CarControl) -> car.CarState:
     pass
 
-  def update(self, c: car.CarControl, can_strings: List[bytes], frogpilot_toggles_updated) -> car.CarState:
-    # Update FrogPilot parameters
-    if frogpilot_toggles_updated:
-      self.update_frogpilot_params()
-
+  def update(self, c: car.CarControl, can_strings: List[bytes]) -> car.CarState:
     # parse can
     for cp in self.can_parsers:
       if cp is not None:
@@ -514,13 +507,7 @@ class CarStateBase(ABC):
     self.display_timer = 0
     self.distance_button = 0
 
-    self.update_frogpilot_params()
-
   def update_speed_kf(self, v_ego_raw):
-    # Update FrogPilot variables when they are changed
-    if self.params_memory.get_bool("FrogPilotTogglesUpdated"):
-      self.update_frogpilot_params()
-
     if abs(v_ego_raw - self.v_ego_kf.x[0][0]) > 2.0:  # Prevent large accelerations when car starts at non zero speed
       self.v_ego_kf.x = [[v_ego_raw], [0.0]]
 

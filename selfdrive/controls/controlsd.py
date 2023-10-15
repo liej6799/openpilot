@@ -79,7 +79,6 @@ class Controls:
     self.params_memory = Params("/dev/shm/params")
     self.fire_the_babysitter = self.params.get_bool("FireTheBabysitter")
     self.mute_dm = self.fire_the_babysitter and self.params.get_bool("MuteDM")
-    self.frogpilot_toggles_updated = False
 
     self.average_desired_curvature = self.params.get_bool("AverageDesiredCurvature")
     self.conditional_experimental_mode = self.params.get_bool("ConditionalExperimental")
@@ -110,9 +109,9 @@ class Controls:
 
       num_pandas = len(messaging.recv_one_retry(self.sm.sock['pandaStates']).pandaStates)
       experimental_long_allowed = self.params.get_bool("ExperimentalLongitudinalEnabled") and not is_release_branch()
-      self.CI, self.CP = get_car(self.can_sock, self.pm.sock['sendcan'], experimental_long_allowed, num_pandas)
+      self.CI, self.CP, self.CS = get_car(self.can_sock, self.pm.sock['sendcan'], experimental_long_allowed, num_pandas)
     else:
-      self.CI, self.CP = CI, CI.CP
+      self.CI, self.CP, self.CS = CI, CI.CP, CI.CS
 
     self.joystick_mode = self.params.get_bool("JoystickDebugMode") or self.CP.notCar
 
@@ -468,7 +467,7 @@ class Controls:
 
     # Update carState from CAN
     can_strs = messaging.drain_sock_raw(self.can_sock, wait_for_one=True)
-    CS = self.CI.update(self.CC, can_strs, self.frogpilot_toggles_updated)
+    CS = self.CI.update(self.CC, can_strs)
     if len(can_strs) and REPLAY:
       self.can_log_mono_time = messaging.log_from_bytes(can_strs[0]).logMonoTime
 
@@ -603,8 +602,11 @@ class Controls:
   def state_control(self, CS):
     """Given the state, this function returns a CarControl packet"""
     # Update FrogPilot parameters
-    self.frogpilot_toggles_updated = self.params_memory.get_bool("FrogPilotTogglesUpdated")
-    if self.frogpilot_toggles_updated:
+    frogpilot_toggles_updated = self.params_memory.get_bool("FrogPilotTogglesUpdated")
+    if frogpilot_toggles_updated:
+      self.CI.update_frogpilot_params()
+      self.CS.update_frogpilot_params()
+
       self.always_on_lateral = self.params.get_bool("AlwaysOnLateral")
       self.always_on_lateral_main = self.params.get_bool("AlwaysOnLateralMain")
       self.average_desired_curvature = self.params.get_bool("AverageDesiredCurvature")
