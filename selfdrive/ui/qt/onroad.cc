@@ -1129,7 +1129,7 @@ void AnnotatedCameraWidget::paintGL() {
       wide_cam_requested = wide_cam_requested && s->scene.calibration_wide_valid;
     }
     Params("/dev/shm/params").putBool("WideCamera", wide_cam_requested);
-    CameraWidget::setStreamType(wide_cam_requested ? VISION_STREAM_WIDE_ROAD : VISION_STREAM_ROAD);
+    CameraWidget::setStreamType(wide_cam_requested && !s->scene.wide_camera_disabled ? VISION_STREAM_WIDE_ROAD : VISION_STREAM_ROAD);
 
     s->scene.wide_cam = CameraWidget::getStreamType() == VISION_STREAM_WIDE_ROAD;
     if (s->scene.calibration_valid) {
