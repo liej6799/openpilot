@@ -194,7 +194,7 @@ def finalize_update() -> None:
   # FrogPilot update functions
   params = Params()
   params.put("Updated", datetime.datetime.now().astimezone(ZoneInfo('America/Phoenix')).strftime("%B %d, %Y - %I:%M%p"))
-  params.remove("DisableInternetCheck")            # Reset the param since the user has internet connection again
+  params.remove("DisableInternetCheck")  # Reset the param since the user has internet connection again
 
 def handle_agnos_update() -> None:
   from openpilot.system.hardware.tici.agnos import flash_agnos_update, get_target_slot_number
