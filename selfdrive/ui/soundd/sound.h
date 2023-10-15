@@ -42,4 +42,7 @@ protected:
   // FrogPilot variables
   Params params;
   Params paramsMemory{"/dev/shm/params"};
+  bool isCustomTheme;
+  int customSounds;
+  std::unordered_map<int, QString> soundPaths;
 };
