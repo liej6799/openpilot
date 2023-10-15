@@ -88,6 +88,8 @@ class Controls:
     self.custom_sounds = self.params.get_int("CustomSounds") if self.custom_theme else 0
     self.frog_sounds = self.custom_sounds == 1
 
+    self.reverse_cruise_increase = self.params.get_bool("ReverseCruiseIncrease")
+
     ignore = self.sensor_packets + ['testJoystick']
     if SIMULATION:
       ignore += ['driverCameraState', 'managerState']
@@ -501,7 +503,7 @@ class Controls:
   def state_transition(self, CS):
     """Compute conditional state transitions and execute actions on state transitions"""
 
-    self.v_cruise_helper.update_v_cruise(CS, self.enabled, self.is_metric)
+    self.v_cruise_helper.update_v_cruise(CS, self.enabled, self.is_metric, self.reverse_cruise_increase)
 
     # decrement the soft disable timer at every step, as it's reset on
     # entrance in SOFT_DISABLING state
@@ -598,6 +600,8 @@ class Controls:
       self.custom_sounds = self.params.get_int("CustomSounds") if self.custom_theme else 0
       self.frog_sounds = self.custom_sounds == 1
 
+      self.reverse_cruise_increase = self.params.get_bool("ReverseCruiseIncrease")
+
     # Update VehicleModel
     lp = self.sm['liveParameters']
     x = max(lp.stiffnessFactor, 0.1)
@@ -616,6 +620,8 @@ class Controls:
 
     CC = car.CarControl.new_message()
     CC.enabled = self.enabled
+
+    CC.reverseCruise = self.reverse_cruise_increase
 
     # Always on lateral
     if self.always_on_lateral:
