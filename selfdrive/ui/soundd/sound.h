@@ -43,6 +43,7 @@ protected:
   Params params;
   Params paramsMemory{"/dev/shm/params"};
   bool isCustomTheme;
+  bool isSilentMode;
   int customSounds;
   std::unordered_map<int, QString> soundPaths;
 };
