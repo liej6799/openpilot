@@ -351,7 +351,7 @@ class LongitudinalPlanner:
       return True
 
     # Road curvature check - Need to check for stop lights/stop signs since the curve function also detects them
-    self.curve_detected = self.curves and self.road_curvature(lead, modeldata, v_ego) and not standstill and self.v_offset == 0
+    self.curve_detected = self.curves and self.road_curvature(modeldata, v_ego) and (self.curves_lead or not lead) and not standstill and self.v_offset == 0
     if self.curve_detected:
       self.status_value = 8
       return True
@@ -371,24 +371,23 @@ class LongitudinalPlanner:
     return self.lead_status_count >= THRESHOLD
 
   # Determine the road curvature - Credit goes to to Pfeiferj!
-  def road_curvature(self, lead, modeldata, v_ego):
-    # Check if the lead toggle is on or we don't have a lead if not
-    if self.curves_lead or not lead:
-      predicted_lateral_accelerations = np.abs(np.array(modeldata.acceleration.y))
-      predicted_velocities = np.array(modeldata.velocity.x)
-      if len(predicted_lateral_accelerations) == len(predicted_velocities) != 0:
-        curvature_ratios = predicted_lateral_accelerations / (predicted_velocities ** 2)
-        predicted_lateral_accelerations = curvature_ratios * (v_ego ** 2)
-        curvature = np.amax(predicted_lateral_accelerations)
-        # Setting an upper limit of "5.0" helps prevent it activating at stop lights
-        if 5.0 > curvature >= 1.6 or (self.curve_detected and 5.0 > curvature >= 1.1):
-          # Setting the maximum to 10 lets it hold the status for 0.25s after it goes "False" to help prevent false negatives
-          self.curvature_count = min(10, self.curvature_count + 1)
-        else:
-          self.curvature_count = max(0, self.curvature_count - 1)
-        # Check if curve is detected for > 0.25s
-        return self.curvature_count >= THRESHOLD
-    return False
+  def road_curvature(self, modeldata, v_ego):
+    # Curve detection variables
+    orientation_rate = np.array(np.abs(modeldata.orientationRate.z))
+    velocity = np.array(modeldata.velocity.x)
+
+    # Get the lateral acceleration from the model
+    lateral_acceleration = np.amax(orientation_rate * velocity)
+
+    # Calculate the curve based on the current velocity
+    curvature = lateral_acceleration / (v_ego**2)
+
+    # Check if the curve is detected for > 0.25s
+    if curvature >= 1.6 or (self.curve_detected and curvature >= 1.1):
+      self.curvature_count = min(10, self.curvature_count + 1)
+    else:
+      self.curvature_count = max(0, self.curvature_count - 1)    
+    return self.curvature_count >= THRESHOLD
 
   # Stop sign and stop light detection - Credit goes to the DragonPilot team!
   def stop_sign_and_light(self, carstate, lead, lead_distance, modeldata, v_ego, v_lead):
