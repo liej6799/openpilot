@@ -219,26 +219,83 @@ FrogPilotVisualsPanel::FrogPilotVisualsPanel(QWidget *parent) : FrogPilotPanel(p
   setInitialToggleStates();
 }
 
-FrogPilotNavigationPanel::FrogPilotNavigationPanel(QWidget *parent) : FrogPilotPanel(parent), instructionsStep(new QLabel(this)), updateTimer(new QTimer(this)), wifiManager(new WifiManager(this)) {
+FrogPilotNavigationPanel::FrogPilotNavigationPanel(QWidget* parent)
+  : FrogPilotPanel(parent),
+    instructionsStep(new QLabel(this)),
+    updateTimer(new QTimer(this)),
+    wifiManager(new WifiManager(this)),
+    setupCompleted(!params.get("MapboxPublicKey").empty() && !params.get("MapboxSecretKey").empty()) {
+  
   auto mainLayout = new QVBoxLayout(this);
+  QWidget *overlayWidget = new QWidget(this);
+  QVBoxLayout *overlayLayout = new QVBoxLayout(overlayWidget);
 
-  mainLayout->addWidget(instructionsStep, 0, Qt::AlignCenter);
+  QPushButton *settings_button = new QPushButton(tr("Manage Settings"));
+  settings_button->setStyleSheet(R"(
+    QPushButton {
+      font-size: 50px;
+      padding-bottom: 0px;
+      border 1px grey solid;
+      border-radius: 25px;
+      background-color: #404040;
+      font-weight: 500;
+    }
+    QPushButton:pressed {
+      background-color: #3B3B3B;
+    }
+  )");
+  settings_button->setFixedSize(500, 70);
+  overlayLayout->addWidget(settings_button, 0, Qt::AlignCenter);
+  QObject::connect(settings_button, &QPushButton::clicked, this, &FrogPilotNavigationPanel::manageSettings);
 
-  mapboxSettingsLabel = new QLabel("", this);
-  mainLayout->addWidget(mapboxSettingsLabel, 0, Qt::AlignBottom | Qt::AlignCenter);
+  overlayLayout->addWidget(instructionsStep, 0, Qt::AlignCenter);
+  mainLayout->addWidget(overlayWidget, 0, Qt::AlignCenter);
 
   connect(updateTimer, &QTimer::timeout, this, &FrogPilotNavigationPanel::retrieveAndUpdateStatus);
   updateTimer->start(100);
 
-  setupCompleted = !params.get("MapboxPublicKey").empty() && !params.get("MapboxSecretKey").empty();
+  settingsPanel = new QWidget(this);
+  mapboxSettingsLabel = new QLabel("", this);
+  QVBoxLayout *settingsLayout = new QVBoxLayout;
 
+  auto createClearButton = [&](const QString &text, const char *key, auto slotFunc) {
+    QPushButton *btn = new QPushButton(text);
+    btn->setVisible(true);
+    btn->setFixedSize(625, 125);
+    settingsLayout->addWidget(btn, 0, Qt::AlignBottom | Qt::AlignCenter);
+    QObject::connect(btn, &QPushButton::clicked, [=]() {
+      if (ConfirmationDialog::yesorno("Are you sure you want to clear your " + text + "?", parent)) {
+        (this->*slotFunc)();
+      }
+    });
+    btn->setStyleSheet(R"(color: white; background-color: #4F4F4F;)");
+    return btn;
+  };
+  
+  clear_public_key_button = createClearButton(tr("Clear Public Key"), "MapboxPublicKey", &FrogPilotNavigationPanel::onClearPublicKeyButtonClicked);
+  clear_secret_key_button = createClearButton(tr("Clear Secret Key"), "MapboxSecretKey", &FrogPilotNavigationPanel::onClearSecretKeyButtonClicked);
+
+  settingsLayout->addWidget(mapboxSettingsLabel, 2, Qt::AlignBottom | Qt::AlignCenter);
+  settingsPanel->setLayout(settingsLayout);
+  settingsPanel->hide();
+  mainLayout->addWidget(settingsPanel);
   retrieveAndUpdateStatus();
 }
 
+void FrogPilotNavigationPanel::onClearPublicKeyButtonClicked() { 
+  params.remove("MapboxPublicKey"); 
+  retrieveAndUpdateStatus(); 
+}
+
+void FrogPilotNavigationPanel::onClearSecretKeyButtonClicked() { 
+  params.remove("MapboxSecretKey"); 
+  retrieveAndUpdateStatus(); 
+}
+
 void FrogPilotNavigationPanel::retrieveAndUpdateStatus() {
-  const bool deviceOnline = int((*uiState()->sm)["deviceState"].getDeviceState().getNetworkStrength()) != 0;
-  const bool mapboxPublicKeySet = !params.get("MapboxPublicKey").empty();
-  const bool mapboxSecretKeySet = !params.get("MapboxSecretKey").empty();
+  bool deviceOnline = int((*uiState()->sm)["deviceState"].getDeviceState().getNetworkStrength()) != 0;
+  bool mapboxPublicKeySet = !params.get("MapboxPublicKey").empty();
+  bool mapboxSecretKeySet = !params.get("MapboxSecretKey").empty();
 
   if (deviceOnline) {
     updateIpAddressLabel();
@@ -264,7 +321,12 @@ void FrogPilotNavigationPanel::showEvent(QShowEvent *event) {
   QWidget::showEvent(event);
 }
 
-void FrogPilotNavigationPanel::updateUI(const bool deviceOnline, const bool mapboxPublicKeySet, const bool mapboxSecretKeySet) {
+void FrogPilotNavigationPanel::manageSettings() {
+  settingsPanel->setVisible(!settingsPanel->isVisible());
+  instructionsStep->setVisible(!instructionsStep->isVisible());
+}
+
+void FrogPilotNavigationPanel::updateUI(bool deviceOnline, bool mapboxPublicKeySet, bool mapboxSecretKeySet) {
   static QString imageName = "offline.png";
   if (deviceOnline) {
     if (!setupCompleted) {
