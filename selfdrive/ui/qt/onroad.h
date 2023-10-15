@@ -51,6 +51,8 @@ private:
   bool engageable;
 
   // FrogPilot variables
+  int steeringWheel;
+  std::map<int, QPixmap> wheelImages;
 
 };
 

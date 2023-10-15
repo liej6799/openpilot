@@ -282,6 +282,7 @@ void ui_update_params(UIState *s) {
     scene.unlimited_road_ui_length = scene.custom_road_ui && params.getBool("UnlimitedLength");
 
     scene.screen_brightness = params.getInt("ScreenBrightness");
+    scene.steering_wheel = params.getInt("SteeringWheel");
     toggles_checked = true;
   }
 }
@@ -322,6 +323,7 @@ void ui_update_live_params(UIState *s) {
     }
 
     scene.screen_brightness = params.getInt("ScreenBrightness");
+    scene.steering_wheel = params.getInt("SteeringWheel");
     if (live_toggles_checked && scene.enabled) {
       paramsMemory.putBool("FrogPilotTogglesUpdated", false);
     }

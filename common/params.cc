@@ -223,6 +223,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"SshEnabled", PERSISTENT},
     {"StandardJerk", PERSISTENT},
     {"StandardPersonality", PERSISTENT},
+    {"SteeringWheel", PERSISTENT},
     {"SubscriberInfo", PERSISTENT},
     {"TermsVersion", PERSISTENT},
     {"Timezone", PERSISTENT},
