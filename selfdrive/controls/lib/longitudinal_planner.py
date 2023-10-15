@@ -3,7 +3,7 @@ import math
 import numpy as np
 from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.params import Params, put_bool_nonblocking
-from cereal import log
+from cereal import car, log
 
 import cereal.messaging as messaging
 from openpilot.common.conversions import Conversions as CV
@@ -114,6 +114,12 @@ class LongitudinalPlanner:
     self.aggressive_jerk = self.params.get_int("AggressiveJerk") / 10
     self.standard_jerk = self.params.get_int("StandardJerk") / 10
     self.relaxed_jerk = self.params.get_int("RelaxedJerk") / 10
+
+    self.green_light_alert = self.params.get_bool("GreenLightAlert")
+
+    self.green_light = False
+    self.previously_driving = False
+    self.stopped_for_light_previously = False
 
     self.update_frogpilot_params()
     # Set variables for Conditional Experimental Mode
@@ -245,6 +251,14 @@ class LongitudinalPlanner:
     lead_distance = radarstate.leadOne.dRel
     speed_difference = radarstate.leadOne.vRel * 3.6
     standstill = carstate.standstill
+
+    # Green light alert
+    if self.green_light_alert and gear_check:
+      self.previously_driving |= not standstill
+
+      stopped_for_light = self.stop_sign_and_light(carstate, lead, lead_distance, modeldata, v_ego, v_lead) and standstill and self.previously_driving
+      self.green_light = not stopped_for_light and self.stopped_for_light_previously and not lead
+      self.stopped_for_light_previously = stopped_for_light
 
     # Conditional Experimental Mode
     if self.conditional_experimental_mode and sm['controlsState'].enabled:
@@ -381,6 +395,7 @@ class LongitudinalPlanner:
 
     # FrogPilot longitudinalPlan variables
     longitudinalPlan.conditionalExperimental = self.experimental_mode
+    longitudinalPlan.greenLight = self.green_light
     # LongitudinalPlan variables for onroad driving insights
     have_lead = self.detect_lead(sm['radarState'])
     longitudinalPlan.safeObstacleDistance = self.mpc.safe_obstacle_distance if have_lead else 0
@@ -416,3 +431,4 @@ class LongitudinalPlanner:
       self.relaxed_jerk = self.params.get_int("RelaxedJerk") / 10
 
     self.experimental_mode_via_wheel = self.params.get_bool("ExperimentalModeViaWheel")
+    self.green_light_alert = self.params.get_bool("GreenLightAlert")
