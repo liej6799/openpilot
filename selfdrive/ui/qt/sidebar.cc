@@ -42,7 +42,9 @@ Sidebar::Sidebar(QWidget *parent) : QFrame(parent), onroad(false), flag_pressed(
   // FrogPilot variables
   isDeveloperUI = params.getInt("DeveloperUI");
 
+  isFahrenheit = params.getBool("Fahrenheit");
   isGPU = params.getBool("DisplayGPU");
+  isNumericalTemp = params.getBool("NumericalTemp");
 
   isStorageLeft = params.getBool("DisplayStorageLeft");
   isStorageUsed = params.getBool("DisplayStorageUsed");
@@ -79,7 +81,9 @@ void Sidebar::mousePressEvent(QMouseEvent *event) {
   // Declare the click boxes
   const QRect cpuRect = {30, 496, 240, 126};
   const QRect memoryRect = {30, 654, 240, 126};
+  const QRect tempRect = {30, 338, 240, 126};
   static int displayState = 0;
+  static int displayTemp = 0;
 
   // Swap between the respective metrics upon tap
   if (cpuRect.contains(event->pos()) && isDeveloperUI) {
@@ -92,6 +96,13 @@ void Sidebar::mousePressEvent(QMouseEvent *event) {
     isStorageUsed = (displayState == 1);
     params.putBool("DisplayStorageLeft", isStorageLeft);
     params.putBool("DisplayStorageUsed", isStorageUsed);
+    update();
+  } else if (tempRect.contains(event->pos())) {
+    displayTemp = (displayTemp + 1) % 3;
+    isNumericalTemp = (displayTemp != 0);
+    isFahrenheit = (displayTemp == 2);
+    params.putBool("Fahrenheit", isFahrenheit);
+    params.putBool("NumericalTemp", isNumericalTemp);
     update();
   } else if (onroad && home_btn.contains(event->pos())) {
     flag_pressed = true;
@@ -146,6 +157,8 @@ void Sidebar::updateState(const UIState &s) {
   setProperty("netStrength", strength > 0 ? strength + 1 : 0);
 
   // FrogPilot properties
+  const int maxTempC = deviceState.getMaxTempC();
+  const QString max_temp = isFahrenheit ? QString::number(maxTempC * 9 / 5 + 32) + "°F" : QString::number(maxTempC) + "°C";
   const QColor theme_color = currentColors[0];
 
   // Developer UI
@@ -207,12 +220,12 @@ void Sidebar::updateState(const UIState &s) {
   }
   setProperty("connectStatus", QVariant::fromValue(connectStatus));
 
-  ItemStatus tempStatus = {{tr("TEMP"), tr("HIGH")}, danger_color};
+  ItemStatus tempStatus = {{tr("TEMP"), isNumericalTemp ? max_temp : tr("HIGH")}, danger_color};
   auto ts = deviceState.getThermalStatus();
   if (ts == cereal::DeviceState::ThermalStatus::GREEN) {
-    tempStatus = {{tr("TEMP"), tr("GOOD")}, theme_color};
+    tempStatus = {{tr("TEMP"), isNumericalTemp ? max_temp : tr("GOOD")}, theme_color};
   } else if (ts == cereal::DeviceState::ThermalStatus::YELLOW) {
-    tempStatus = {{tr("TEMP"), tr("OK")}, warning_color};
+    tempStatus = {{tr("TEMP"), isNumericalTemp ? max_temp : tr("OK")}, warning_color};
   }
   setProperty("tempStatus", QVariant::fromValue(tempStatus));
 
