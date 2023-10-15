@@ -241,6 +241,9 @@ static void update_state(UIState *s) {
   }
   if (sm.updated("gpsLocationExternal")) {
     const auto gpsLocationExternal = sm["gpsLocationExternal"].getGpsLocationExternal();
+    if (scene.compass) {
+      scene.bearing_deg = gpsLocationExternal.getBearingDeg();
+    }
   }
   if (sm.updated("lateralPlan")) {
     const auto lateralPlan = sm["lateralPlan"].getLateralPlan();
@@ -278,6 +281,7 @@ void ui_update_params(UIState *s) {
   static float conversion = scene.is_metric ? 0.06 : 0.1524;
   if (!toggles_checked) {
     scene.always_on_lateral = params.getBool("AlwaysOnLateral");
+    scene.compass = params.getBool("Compass");
 
     scene.conditional_experimental = params.getBool("ConditionalExperimental");
     scene.conditional_speed = params.getInt("ConditionalSpeed");
@@ -322,6 +326,7 @@ void ui_update_live_params(UIState *s) {
   static bool live_toggles_checked = false;
   if (paramsMemory.getBool("FrogPilotTogglesUpdated")) {
     scene.always_on_lateral = params.getBool("AlwaysOnLateral");
+    scene.compass = params.getBool("Compass");
 
     scene.conditional_experimental = params.getBool("ConditionalExperimental");
     if (scene.conditional_experimental) {
