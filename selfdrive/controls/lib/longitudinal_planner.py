@@ -382,6 +382,8 @@ class LongitudinalPlanner:
     # Calculate the curve based on the current velocity
     curvature = lateral_acceleration / (v_ego**2)
 
+    self.params_memory.put_int("Curvature", min(100, curvature * 100))
+
     # Check if the curve is detected for > 0.25s
     if curvature >= 1.6 or (self.curve_detected and curvature >= 1.1):
       self.curvature_count = min(10, self.curvature_count + 1)
