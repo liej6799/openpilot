@@ -355,7 +355,10 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   }
 
   // FrogPilot variables
+  accelerationPath = s.scene.acceleration_path;
   alwaysOnLateral = s.scene.always_on_lateral_active;
+  blindSpotLeft = s.scene.blind_spot_left;
+  blindSpotRight = s.scene.blind_spot_right;
   conditionalExperimental = s.scene.conditional_experimental;
   conditionalSpeed = s.scene.conditional_speed;
   conditionalSpeedLead = s.scene.conditional_speed_lead;
@@ -524,7 +527,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
 
   // paint path
   QLinearGradient bg(0, height(), 0, 0);
-  if (sm["controlsState"].getControlsState().getExperimentalMode()) {
+  if (sm["controlsState"].getControlsState().getExperimentalMode() || accelerationPath) {
     // The first half of track_vertices are the points for the right side of the path
     // and the indices match the positions of accel from uiPlan
     const auto &acceleration = sm["uiPlan"].getUiPlan().getAccel();
@@ -559,6 +562,61 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
 
   painter.setBrush(bg);
   painter.drawPolygon(scene.track_vertices);
+
+  // create new path with track vertices and track edge vertices
+  QPainterPath path;
+  path.addPolygon(scene.track_vertices);
+  path.addPolygon(scene.track_edge_vertices);
+
+  // paint path edges
+  QLinearGradient pe(0, height(), 0, 0);
+  if (alwaysOnLateral) {
+    pe.setColorAt(0.0, QColor::fromHslF(178 / 360., 0.90, 0.38, 1.0));
+    pe.setColorAt(0.5, QColor::fromHslF(178 / 360., 0.90, 0.38, 0.5));
+    pe.setColorAt(1.0, QColor::fromHslF(178 / 360., 0.90, 0.38, 0.1));
+  } else if (conditionalStatus == 1) {
+    pe.setColorAt(0.0, QColor::fromHslF(58 / 360., 1.00, 0.50, 1.0));
+    pe.setColorAt(0.5, QColor::fromHslF(58 / 360., 1.00, 0.50, 0.5));
+    pe.setColorAt(1.0, QColor::fromHslF(58 / 360., 1.00, 0.50, 0.1));
+  } else if (experimentalMode) {
+    pe.setColorAt(0.0, QColor::fromHslF(25 / 360., 0.71, 0.50, 1.0));
+    pe.setColorAt(0.5, QColor::fromHslF(25 / 360., 0.71, 0.50, 0.5));
+    pe.setColorAt(1.0, QColor::fromHslF(25 / 360., 0.71, 0.50, 0.1));
+  } else if (scene.navigate_on_openpilot) {
+    pe.setColorAt(0.0, QColor::fromHslF(205 / 360., 0.85, 0.56, 1.0));
+    pe.setColorAt(0.5, QColor::fromHslF(205 / 360., 0.85, 0.56, 0.5));
+    pe.setColorAt(1.0, QColor::fromHslF(205 / 360., 0.85, 0.56, 0.1));
+  } else if (customColors != 0) {
+    const auto &colorMap = themeConfiguration[customColors].second.second;
+    for (const auto &[position, brush] : colorMap) {
+      QColor darkerColor = brush.color().darker(120);
+      pe.setColorAt(position, darkerColor);
+    }
+  } else {
+    pe.setColorAt(0.0, QColor::fromHslF(148 / 360., 0.94, 0.51, 1.0));
+    pe.setColorAt(0.5, QColor::fromHslF(112 / 360., 1.00, 0.68, 0.5));
+    pe.setColorAt(1.0, QColor::fromHslF(112 / 360., 1.00, 0.68, 0.1));
+  }
+
+  painter.setBrush(pe);
+  painter.drawPath(path);
+
+  // paint adjacent lane paths
+  // paint blindspot path
+  QLinearGradient bs(0, height(), 0, 0);
+  if (blindSpotLeft || blindSpotRight) {
+    bs.setColorAt(0.0, QColor::fromHslF(0 / 360., 0.75, 0.50, 0.6));
+    bs.setColorAt(0.5, QColor::fromHslF(0 / 360., 0.75, 0.50, 0.4));
+    bs.setColorAt(1.0, QColor::fromHslF(0 / 360., 0.75, 0.50, 0.2));
+  }
+
+  painter.setBrush(bs);
+  if (blindSpotLeft) {
+    painter.drawPolygon(scene.track_left_adjacent_lane_vertices);
+  }
+  if (blindSpotRight) {
+    painter.drawPolygon(scene.track_right_adjacent_lane_vertices);
+  }
 
   painter.restore();
 }

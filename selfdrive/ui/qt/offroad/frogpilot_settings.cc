@@ -127,11 +127,21 @@ FrogPilotVisualsPanel::FrogPilotVisualsPanel(QWidget *parent) : FrogPilotPanel(p
   mainLayout->addWidget(whiteHorizontalLine());
 
   static const std::vector<std::tuple<QString, QString, QString, QString>> toggles = {
+    {"CustomRoadUI", "Custom Road UI", "Customize the road UI to your liking.", "../assets/offroad/icon_road.png"},
   };
 
   for (const auto &[key, label, desc, icon] : toggles) {
     ParamControl *control = createParamControl(key, label, desc, icon, this);
-    if (key == "") {
+    if (key == "CustomRoadUI") {
+      createSubControl(key, label, desc, icon, {
+        createDualParamControl(new LaneLinesWidth(), new RoadEdgesWidth()),
+        createDualParamControl(new PathWidth(), new PathEdgeWidth()),
+      });
+      createSubButtonControl(key, {
+        {"AccelerationPath", "Acceleration Path"},
+        {"BlindSpotPath", "Blind Spot Path"},
+        {"UnlimitedLength", "'Unlimited' Road UI Length"},
+      }, mainLayout);
     } else {
       mainLayout->addWidget(control);
       if (key != std::get<0>(toggles.back())) mainLayout->addWidget(horizontalLine());
