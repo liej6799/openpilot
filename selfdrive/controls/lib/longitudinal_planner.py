@@ -50,6 +50,10 @@ LEAD_SPEED_DIFF = [-1., -10.]
 STOP_SIGN_BP = [0., 10., 20., 30., 40., 50., 55.]
 STOP_SIGN_DISTANCE = [10, 30., 50., 70., 80., 90., 120.]
 
+# VTSC variables
+TARGET_LAT_A = 1.9  # m/s^2
+MIN_TARGET_V = 5    # m/s
+
 def get_max_accel(v_ego):
   return interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
 
@@ -119,9 +123,16 @@ class LongitudinalPlanner:
 
     self.green_light_alert = self.params.get_bool("GreenLightAlert")
 
+    self.vision_turn_controller = self.params.get_bool("VisionTurnControl")
+    self.curve_sensitivity = self.params.get_int("CurveSensitivity") / 100
+    self.turn_aggressiveness = self.params.get_int("TurnAggressiveness") / 100
+
     self.green_light = False
     self.previously_driving = False
     self.stopped_for_light_previously = False
+
+    self.v_offset = 0
+    self.v_target = MIN_TARGET_V
 
     self.update_frogpilot_params()
     # Set variables for Conditional Experimental Mode
@@ -220,6 +231,31 @@ class LongitudinalPlanner:
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
 
+    # Pfeiferj's Vision Turn Controller
+    if self.vision_turn_controller and prev_accel_constraint and v_ego >= 1:
+      # Adjust the rate plan with curve sensitivity
+      rate_plan = np.array(np.abs(sm['modelV2'].orientationRate.z)) * self.curve_sensitivity
+      vel_plan = np.array(sm['modelV2'].velocity.x)
+
+      # Get the maximum lat accel from the model
+      self.max_pred_lat_acc = np.amax(rate_plan * vel_plan)
+
+      # Get the maximum curve based on the current velocity
+      max_curve = self.max_pred_lat_acc / (v_ego**2)
+
+      # Adjust the target lateral acceleration with turn aggressiveness
+      adjusted_target_lat_a = TARGET_LAT_A * self.turn_aggressiveness
+
+      # Get the target velocity for the maximum curve
+      self.v_target = (adjusted_target_lat_a / max_curve) ** 0.5
+      self.v_target = max(self.v_target, MIN_TARGET_V)
+
+      # Configure the offset value for the UI
+      self.v_offset = max(0, int(v_cruise - self.v_target) - 1)
+
+      # Set v_cruise to the desired speed
+      v_cruise = min(v_cruise, self.v_target)
+
     self.mpc.set_weights(prev_accel_constraint, self.custom_personalities, self.aggressive_jerk, self.standard_jerk, self.relaxed_jerk, personality=self.personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
@@ -315,7 +351,7 @@ class LongitudinalPlanner:
       return True
 
     # Road curvature check - Need to check for stop lights/stop signs since the curve function also detects them
-    self.curve_detected = self.curves and self.road_curvature(lead, modeldata, v_ego) and not standstill
+    self.curve_detected = self.curves and self.road_curvature(lead, modeldata, v_ego) and not standstill and self.v_offset == 0
     if self.curve_detected:
       self.status_value = 8
       return True
@@ -398,6 +434,7 @@ class LongitudinalPlanner:
     # FrogPilot longitudinalPlan variables
     longitudinalPlan.conditionalExperimental = self.experimental_mode
     longitudinalPlan.greenLight = self.green_light
+    longitudinalPlan.vtscOffset = self.v_offset
     # LongitudinalPlan variables for onroad driving insights
     have_lead = self.detect_lead(sm['radarState'])
     longitudinalPlan.safeObstacleDistance = self.mpc.safe_obstacle_distance if have_lead else 0
@@ -436,3 +473,8 @@ class LongitudinalPlanner:
 
     self.experimental_mode_via_wheel = self.params.get_bool("ExperimentalModeViaWheel")
     self.green_light_alert = self.params.get_bool("GreenLightAlert")
+
+    self.vision_turn_controller = self.params.get_bool("VisionTurnControl")
+    if self.vision_turn_controller:
+      self.curve_sensitivity = self.params.get_int("CurveSensitivity") / 100
+      self.turn_aggressiveness = self.params.get_int("TurnAggressiveness") / 100

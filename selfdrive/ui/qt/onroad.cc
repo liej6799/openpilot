@@ -593,6 +593,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   toyotaCar = s.scene.toyota_car;
   turnSignalLeft = s.scene.turn_signal_left;
   turnSignalRight = s.scene.turn_signal_right;
+  vtscOffset = 0.1 * sm["longitudinalPlan"].getLongitudinalPlan().getVtscOffset() * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH) + 0.9 * vtscOffset;
 
   // Update the turn signal animation images upon toggle change
   if (customSignals != s.scene.custom_signals) {
@@ -628,7 +629,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
   QString speedStr = QString::number(std::nearbyint(speed));
-  QString setSpeedStr = is_cruise_set ? QString::number(std::nearbyint(setSpeed)) : "–";
+  QString setSpeedStr = is_cruise_set ? QString::number(std::nearbyint(setSpeed - vtscOffset)) : "–";
 
   // Draw outer box + border to contain set speed and speed limit
   const int sign_margin = 12;
@@ -647,7 +648,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   int bottom_radius = has_eu_speed_limit ? 100 : 32;
 
   QRect set_speed_rect(QPoint(60 + (default_size.width() - set_speed_size.width()) / 2, 45), set_speed_size);
-  if (reverseCruiseIncrease) {
+  if (is_cruise_set && vtscOffset) {
+    const float transition = qBound(0.0f, 4.0f * (vtscOffset / setSpeed), 1.0f);
+    const QColor min = whiteColor(75), max = redColor(75);
+
+    p.setPen(QPen(QColor::fromRgbF(
+      min.redF()   + transition * (max.redF()   - min.redF()),
+      min.greenF() + transition * (max.greenF() - min.greenF()),
+      min.blueF()  + transition * (max.blueF()  - min.blueF())
+    ), 6));
+  } else if (reverseCruiseIncrease) {
     p.setPen(QPen(QColor(0, 150, 255), 6));
   } else {
     p.setPen(QPen(whiteColor(75), 6));
