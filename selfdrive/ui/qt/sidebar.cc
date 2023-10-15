@@ -40,6 +40,13 @@ Sidebar::Sidebar(QWidget *parent) : QFrame(parent), onroad(false), flag_pressed(
   pm = std::make_unique<PubMaster, const std::initializer_list<const char *>>({"userFlag"});
 
   // FrogPilot variables
+  isDeveloperUI = params.getInt("DeveloperUI");
+
+  isGPU = params.getBool("DisplayGPU");
+
+  isStorageLeft = params.getBool("DisplayStorageLeft");
+  isStorageUsed = params.getBool("DisplayStorageUsed");
+
   isCustomTheme = params.getBool("CustomTheme");
   customColors = isCustomTheme ? params.getInt("CustomColors") : 0;
   customIcons = isCustomTheme ? params.getInt("CustomIcons") : 0;
@@ -69,7 +76,24 @@ Sidebar::Sidebar(QWidget *parent) : QFrame(parent), onroad(false), flag_pressed(
 }
 
 void Sidebar::mousePressEvent(QMouseEvent *event) {
-  if (onroad && home_btn.contains(event->pos())) {
+  // Declare the click boxes
+  const QRect cpuRect = {30, 496, 240, 126};
+  const QRect memoryRect = {30, 654, 240, 126};
+  static int displayState = 0;
+
+  // Swap between the respective metrics upon tap
+  if (cpuRect.contains(event->pos()) && isDeveloperUI) {
+    isGPU = !isGPU;
+    params.putBool("DisplayGPU", isGPU);
+    update();
+  } else if (memoryRect.contains(event->pos()) && isDeveloperUI) {
+    displayState = (displayState + 1) % 3;
+    isStorageLeft = (displayState == 0);
+    isStorageUsed = (displayState == 1);
+    params.putBool("DisplayStorageLeft", isStorageLeft);
+    params.putBool("DisplayStorageUsed", isStorageUsed);
+    update();
+  } else if (onroad && home_btn.contains(event->pos())) {
     flag_pressed = true;
     update();
   } else if (settings_btn.contains(event->pos())) {
@@ -110,6 +134,8 @@ void Sidebar::updateState(const UIState &s) {
     settings_img = settings_imgs[customIcons];
 
     currentColors = themeConfiguration[customColors].second;
+
+    isDeveloperUI = params.getInt("DeveloperUI");
   }
 
   auto &sm = *(s.sm);
@@ -121,6 +147,54 @@ void Sidebar::updateState(const UIState &s) {
 
   // FrogPilot properties
   const QColor theme_color = currentColors[0];
+
+  // Developer UI
+  if (isDeveloperUI) {
+    // Configure the metrics
+    const auto cpu_loads = deviceState.getCpuUsagePercent();
+    const int cpu_usage = std::accumulate(cpu_loads.begin(), cpu_loads.end(), 0) / cpu_loads.size();
+    const int gpu_usage = deviceState.getGpuUsagePercent();
+
+    const int memory_usage = deviceState.getMemoryUsagePercent();
+    const int storage_left = deviceState.getFreeSpace();
+    const int storage_used = deviceState.getUsedSpace();
+  
+    // Set up the strings
+    const QString cpu = QString::number(cpu_usage) + "%";
+    const QString gpu = QString::number(gpu_usage) + "%";
+    const QString memory = QString::number(memory_usage) + "%";
+    const QString storage = QString::number(isStorageLeft ? storage_left : storage_used) + " GB";
+
+    // CPU / GPU
+    const QString metric = isGPU ? gpu : cpu;
+    const int usage = isGPU ? gpu_usage : cpu_usage;
+    ItemStatus cpuStatus = {{tr(isGPU ? "GPU" : "CPU"), metric}, theme_color};
+    if (usage >= 85) {
+      cpuStatus = {{tr(isGPU ? "GPU" : "CPU"), metric}, danger_color};
+    } else if (usage >= 70) {
+      cpuStatus = {{tr(isGPU ? "GPU" : "CPU"), metric}, warning_color};
+    }
+
+    // Memory / Storage
+    if (isStorageLeft || isStorageUsed) {
+      ItemStatus storageStatus = {{tr(isStorageLeft ? "LEFT" : "USED"), storage}, theme_color};
+      if (10 <= storage_left && storage_left < 25) {
+        storageStatus = {{tr(isStorageLeft ? "LEFT" : "USED"), storage}, warning_color};
+      } else if (storage_left < 10) {
+        storageStatus = {{tr(isStorageLeft ? "LEFT" : "USED"), storage}, danger_color};
+      }
+      setProperty("storageStatus", QVariant::fromValue(storageStatus));
+    } else {
+      ItemStatus memoryStatus = {{tr("MEMORY"), memory}, theme_color};
+      if (memory_usage >= 85) {
+        memoryStatus = {{tr("MEMORY"), memory}, danger_color};
+      } else if (memory_usage >= 70) {
+        memoryStatus = {{tr("MEMORY"), memory}, warning_color};
+      }
+      setProperty("memoryStatus", QVariant::fromValue(memoryStatus));
+    }
+    setProperty("cpuStatus", QVariant::fromValue(cpuStatus));
+  }
 
   ItemStatus connectStatus;
   auto last_ping = deviceState.getLastAthenaPingTime();
@@ -180,7 +254,17 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   p.drawText(r, Qt::AlignCenter, net_type);
 
   // metrics
-  drawMetric(p, temp_status.first, temp_status.second, 338);
-  drawMetric(p, panda_status.first, panda_status.second, 496);
-  drawMetric(p, connect_status.first, connect_status.second, 654);
+  if (isDeveloperUI) {
+    drawMetric(p, temp_status.first, temp_status.second, 338);
+    drawMetric(p, cpu_status.first, cpu_status.second, 496);
+    if (isStorageLeft || isStorageUsed) {
+      drawMetric(p, storage_status.first, storage_status.second, 654);
+    } else {
+      drawMetric(p, memory_status.first, memory_status.second, 654);
+    }
+  } else {
+    drawMetric(p, temp_status.first, temp_status.second, 338);
+    drawMetric(p, panda_status.first, panda_status.second, 496);
+    drawMetric(p, connect_status.first, connect_status.second, 654);
+  }
 }

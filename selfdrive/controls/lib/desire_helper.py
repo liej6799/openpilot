@@ -44,6 +44,7 @@ class DesireHelper:
     # FrogPilot variables
     self.params = Params()
     self.blindspot_path = self.params.get_bool("CustomRoadUI") and self.params.get_bool("BlindSpotPath")
+    self.developer_ui = self.params.get_int("DeveloperUI");
 
   # Lane detection
   def calculate_lane_width(self, lane, current_lane, road_edge):
@@ -62,6 +63,7 @@ class DesireHelper:
   def update(self, carstate, modeldata, lateral_active, lane_change_prob, frogpilot_toggles_updated):
     if frogpilot_toggles_updated:
       self.blindspot_path = self.params.get_bool("CustomRoadUI") and self.params.get_bool("BlindSpotPath")
+      self.developer_ui = self.params.get_int("DeveloperUI");
 
     v_ego = carstate.vEgo
     one_blinker = carstate.leftBlinker != carstate.rightBlinker
@@ -71,7 +73,7 @@ class DesireHelper:
     self.lane_width_left = 0
     self.lane_width_right = 0
     turning = abs(carstate.steeringAngleDeg) >= 60
-    if self.blindspot_path and not below_lane_change_speed and not turning:
+    if (self.blindspot_path or self.developer_ui) and not below_lane_change_speed and not turning:
       # Calculate left and right lane widths
       self.lane_width_left = self.calculate_lane_width(modeldata.laneLines[0], modeldata.laneLines[1], modeldata.roadEdges[0])
       self.lane_width_right = self.calculate_lane_width(modeldata.laneLines[3], modeldata.laneLines[2], modeldata.roadEdges[1])

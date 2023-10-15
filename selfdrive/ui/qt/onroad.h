@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include <QElapsedTimer>
 #include <QPushButton>
 #include <QStackedLayout>
 #include <QWidget>
@@ -83,6 +84,7 @@ private:
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
 
   // FrogPilot widgets
+  void drawDeveloperUI(QPainter &p);
   void drawStatusBar(QPainter &p);
   void drawTurnSignals(QPainter &p);
 
@@ -119,11 +121,20 @@ private:
   bool toyotaCar;
   bool turnSignalLeft;
   bool turnSignalRight;
+  double maxAcceleration;
+  float laneWidthLeft;
+  float laneWidthRight;
   int conditionalSpeed;
   int conditionalSpeedLead;
   int conditionalStatus;
   int customColors;
   int customSignals;
+  int desiredFollow;
+  int developerUI;
+  int obstacleDistance;
+  int obstacleDistanceStock;
+  int stoppedEquivalence;
+  int stoppedEquivalenceStock;
   int totalFrames = 8;
   QString theme_path;
   size_t animationFrameIndex;
@@ -169,7 +180,18 @@ private:
   QHBoxLayout* split;
 
   // FrogPilot variables
+  bool developerUI;
   bool rightHandDM;
+  double avgFPS;
+  double fps;
+  double lastFPS;
+  double maxFPS = 0.0;
+  double minFPS = 99.9;
+  double totalFPS;
+  qint64 frameCount;
+  QElapsedTimer fpsTimer;
+  QPoint timeoutPoint = QPoint(420, 69);
+  QTimer clickTimer;
 
 private slots:
   void offroadTransition(bool offroad);
