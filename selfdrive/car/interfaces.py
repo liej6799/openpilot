@@ -199,6 +199,7 @@ class CarInterfaceBase(ABC):
     self.has_lateral_torque_nn = self.initialize_lat_torque_nn(CP.carFingerprint, eps_firmware) and self.params.get_bool("LateralTuning") and self.params.get_bool("NNFF")
 
     self.sng_hack = self.params.get_bool("SNGHack")
+    self.use_ev_tables = self.params.get_bool("EVTable")
 
     self.belowSteerSpeed_shown = False
     self.disable_belowSteerSpeed = False
@@ -456,6 +457,7 @@ class CarInterfaceBase(ABC):
     self.mute_seatbelt = self.fire_the_babysitter and self.params.get_bool("MuteSeatbelt")
 
     self.sng_hack = self.params.get_bool("SNGHack")
+    self.use_ev_tables = self.params.get_bool("EVTable")
 
 class RadarInterfaceBase(ABC):
   def __init__(self, CP):
