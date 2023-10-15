@@ -74,7 +74,11 @@ class Controls:
 
     self.log_sock = messaging.sub_sock('androidLog')
 
+    # FrogPilot variables
     self.params = Params()
+    self.params_memory = Params("/dev/shm/params")
+    self.frogpilot_toggles_updated = False
+
     ignore = self.sensor_packets + ['testJoystick']
     if SIMULATION:
       ignore += ['driverCameraState', 'managerState']
@@ -423,7 +427,7 @@ class Controls:
 
     # Update carState from CAN
     can_strs = messaging.drain_sock_raw(self.can_sock, wait_for_one=True)
-    CS = self.CI.update(self.CC, can_strs)
+    CS = self.CI.update(self.CC, can_strs, self.frogpilot_toggles_updated)
     if len(can_strs) and REPLAY:
       self.can_log_mono_time = messaging.log_from_bytes(can_strs[0]).logMonoTime
 
@@ -557,6 +561,9 @@ class Controls:
 
   def state_control(self, CS):
     """Given the state, this function returns a CarControl packet"""
+    # Update FrogPilot parameters
+    self.frogpilot_toggles_updated = self.params_memory.get_bool("FrogPilotTogglesUpdated")
+    if self.frogpilot_toggles_updated:
 
     # Update VehicleModel
     lp = self.sm['liveParameters']

@@ -15,6 +15,8 @@
 Sound::Sound(QObject *parent) : sm({"controlsState", "microphone"}) {
   qInfo() << "default audio device: " << QAudioDeviceInfo::defaultOutputDevice().deviceName();
 
+  // FrogPilot variables
+
   for (auto &[alert, fn, loops, volume] : sound_list) {
     QSoundEffect *s = new QSoundEffect(this);
     QObject::connect(s, &QSoundEffect::statusChanged, [=]() {
@@ -31,6 +33,10 @@ Sound::Sound(QObject *parent) : sm({"controlsState", "microphone"}) {
 }
 
 void Sound::update() {
+  // Update FrogPilot parameters
+  if (paramsMemory.getBool("FrogPilotTogglesUpdated")) {
+  }
+
   sm.update(0);
 
   // scale volume using ambient noise level

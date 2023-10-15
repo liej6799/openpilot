@@ -10,6 +10,7 @@ from openpilot.common.basedir import BASEDIR
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.kalman.simple_kalman import KF1D, get_kalman_gain
 from openpilot.common.numpy_fast import clip
+from openpilot.common.params import Params
 from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.car import apply_hysteresis, gen_empty_fingerprint, scale_rot_inertia, scale_tire_stiffness, STD_CARGO_KG
 from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, get_friction
@@ -84,6 +85,10 @@ class CarInterfaceBase(ABC):
     self.CC = None
     if CarController is not None:
       self.CC = CarController(self.cp.dbc_name, CP, self.VM)
+
+    # FrogPilot variables
+    self.params = Params()
+    self.update_frogpilot_params()
 
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
@@ -175,6 +180,10 @@ class CarInterfaceBase(ABC):
     ret.longitudinalActuatorDelayLowerBound = 0.15
     ret.longitudinalActuatorDelayUpperBound = 0.15
     ret.steerLimitTimer = 1.0
+
+    # FrogPilot variables
+    params = Params()
+
     return ret
 
   @staticmethod
@@ -195,7 +204,11 @@ class CarInterfaceBase(ABC):
   def _update(self, c: car.CarControl) -> car.CarState:
     pass
 
-  def update(self, c: car.CarControl, can_strings: List[bytes]) -> car.CarState:
+  def update(self, c: car.CarControl, can_strings: List[bytes], frogpilot_toggles_updated) -> car.CarState:
+    # Update FrogPilot parameters
+    if frogpilot_toggles_updated:
+      self.update_frogpilot_params()
+
     # parse can
     for cp in self.can_parsers:
       if cp is not None:
@@ -305,6 +318,7 @@ class CarInterfaceBase(ABC):
 
     return events
 
+  def update_frogpilot_params(self):
 
 class RadarInterfaceBase(ABC):
   def __init__(self, CP):
@@ -344,7 +358,16 @@ class CarStateBase(ABC):
     K = get_kalman_gain(DT_CTRL, np.array(A), np.array(C), np.array(Q), R)
     self.v_ego_kf = KF1D(x0=x0, A=A, C=C[0], K=K)
 
+    # FrogPilot variables
+    self.params = Params()
+    self.params_memory = Params("/dev/shm/params")
+    self.update_frogpilot_params()
+
   def update_speed_kf(self, v_ego_raw):
+    # Update FrogPilot variables when they are changed
+    if self.params_memory.get_bool("FrogPilotTogglesUpdated"):
+      self.update_frogpilot_params()
+
     if abs(v_ego_raw - self.v_ego_kf.x[0][0]) > 2.0:  # Prevent large accelerations when car starts at non zero speed
       self.v_ego_kf.x = [[v_ego_raw], [0.0]]
 
@@ -432,6 +455,7 @@ class CarStateBase(ABC):
   def get_loopback_can_parser(CP):
     return None
 
+  def update_frogpilot_params(self):
 
 # interface-specific helpers
 

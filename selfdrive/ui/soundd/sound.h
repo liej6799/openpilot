@@ -38,4 +38,8 @@ protected:
   Alert current_alert = {};
   QMap<AudibleAlert, QPair<QSoundEffect *, int>> sounds;
   int current_volume = -1;
+
+  // FrogPilot variables
+  Params params;
+  Params paramsMemory{"/dev/shm/params"};
 };

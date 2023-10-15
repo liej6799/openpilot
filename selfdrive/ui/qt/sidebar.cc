@@ -38,6 +38,8 @@ Sidebar::Sidebar(QWidget *parent) : QFrame(parent), onroad(false), flag_pressed(
   QObject::connect(uiState(), &UIState::uiUpdate, this, &Sidebar::updateState);
 
   pm = std::make_unique<PubMaster, const std::initializer_list<const char *>>({"userFlag"});
+
+  // FrogPilot variables
 }
 
 void Sidebar::mousePressEvent(QMouseEvent *event) {
@@ -72,12 +74,18 @@ void Sidebar::offroadTransition(bool offroad) {
 void Sidebar::updateState(const UIState &s) {
   if (!isVisible()) return;
 
+  // Update FrogPilot parameters
+  if (paramsMemory.getBool("FrogPilotTogglesUpdated")) {
+  }
+
   auto &sm = *(s.sm);
 
   auto deviceState = sm["deviceState"].getDeviceState();
   setProperty("netType", network_type[deviceState.getNetworkType()]);
   int strength = (int)deviceState.getNetworkStrength();
   setProperty("netStrength", strength > 0 ? strength + 1 : 0);
+
+  // FrogPilot properties
 
   ItemStatus connectStatus;
   auto last_ping = deviceState.getLastAthenaPingTime();
