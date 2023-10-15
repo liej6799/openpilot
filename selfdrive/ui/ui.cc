@@ -249,6 +249,10 @@ void ui_update_params(UIState *s) {
   static bool toggles_checked = false;
   if (!toggles_checked) {
     scene.always_on_lateral = params.getBool("AlwaysOnLateral");
+
+    scene.conditional_experimental = params.getBool("ConditionalExperimental");
+    scene.conditional_speed = params.getInt("ConditionalSpeed");
+    scene.conditional_speed_lead = params.getInt("ConditionalSpeedLead");
     toggles_checked = true;
   }
 }
@@ -269,6 +273,12 @@ void ui_update_live_params(UIState *s) {
   static bool live_toggles_checked = false;
   if (paramsMemory.getBool("FrogPilotTogglesUpdated")) {
     scene.always_on_lateral = params.getBool("AlwaysOnLateral");
+
+    scene.conditional_experimental = params.getBool("ConditionalExperimental");
+    if (scene.conditional_experimental) {
+      scene.conditional_speed = params.getInt("ConditionalSpeed");
+      scene.conditional_speed_lead = params.getInt("ConditionalSpeedLead");
+    }
     if (live_toggles_checked && scene.enabled) {
       paramsMemory.putBool("FrogPilotTogglesUpdated", false);
     }
@@ -276,6 +286,9 @@ void ui_update_live_params(UIState *s) {
   }
 
   // FrogPilot live variables that need to be constantly checked
+  if (scene.conditional_experimental) {
+    scene.conditional_status = paramsMemory.getInt("ConditionalStatus");
+  }
 }
 
 void UIState::updateStatus() {
