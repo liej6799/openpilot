@@ -280,6 +280,8 @@ void ui_update_params(UIState *s) {
     scene.path_width = params.getInt("PathWidth") / 10.0 * (scene.is_metric ? 0.5 : 0.1524);
     scene.road_edge_width = params.getInt("RoadEdgesWidth") / 12.0 * conversion;
     scene.unlimited_road_ui_length = scene.custom_road_ui && params.getBool("UnlimitedLength");
+
+    scene.screen_brightness = params.getInt("ScreenBrightness");
     toggles_checked = true;
   }
 }
@@ -318,6 +320,8 @@ void ui_update_live_params(UIState *s) {
       scene.path_width = params.getInt("PathWidth") / 10.0 * (scene.is_metric ? 0.5 : 0.1524);
       scene.road_edge_width = params.getInt("RoadEdgesWidth") / 12.0 * conversion;
     }
+
+    scene.screen_brightness = params.getInt("ScreenBrightness");
     if (live_toggles_checked && scene.enabled) {
       paramsMemory.putBool("FrogPilotTogglesUpdated", false);
     }
@@ -449,6 +453,9 @@ void Device::updateBrightness(const UIState &s) {
   int brightness = brightness_filter.update(clipped_brightness);
   if (!awake) {
     brightness = 0;
+  } else if (s.scene.screen_brightness <= 100) {
+    // Bring the screen brightness up to 5% upon screen tap
+    brightness = fmax(5, s.scene.screen_brightness);
   }
 
   if (brightness != last_brightness) {
@@ -469,7 +476,11 @@ void Device::updateWakefulness(const UIState &s) {
     emit interactiveTimeout();
   }
 
-  setAwake(s.scene.ignition || interactive_timeout > 0);
+  if (s.scene.screen_brightness != 0) {
+    setAwake(s.scene.ignition || interactive_timeout > 0);
+  } else {
+    setAwake(interactive_timeout > 0);
+  }
 }
 
 UIState *uiState() {

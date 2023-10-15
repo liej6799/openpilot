@@ -128,6 +128,7 @@ FrogPilotVisualsPanel::FrogPilotVisualsPanel(QWidget *parent) : FrogPilotPanel(p
 
   static const std::vector<std::tuple<QString, QString, QString, QString>> toggles = {
     {"CustomRoadUI", "Custom Road UI", "Customize the road UI to your liking.", "../assets/offroad/icon_road.png"},
+    {"ScreenBrightness", "Screen Brightness", "Choose a custom screen brightness level or use the default 'Auto' brightness setting.", "../assets/offroad/icon_light.png"},
   };
 
   for (const auto &[key, label, desc, icon] : toggles) {
@@ -142,6 +143,9 @@ FrogPilotVisualsPanel::FrogPilotVisualsPanel(QWidget *parent) : FrogPilotPanel(p
         {"BlindSpotPath", "Blind Spot Path"},
         {"UnlimitedLength", "'Unlimited' Road UI Length"},
       }, mainLayout);
+    } else if (key == "ScreenBrightness") {
+      mainLayout->addWidget(new ScreenBrightness());
+      mainLayout->addWidget(horizontalLine());
     } else {
       mainLayout->addWidget(control);
       if (key != std::get<0>(toggles.back())) mainLayout->addWidget(horizontalLine());
