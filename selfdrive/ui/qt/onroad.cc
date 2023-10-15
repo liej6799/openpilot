@@ -28,6 +28,21 @@ static void drawIcon(QPainter &p, const QPoint &center, const QPixmap &img, cons
   p.setOpacity(1.0);
 }
 
+static void drawIconRotate(QPainter &p, const QPoint &center, const QPixmap &img, const QBrush &bg, float opacity, const int angle) {
+  p.setRenderHint(QPainter::Antialiasing);
+  p.setOpacity(1.0);  // bg dictates opacity of ellipse
+  p.setPen(Qt::NoPen);
+  p.setBrush(bg);
+  p.drawEllipse(center, btn_size / 2, btn_size / 2);
+  p.save();
+  p.translate(center);
+  p.rotate(-angle);
+  p.setOpacity(opacity);
+  p.drawPixmap(-QPoint(img.width() / 2, img.height() / 2), img); 
+  p.setOpacity(1.0);
+  p.restore();
+}
+
 OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
   main_layout->setMargin(UI_BORDER_SIZE);
@@ -362,7 +377,15 @@ void ExperimentalButton::updateState(const UIState &s) {
   }
 
   // FrogPilot variables
+  rotatingWheel = s.scene.rotating_wheel;
+  const int steeringAngleDegPrevious = steeringAngleDeg;
+  steeringAngleDeg = s.scene.steering_angle_deg;
   steeringWheel = s.scene.steering_wheel;
+
+  // Update the icon so the steering wheel rotates in real time
+  if (rotatingWheel && steeringAngleDegPrevious != steeringAngleDeg) {
+    update();
+  }
 }
 
 void ExperimentalButton::paintEvent(QPaintEvent *event) {
@@ -378,7 +401,11 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
       (experimental_mode ? QColor(218, 111, 37, 241) :
       (scene.navigate_on_openpilot ? QColor(49, 161, 238, 255) : QColor(0, 0, 0, 166))))) : QColor(0, 0, 0, 166);
 
-  drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, background_color, (isDown() || !engageable) ? 0.6 : 1.0);
+  if (rotatingWheel) {
+    drawIconRotate(p, QPoint(btn_size / 2, btn_size / 2), img, background_color, (isDown() || !engageable) ? 0.6 : 1.0, steeringAngleDeg);
+  } else {
+    drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, background_color, (isDown() || !engageable) ? 0.6 : 1.0);
+  }
 }
 
 

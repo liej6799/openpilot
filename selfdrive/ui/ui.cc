@@ -226,6 +226,9 @@ static void update_state(UIState *s) {
       scene.turn_signal_left = carState.getLeftBlinker();
       scene.turn_signal_right = carState.getRightBlinker();
     }
+    if (scene.rotating_wheel) {
+      scene.steering_angle_deg = carState.getSteeringAngleDeg();
+    }
     if (scene.started) {
       scene.toyota_car = carState.getToyotaCar();
     }
@@ -303,6 +306,7 @@ void ui_update_params(UIState *s) {
     scene.developer_ui = params.getInt("DeveloperUI");
     scene.experimental_mode_via_wheel = params.getBool("ExperimentalModeViaWheel");
     scene.mute_dm = params.getBool("FireTheBabysitter") && params.getBool("MuteDM");
+    scene.rotating_wheel = params.getBool("RotatingWheel");
     scene.screen_brightness = params.getInt("ScreenBrightness");
     scene.steering_wheel = params.getInt("SteeringWheel");
     toggles_checked = true;
@@ -351,6 +355,7 @@ void ui_update_live_params(UIState *s) {
 
     scene.developer_ui = params.getInt("DeveloperUI");
     scene.experimental_mode_via_wheel = params.getBool("ExperimentalModeViaWheel");
+    scene.rotating_wheel = params.getBool("RotatingWheel");
     scene.screen_brightness = params.getInt("ScreenBrightness");
     scene.steering_wheel = params.getInt("SteeringWheel");
     if (live_toggles_checked && scene.enabled) {
