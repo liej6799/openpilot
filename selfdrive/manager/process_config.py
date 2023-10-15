@@ -8,6 +8,8 @@ from openpilot.selfdrive.manager.process import PythonProcess, NativeProcess, Da
 # FrogPilot variables
 params = Params()
 
+disable_onroad_uploads = params.get_bool("DisableOnroadUploads")
+
 WEBCAM = os.getenv("USE_WEBCAM") is not None
 
 def driverview(started: bool, params: Params, CP: car.CarParams) -> bool:
@@ -84,7 +86,7 @@ procs = [
   PythonProcess("thermald", "selfdrive.thermald.thermald", always_run),
   PythonProcess("tombstoned", "selfdrive.tombstoned", always_run, enabled=not PC),
   PythonProcess("updated", "selfdrive.updated", only_offroad, enabled=not PC),
-  PythonProcess("uploader", "system.loggerd.uploader", always_run),
+  PythonProcess("uploader", "system.loggerd.uploader", only_offroad if disable_onroad_uploads else always_run)
   PythonProcess("statsd", "selfdrive.statsd", always_run),
 
   # debug procs
