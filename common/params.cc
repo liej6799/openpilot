@@ -188,6 +188,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"LiveTorqueParameters", PERSISTENT | DONT_LOG},
     {"LongitudinalPersonality", PERSISTENT},
     {"LongitudinalTuning", PERSISTENT},
+    {"MapOpen", PERSISTENT},
     {"NavDestination", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
     {"NavDestinationWaypoints", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
     {"NavPastDestinations", PERSISTENT},
