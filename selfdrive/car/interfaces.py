@@ -366,8 +366,11 @@ class CarStateBase(ABC):
     # FrogPilot variables
     self.params = Params()
     self.params_memory = Params("/dev/shm/params")
+    self.conditional_experimental_mode = self.params.get_bool("ConditionalExperimental")
+    self.experimental_mode_via_wheel = self.params.get_bool("ExperimentalModeViaWheel")
 
     self.enable_cruise = self.params_memory.get_bool("EnableCruise", False)
+    self.lkas_previously_pressed = False
 
     self.update_frogpilot_params()
 
@@ -464,6 +467,8 @@ class CarStateBase(ABC):
     return None
 
   def update_frogpilot_params(self):
+    self.conditional_experimental_mode = self.params.get_bool("ConditionalExperimental")
+    self.experimental_mode_via_wheel = self.params.get_bool("ExperimentalModeViaWheel")
 
 # interface-specific helpers
 

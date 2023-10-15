@@ -6,6 +6,7 @@
 #include <memory>
 #include <sstream>
 
+#include <QApplication>
 #include <QDebug>
 #include <QMouseEvent>
 
@@ -65,6 +66,12 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &OnroadWindow::updateState);
   QObject::connect(uiState(), &UIState::offroadTransition, this, &OnroadWindow::offroadTransition);
   QObject::connect(uiState(), &UIState::primeChanged, this, &OnroadWindow::primeChanged);
+
+  QObject::connect(&clickTimer, &QTimer::timeout, this, [this]() {
+    clickTimer.stop();
+    QMouseEvent *event = new QMouseEvent(QEvent::MouseButtonPress, timeoutPoint, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QApplication::postEvent(this, event);
+  });
 
   // Start FPS counter
   fpsTimer.start();
@@ -139,12 +146,32 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
 
   bool widgetClicked = false;
 
+  // If the click wasn't for anything specific, change the value of "ExperimentalMode"
+  if (scene.experimental_mode_via_wheel && (scene.enabled || previouslyEnabled) && e->pos() != timeoutPoint) {
+    if (clickTimer.isActive()) {
+      clickTimer.stop();
+      if (scene.conditional_experimental) {
+        const int override_value = (scene.conditional_status == 1 || scene.conditional_status == 2) ? 0 : scene.conditional_status >= 2 ? 1 : 2;
+        paramsMemory.putInt("ConditionalStatus", override_value);
+      } else {
+        const bool experimentalMode = params.getBool("ExperimentalMode");
+        params.putBool("ExperimentalMode", !experimentalMode);
+      }
+    } else {
+      clickTimer.start(500);
+    }
+    previouslyEnabled = true;
+    widgetClicked = true;
+  }
+
 #ifdef ENABLE_MAPS
   if (map != nullptr && !widgetClicked) {
     // Switch between map and sidebar when using navigate on openpilot
     bool sidebarVisible = geometry().x() > 0;
     bool show_map = uiState()->scene.navigate_on_openpilot ? sidebarVisible : !sidebarVisible;
-    map->setVisible(show_map && !map->isVisible());
+    if (!scene.experimental_mode_via_wheel || map->isVisible()) {
+      map->setVisible(show_map && !map->isVisible());
+    }
   }
 #endif
   // propagation event to parent(HomeWindow)
@@ -1194,10 +1221,15 @@ void AnnotatedCameraWidget::drawStatusBar(QPainter &p) {
 
   // Display the appropriate status
   static QString statusText;
+  const QString wheelSuffix = toyotaCar ? ". Double press the \"LKAS\" button to revert" : ". Double tap the screen to revert";
   if (alwaysOnLateral) {
     statusText = QString("Always On Lateral active") + (mapOpen ? "" : QString(". Press the \"Cruise Control\" button to disable"));
   } else if (conditionalExperimental) {
     statusText = conditionalStatusMap.contains(conditionalStatus) && status != STATUS_DISENGAGED ? conditionalStatusMap[conditionalStatus] : conditionalStatusMap[0];
+  }
+  // Add the appropriate suffix if always on lateral isn't active and the map isn't being shown
+  if ((conditionalStatus == 1 || conditionalStatus == 2) && !alwaysOnLateral && !mapOpen && status != STATUS_DISENGAGED && !statusText.isEmpty()) {
+    statusText += wheelSuffix;
   }
 
   // Push down the bar below the edges of the screen to give it a cleaner look
