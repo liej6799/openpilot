@@ -392,23 +392,26 @@ class LongitudinalPlanner:
 
   # Stop sign and stop light detection - Credit goes to the DragonPilot team!
   def stop_sign_and_light(self, carstate, lead, lead_distance, modeldata, v_ego, v_lead):
-    if abs(carstate.steeringAngleDeg) <= 60 or self.stop_light_count >= THRESHOLD:
-      # Check to make sure we don't have a lead that's stopping for the red light / stop sign
-      if not lead or not (self.previous_lead_speed >= v_lead or lead_distance <= 10 or v_lead <= 1):
-        if len(modeldata.orientation.x) == len(modeldata.position.x) == TRAJECTORY_SIZE:
-          if modeldata.position.x[TRAJECTORY_SIZE - 1] < interp(v_ego * 3.6, STOP_SIGN_BP, STOP_SIGN_DISTANCE):
-            self.stop_light_count = min(10, self.stop_light_count + 1)
-          else:
-            self.stop_light_count = max(0, self.stop_light_count - 1)
+    # Stop light/sign detection variables
+    following_lead = lead and (self.previous_lead_speed <= v_lead or lead_distance <= 10 or v_lead <= 1)
+    model_check = len(modeldata.orientation.x) == len(modeldata.position.x) == TRAJECTORY_SIZE
+    model_stopping = model_check and modeldata.position.x[-1] < interp(v_ego * 3.6, STOP_SIGN_BP, STOP_SIGN_DISTANCE)
+    red_light_detected = self.stop_light_count >= THRESHOLD
+    turning = abs(carstate.steeringAngleDeg) >= 60
+
+    if not turning or red_light_detected:
+      if not following_lead:
+        if model_stopping:
+          self.stop_light_count = min(10, self.stop_light_count + 1)
         else:
           self.stop_light_count = max(0, self.stop_light_count - 1)
       else:
         self.stop_light_count = max(0, self.stop_light_count - 1)
     else:
       self.stop_light_count = max(0, self.stop_light_count - 1)
+
     self.previous_lead_speed = v_lead
-    # Check if stop sign / stop light is detected for > 0.25s
-    return self.stop_light_count >= THRESHOLD
+    return red_light_detected
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
