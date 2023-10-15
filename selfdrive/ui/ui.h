@@ -171,6 +171,7 @@ typedef struct UIScene {
   bool experimental_mode_via_wheel;
   bool map_open;
   bool mute_dm;
+  bool personalities_via_wheel;
   bool right_hand_dm;
   bool rotating_wheel;
   bool toyota_car = true;
@@ -186,6 +187,7 @@ typedef struct UIScene {
   int developer_ui;
   int obstacle_distance;
   int obstacle_distance_stock;
+  int personality_profile;
   int screen_brightness;
   int steering_angle_deg;
   int steering_wheel;
