@@ -362,6 +362,9 @@ class CarStateBase(ABC):
     # FrogPilot variables
     self.params = Params()
     self.params_memory = Params("/dev/shm/params")
+
+    self.enable_cruise = self.params_memory.get_bool("EnableCruise", False)
+
     self.update_frogpilot_params()
 
   def update_speed_kf(self, v_ego_raw):
