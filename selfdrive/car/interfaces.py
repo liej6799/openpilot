@@ -88,6 +88,10 @@ class CarInterfaceBase(ABC):
 
     # FrogPilot variables
     self.params = Params()
+
+    self.belowSteerSpeed_shown = False
+    self.disable_belowSteerSpeed = False
+
     self.update_frogpilot_params()
 
   @staticmethod
