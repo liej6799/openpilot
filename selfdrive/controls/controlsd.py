@@ -77,6 +77,8 @@ class Controls:
     # FrogPilot variables
     self.params = Params()
     self.params_memory = Params("/dev/shm/params")
+    self.fire_the_babysitter = self.params.get_bool("FireTheBabysitter")
+    self.mute_dm = self.fire_the_babysitter and self.params.get_bool("MuteDM")
     self.frogpilot_toggles_updated = False
 
     self.average_desired_curvature = self.params.get_bool("AverageDesiredCurvature")
@@ -89,6 +91,9 @@ class Controls:
     ignore = self.sensor_packets + ['testJoystick']
     if SIMULATION:
       ignore += ['driverCameraState', 'managerState']
+    if self.mute_dm:
+      ignore += ['driverMonitoringState']
+      self.params.put_bool("DmModelInitialized", True)
     self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                    'driverMonitoringState', 'longitudinalPlan', 'lateralPlan', 'liveLocationKalman',
                                    'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters',

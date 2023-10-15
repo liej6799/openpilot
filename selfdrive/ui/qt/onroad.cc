@@ -507,6 +507,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   laneWidthLeft = s.scene.lane_width_left;
   laneWidthRight = s.scene.lane_width_right;
   mapOpen = s.scene.map_open;
+  muteDM = s.scene.mute_dm;
   obstacleDistance = s.scene.obstacle_distance;
   obstacleDistanceStock = s.scene.obstacle_distance_stock;
   stoppedEquivalence = s.scene.stopped_equivalence;
@@ -1074,7 +1075,7 @@ void AnnotatedCameraWidget::paintGL() {
   }
 
   // DMoji
-  if (!hideBottomIcons && (sm.rcv_frame("driverStateV2") > s->scene.started_frame)) {
+  if (!hideBottomIcons && (sm.rcv_frame("driverStateV2") > s->scene.started_frame) && !muteDM) {
     update_dmonitoring(s, sm["driverStateV2"].getDriverStateV2(), dm_fade_state, rightHandDM);
     drawDriverState(painter, s);
   }
