@@ -1028,6 +1028,7 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
   stoppedEquivalenceFactor @42 :Int64;
   safeObstacleDistanceStock @43 :Int64;
   stoppedEquivalenceFactorStock @44 :Int64;
+  vtscOffset @45 :Float32;
 
   enum LongitudinalPlanSource {
     cruise @0;
