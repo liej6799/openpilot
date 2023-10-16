@@ -268,4 +268,4 @@ def get_car(logcan, sendcan, experimental_long_allowed, num_pandas=1):
   CP.fingerprintSource = source
   CP.fuzzyFingerprint = not exact_match
 
-  return CarInterface(CP, CarController, CarState), CP, CarState
+  return CarInterface(CP, CarController, CarState()), CP, CarState(), CarState
