@@ -510,6 +510,7 @@ struct CarParams {
 
   # FrogPilot CarParams
   accelerationProfile @73 :UInt8;
+  hasZss @74: Bool;
 
   struct SafetyConfig {
     safetyModel @0 :SafetyModel;
