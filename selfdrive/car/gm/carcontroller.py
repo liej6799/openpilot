@@ -4,8 +4,8 @@ from openpilot.common.numpy_fast import interp, clip
 from openpilot.common.realtime import DT_CTRL
 from opendbc.can.packer import CANPacker
 from openpilot.selfdrive.car import apply_driver_steer_torque_limits, create_gas_interceptor_command
+from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.car.gm import gmcan
-from openpilot.selfdrive.car.gm.interface import CarInterface
 from openpilot.selfdrive.car.gm.values import DBC, CanBus, CarControllerParams, CruiseButtons, GMFlags, CC_ONLY_CAR, EV_CAR
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
@@ -121,7 +121,7 @@ class CarController:
           self.apply_brake = int(min(-100 * self.CP.stopAccel, self.params.MAX_BRAKE))
         else:
           # Normal operation
-          if self.CP.carFingerprint in EV_CAR and CarInterface.use_ev_tables:
+          if self.CP.carFingerprint in EV_CAR and True:
             self.params.update_ev_gas_brake_threshold(CS.out.vEgo)
             self.apply_gas = int(round(interp(actuators.accel, self.params.EV_GAS_LOOKUP_BP, self.params.GAS_LOOKUP_V)))
             self.apply_brake = int(round(interp(actuators.accel, self.params.EV_BRAKE_LOOKUP_BP, self.params.BRAKE_LOOKUP_V)))
