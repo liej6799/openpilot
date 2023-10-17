@@ -92,7 +92,7 @@ procs = [
   PythonProcess("thermald", "selfdrive.thermald.thermald", always_run),
   PythonProcess("tombstoned", "selfdrive.tombstoned", always_run, enabled=not PC and not disable_logging),
   PythonProcess("updated", "selfdrive.updated", only_offroad, enabled=not PC),
-  PythonProcess("uploader", "system.loggerd.uploader", only_offroad if disable_onroad_uploads else always_run, enabled=not disable_logging),
+  # PythonProcess("uploader", "system.loggerd.uploader", only_offroad if disable_onroad_uploads else always_run, enabled=not disable_logging),
   PythonProcess("statsd", "selfdrive.statsd", always_run),
 
   # debug procs
