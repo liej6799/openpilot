@@ -491,17 +491,17 @@ class CarStateBase(ABC):
     self.v_ego_kf = KF1D(x0=x0, A=A, C=C[0], K=K)
 
     # FrogPilot variables
-    self.params = Params()
-    self.params_memory = Params("/dev/shm/params")
-    self.conditional_experimental_mode = self.params.get_bool("ConditionalExperimental")
-    self.experimental_mode_via_wheel = self.params.get_bool("ExperimentalModeViaWheel")
-    self.personalities_via_wheel = self.params.get_bool("PersonalitiesViaWheel")
-    self.personality_profile = self.params.get_int("LongitudinalPersonality")
-    self.previous_personality_profile = self.params.get_int("LongitudinalPersonality")
+    self.param = Params()
+    self.param_memory = Params("/dev/shm/params")
+    self.conditional_experimental_mode = self.param.get_bool("ConditionalExperimental")
+    self.experimental_mode_via_wheel = self.param.get_bool("ExperimentalModeViaWheel")
+    self.personalities_via_wheel = self.param.get_bool("PersonalitiesViaWheel")
+    self.personality_profile = self.param.get_int("LongitudinalPersonality")
+    self.previous_personality_profile = self.param.get_int("LongitudinalPersonality")
 
     self.display_menu = False
     self.distance_previously_pressed = False
-    self.enable_cruise = self.params_memory.get_bool("EnableCruise", False)
+    self.enable_cruise = self.param_memory.get_bool("EnableCruise", False)
     self.lkas_previously_pressed = False
     self.profile_restored = False
     self.display_timer = 0
@@ -596,9 +596,9 @@ class CarStateBase(ABC):
     return None
 
   def update_frogpilot_params(self):
-    self.conditional_experimental_mode = self.params.get_bool("ConditionalExperimental")
-    self.experimental_mode_via_wheel = self.params.get_bool("ExperimentalModeViaWheel")
-    self.personalities_via_wheel = self.params.get_bool("PersonalitiesViaWheel")
+    self.conditional_experimental_mode = self.param.get_bool("ConditionalExperimental")
+    self.experimental_mode_via_wheel = self.param.get_bool("ExperimentalModeViaWheel")
+    self.personalities_via_wheel = self.param.get_bool("PersonalitiesViaWheel")
 
 # interface-specific helpers
 
