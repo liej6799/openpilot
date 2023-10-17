@@ -251,10 +251,12 @@ class LongitudinalPlanner:
       self.v_target = max(self.v_target, MIN_TARGET_V)
 
       # Configure the offset value for the UI
-      self.v_offset = max(0, int(v_cruise - self.v_target) - 1)
+      self.v_offset = max(0, int(v_cruise - self.v_target))
 
       # Set v_cruise to the desired speed
       v_cruise = min(v_cruise, self.v_target)
+    else:
+      self.v_offset = 0
 
     self.mpc.set_weights(prev_accel_constraint, self.custom_personalities, self.aggressive_jerk, self.standard_jerk, self.relaxed_jerk, personality=self.personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
