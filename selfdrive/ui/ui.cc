@@ -278,6 +278,8 @@ void ui_update_params(UIState *s) {
   scene.path_width = params.getInt("PathWidth") / 10.0 * (scene.is_metric ? 0.5 : 0.1524);
   scene.road_edge_width = params.getInt("RoadEdgesWidth") / 12.0 * conversion;
   scene.unlimited_road_ui_length = scene.custom_road_ui && params.getBool("UnlimitedLength");
+
+  scene.screen_brightness = params.getInt("ScreenBrightness");
 }
 
 void UIState::updateStatus() {
@@ -322,6 +324,9 @@ UIState::UIState(QObject *parent) : QObject(parent) {
   timer = new QTimer(this);
   QObject::connect(timer, &QTimer::timeout, this, &UIState::update);
   timer->start(1000 / UI_FREQ);
+
+  // Set the brightness on boot to prevent screen flickers
+  scene.screen_brightness = params.getInt("ScreenBrightness");
 }
 
 void UIState::update() {
@@ -350,6 +355,7 @@ void UIState::update() {
     toggles_checked = !toggles_checked;
 
     // FrogPilot variables that need to be checked on toggle change
+    scene.screen_brightness = params.getInt("ScreenBrightness");
   }
 
   // FrogPilot live variables that need to be constantly checked
@@ -420,6 +426,9 @@ void Device::updateBrightness(const UIState &s) {
   int brightness = brightness_filter.update(clipped_brightness);
   if (!awake) {
     brightness = 0;
+  } else if (s.scene.screen_brightness <= 100) {
+    // Bring the screen brightness up to 5% upon screen tap
+    brightness = fmax(5, s.scene.screen_brightness);
   }
 
   if (brightness != last_brightness) {
@@ -440,7 +449,11 @@ void Device::updateWakefulness(const UIState &s) {
     emit interactiveTimeout();
   }
 
-  setAwake(s.scene.ignition || interactive_timeout > 0);
+  if (s.scene.screen_brightness != 0) {
+    setAwake(s.scene.ignition || interactive_timeout > 0);
+  } else {
+    setAwake(interactive_timeout > 0);
+  }
 }
 
 UIState *uiState() {
