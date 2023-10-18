@@ -87,6 +87,7 @@ class Controls:
     self.custom_sounds = self.params.get_int("CustomSounds") if self.custom_theme else 0
     self.frog_sounds = self.custom_sounds == 1
 
+    self.pause_lateral_on_signal = self.params.get_bool("PauseLateralOnSignal")
     self.reverse_cruise_increase = self.params.get_bool("ReverseCruiseIncrease")
 
     ignore = self.sensor_packets + ['testJoystick']
@@ -627,8 +628,9 @@ class Controls:
         self.current_alert_types.append(ET.WARNING)
 
     # Check which actuators can be enabled
+    signal_check = not (self.pause_lateral_on_signal and self.sm['lateralPlan'].laneChangeState != LaneChangeState.off)
     standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
-    CC.latActive = (self.active or CC.alwaysOnLateral) and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
+    CC.latActive = (self.active or CC.alwaysOnLateral) and signal_check and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                    (not standstill or self.joystick_mode)
     CC.longActive = self.enabled and not self.events.contains(ET.OVERRIDE_LONGITUDINAL) and self.CP.openpilotLongitudinalControl
 
@@ -938,6 +940,7 @@ class Controls:
       self.custom_sounds = self.params.get_int("CustomSounds") if self.custom_theme else 0
       self.frog_sounds = self.custom_sounds == 1
 
+      self.pause_lateral_on_signal = self.params.get_bool("PauseLateralOnSignal")
       self.reverse_cruise_increase = self.params.get_bool("ReverseCruiseIncrease")
 
   def controlsd_thread(self):
