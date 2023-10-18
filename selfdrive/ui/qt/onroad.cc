@@ -429,6 +429,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   conditionalStatus = s.scene.conditional_status;
   customColors = s.scene.custom_colors;
   experimentalMode = s.scene.experimental_mode;
+  mapOpen = s.scene.map_open;
   toyotaCar = s.scene.toyota_car;
   turnSignalLeft = s.scene.turn_signal_left;
   turnSignalRight = s.scene.turn_signal_right;
@@ -942,11 +943,11 @@ void AnnotatedCameraWidget::drawStatusBar(QPainter &p) {
     {0, "Conditional Experimental Mode ready"},
     {1, "Conditional Experimental overridden"},
     {2, "Experimental Mode manually activated"},
-    {3, "Experimental Mode activated due to" + (" speed being less than " + QString::number(conditionalSpeedLead) + (is_metric ? " kph" : " mph"))},
-    {4, "Experimental Mode activated due to" + (" speed being less than " + QString::number(conditionalSpeed) + (is_metric ? " kph" : " mph"))},
+    {3, "Experimental Mode activated due to" + (mapOpen ? " speed" : " speed being less than " + QString::number(conditionalSpeedLead) + (is_metric ? " kph" : " mph"))},
+    {4, "Experimental Mode activated due to" + (mapOpen ? " speed" : " speed being less than " + QString::number(conditionalSpeed) + (is_metric ? " kph" : " mph"))},
     {5, "Experimental Mode activated for slower lead"},
-    {6, "Experimental Mode activated for turn" + (QString(" / lane change"))},
-    {7, "Experimental Mode activated for stop" + (QString(" sign / stop light"))},
+    {6, "Experimental Mode activated for turn" + (mapOpen ? "" : QString(" / lane change"))},
+    {7, "Experimental Mode activated for stop" + (mapOpen ? "" : QString(" sign / stop light"))},
     {8, "Experimental Mode activated for curve"}
   };
 
@@ -955,7 +956,7 @@ void AnnotatedCameraWidget::drawStatusBar(QPainter &p) {
   QString statusText;
 
   if (alwaysOnLateral) {
-    statusText = QString("Always On Lateral active") + (QString(". Press the \"Cruise Control\" button to disable"));
+    statusText = QString("Always On Lateral active") + (mapOpen ? "" : QString(". Press the \"Cruise Control\" button to disable"));
   } else if (conditionalExperimental) {
     statusText = conditionalStatusMap.contains(conditionalStatus) && status != STATUS_DISENGAGED ? conditionalStatusMap[conditionalStatus] : conditionalStatusMap[0];
   }
