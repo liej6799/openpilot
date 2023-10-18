@@ -295,6 +295,7 @@ void ui_update_params(UIState *s) {
   scene.custom_signals = scene.custom_theme ? params.getInt("CustomSignals") : 0;
 
   scene.developer_ui = params.getInt("DeveloperUI");
+  scene.experimental_mode_via_wheel = params.getBool("ExperimentalModeViaWheel");
   scene.screen_brightness = params.getInt("ScreenBrightness");
   scene.steering_wheel = params.getInt("SteeringWheel");
 }

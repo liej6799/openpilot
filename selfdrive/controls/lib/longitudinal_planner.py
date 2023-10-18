@@ -122,6 +122,7 @@ class LongitudinalPlanner:
       put_bool_nonblocking("ExperimentalMode", True)
     self.curves = self.params.get_bool("ConditionalCurves")
     self.curves_lead = self.params.get_bool("ConditionalCurvesLead")
+    self.experimental_mode_via_wheel = self.params.get_bool("ExperimentalModeViaWheel")
     self.limit = self.params.get_int("ConditionalSpeed") * (CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS)
     self.limit_lead = self.params.get_int("ConditionalSpeedLead") * (CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS)
     self.signal = self.params.get_bool("ConditionalSignal")
@@ -247,16 +248,21 @@ class LongitudinalPlanner:
 
     # Conditional Experimental Mode
     if self.conditional_experimental_mode and sm['controlsState'].enabled:
+      # Set the value of "overridden"
+      if self.experimental_mode_via_wheel:
+        overridden = self.params_memory.get_int("ConditionalStatus")
+      else:
+        overridden = 0
 
       # Update Experimental Mode based on the current driving conditions
       condition_met = self.check_conditions(sm, v_ego, v_lead, carstate, modeldata, lead, lead_distance, speed_difference, standstill)
-      if (not self.experimental_mode and condition_met):
+      if (not self.experimental_mode and condition_met and overridden != 1) or overridden == 2:
         self.experimental_mode = True
-      elif (self.experimental_mode and not condition_met):
+      elif (self.experimental_mode and not condition_met and overridden != 2) or overridden == 1:
         self.experimental_mode = False
 
       # Set parameter for on-road status bar
-      status_bar = self.status_value if self.status_value >= 3 and self.experimental_mode else 0
+      status_bar = overridden if overridden in {1, 2} else (self.status_value if self.status_value >= 3 and self.experimental_mode else 0)
       # Update the status bar if the status value has changed
       if status_bar != self.previous_status_bar:
         self.previous_status_bar = status_bar
@@ -402,3 +408,5 @@ class LongitudinalPlanner:
       self.aggressive_jerk = self.params.get_int("AggressiveJerk") / 10
       self.standard_jerk = self.params.get_int("StandardJerk") / 10
       self.relaxed_jerk = self.params.get_int("RelaxedJerk") / 10
+
+    self.experimental_mode_via_wheel = self.params.get_bool("ExperimentalModeViaWheel")
