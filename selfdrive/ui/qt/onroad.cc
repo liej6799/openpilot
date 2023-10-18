@@ -297,7 +297,7 @@ void OnroadAlerts::updateAlert(const Alert &a) {
 
 void OnroadAlerts::paintEvent(QPaintEvent *event) {
   const UIScene &scene = uiState()->scene;
-  if (alert.size == cereal::ControlsState::AlertSize::NONE) {
+  if (alert.size == cereal::ControlsState::AlertSize::NONE || alert.size == cereal::ControlsState::AlertSize::FULL && scene.show_driver_camera) {
     return;
   }
   static std::map<cereal::ControlsState::AlertSize, const int> alert_heights = {
@@ -1165,7 +1165,7 @@ void AnnotatedCameraWidget::paintGL() {
       wide_cam_requested = wide_cam_requested && s->scene.calibration_wide_valid;
     }
     Params("/dev/shm/params").putBool("WideCamera", wide_cam_requested);
-    CameraWidget::setStreamType(wide_cam_requested ? VISION_STREAM_WIDE_ROAD : VISION_STREAM_ROAD);
+    CameraWidget::setStreamType(s->scene.show_driver_camera ? VISION_STREAM_DRIVER : wide_cam_requested ? VISION_STREAM_WIDE_ROAD : VISION_STREAM_ROAD);
 
     s->scene.wide_cam = CameraWidget::getStreamType() == VISION_STREAM_WIDE_ROAD;
     if (s->scene.calibration_valid) {

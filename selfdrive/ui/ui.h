@@ -166,6 +166,7 @@ typedef struct UIScene {
   bool conditional_experimental;
   bool custom_road_ui;
   bool custom_theme;
+  bool driver_camera;
   bool enabled;
   bool experimental_mode;
   bool experimental_mode_via_wheel;
@@ -174,6 +175,7 @@ typedef struct UIScene {
   bool personalities_via_wheel;
   bool right_hand_dm;
   bool rotating_wheel;
+  bool show_driver_camera;
   bool toyota_car = true;
   bool turn_signal_left;
   bool turn_signal_right;
