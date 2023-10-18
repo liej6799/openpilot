@@ -200,6 +200,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"LiveTorqueParameters", PERSISTENT | DONT_LOG},
     {"LongitudinalPersonality", PERSISTENT},
     {"LongitudinalTuning", PERSISTENT},
+    {"LowerVolt", PERSISTENT},
     {"MapOpen", PERSISTENT},
     {"MuteDM", PERSISTENT},
     {"MuteDoor", PERSISTENT},
