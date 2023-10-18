@@ -639,7 +639,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.fillRect(0, 0, width(), UI_HEADER_HEIGHT, bg);
 
   QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
-  QString speedStr = QString::number(std::nearbyint(speed));
+  QString speedStr = QString::number((std::nearbyint(Params("/dev/shm/params").getInt("Curvature"))));
   QString setSpeedStr = is_cruise_set ? QString::number(std::nearbyint(setSpeed - fmax(vtscOffset - 1, 0))) : "–";
 
   // Draw outer box + border to contain set speed and speed limit

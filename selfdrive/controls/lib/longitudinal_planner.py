@@ -298,6 +298,8 @@ class LongitudinalPlanner:
     speed_difference = radarstate.leadOne.vRel * 3.6
     standstill = carstate.standstill
 
+    self.road_curvature(modeldata, v_ego)
+
     # Green light alert
     if self.green_light_alert and gear_check:
       self.previously_driving |= not standstill
@@ -355,7 +357,7 @@ class LongitudinalPlanner:
       return True
 
     # Road curvature check - Need to check for stop lights/stop signs since the curve function also detects them
-    self.curve_detected = self.curves and self.road_curvature(modeldata, v_ego) and (self.curves_lead or not lead) and not standstill and self.v_offset == 0
+    self.curve_detected = self.curves and self.road_curvature(modeldata, v_ego) and (self.curves_lead or not lead) and not standstill
     if self.curve_detected:
       self.status_value = 8
       return True
@@ -385,6 +387,8 @@ class LongitudinalPlanner:
 
     # Calculate the curve based on the current velocity
     curvature = lateral_acceleration / (v_ego**2)
+
+    self.params_memory.put_int("Curvature", np.clip(curvature * 100, 0, 10000))
 
     # Check if the curve is detected for > 0.25s
     if curvature >= 1.6 or (self.curve_detected and curvature >= 1.1):
