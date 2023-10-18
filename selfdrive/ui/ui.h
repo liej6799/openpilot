@@ -178,8 +178,14 @@ typedef struct UIScene {
   int conditional_status;
   int custom_colors;
   int custom_signals;
+  int desired_follow;
+  int developer_ui;
+  int obstacle_distance;
+  int obstacle_distance_stock;
   int screen_brightness;
   int steering_wheel;
+  int stopped_equivalence;
+  int stopped_equivalence_stock;
   float lane_line_width;
   float lane_width_left;
   float lane_width_right;

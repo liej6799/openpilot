@@ -104,6 +104,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"CalibrationParams", PERSISTENT},
     {"CameraDebugExpGain", CLEAR_ON_MANAGER_START},
     {"CameraDebugExpTime", CLEAR_ON_MANAGER_START},
+    {"CameraFPS", PERSISTENT},
     {"CarBatteryCapacity", PERSISTENT},
     {"CarParams", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"CarParamsCache", CLEAR_ON_MANAGER_START},
@@ -129,11 +130,14 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"CustomSignals", PERSISTENT},
     {"CustomSounds", PERSISTENT},
     {"CustomTheme", PERSISTENT},
+    {"DeveloperUI", PERSISTENT},
     {"DisableInternetCheck", PERSISTENT},
     {"DisableLogging", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"DisablePowerDown", PERSISTENT},
     {"DisableUpdates", PERSISTENT},
     {"DisengageOnAccelerator", PERSISTENT},
+    {"DisplayStorageLeft", PERSISTENT},
+    {"DisplayStorageUsed", PERSISTENT},
     {"DmModelInitialized", CLEAR_ON_ONROAD_TRANSITION},
     {"DongleId", PERSISTENT},
     {"DoReboot", CLEAR_ON_MANAGER_START},
@@ -250,6 +254,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"Version", PERSISTENT},
     {"VisionRadarToggle", PERSISTENT},
     {"WheeledBody", PERSISTENT},
+    {"WideCamera", PERSISTENT},
 };
 
 } // namespace

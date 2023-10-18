@@ -227,6 +227,12 @@ ParamController(CustomSounds, "CustomSounds", "Sounds", "Replace the stock openp
   return v >= 0 ? v % 4 : 3;
 )
 
+ParamController(DeveloperUI, "DeveloperUI", "Developer UI", "Displays various information about openpilot and the device itself.", "../assets/offroad/icon_developer.png",
+  const int system = params.getInt("DeveloperUI");
+  return system == 0 ? "Off" : system == 1 ? "'merican" : system == 2 ? "Metric" : "SI";,
+  return v >= 0 ? v % 4 : 3;
+)
+
 ParamController(LaneLinesWidth, "LaneLinesWidth", "Lanes", "Customize the lane line width.\n\nDefault matches the MUTCD average of 4 inches.", "../assets/offroad/icon_blank.png",
   return QString::number(params.getInt("LaneLinesWidth")) + (isMetric ? " cm" : " in");,
   return std::clamp(v, 0, isMetric ? 60 : 24);
