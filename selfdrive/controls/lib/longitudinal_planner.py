@@ -376,21 +376,22 @@ class LongitudinalPlanner:
 
   # Determine the road curvature - Credit goes to to Pfeiferj!
   def road_curvature(self, modeldata, v_ego):
-    predicted_lateral_accelerations = np.abs(np.array(modeldata.acceleration.y))
-    predicted_velocities = np.array(modeldata.velocity.x)
-    if len(predicted_lateral_accelerations) == len(predicted_velocities) != 0:
-      curvature_ratios = predicted_lateral_accelerations / (predicted_velocities ** 2)
-      predicted_lateral_accelerations = curvature_ratios * (v_ego ** 2)
-      curvature = np.amax(predicted_lateral_accelerations)
-      # Setting an upper limit of "5.0" helps prevent it activating at stop lights
-      if 5.0 > curvature >= 1.6 or (self.curve_detected and 5.0 > curvature >= 1.1):
-        # Setting the maximum to 10 lets it hold the status for 0.25s after it goes "False" to help prevent false negatives
-        self.curvature_count = min(10, self.curvature_count + 1)
-      else:
-        self.curvature_count = max(0, self.curvature_count - 1)
-      # Check if curve is detected for > 0.25s
-      return self.curvature_count >= THRESHOLD
-    return False
+    # Curve detection variables
+    orientation_rate = np.array(np.abs(modeldata.orientationRate.z))
+    velocity = np.array(modeldata.velocity.x)
+
+    # Get the lateral acceleration from the model
+    lateral_acceleration = np.amax(orientation_rate * velocity)
+
+    # Calculate the curve based on the current velocity
+    curvature = lateral_acceleration / (v_ego**2)
+
+    # Check if the curve is detected for > 0.25s
+    if curvature >= 1.6 or (self.curve_detected and curvature >= 1.1):
+      self.curvature_count = min(10, self.curvature_count + 1)
+    else:
+      self.curvature_count = max(0, self.curvature_count - 1)    
+    return self.curvature_count >= THRESHOLD
 
   # Stop sign and stop light detection - Credit goes to the DragonPilot team!
   def stop_sign_and_light(self, carstate, lead, lead_distance, modeldata, v_ego, v_lead):
