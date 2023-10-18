@@ -167,7 +167,7 @@ class CarState(CarStateBase):
     # Check for cruise control button press
     if self.prev_main_buttons == 0 and self.main_buttons[-1] != 0:
       self.enable_cruise = not self.enable_cruise
-    self.params_memory.put_bool("EnableCruise", self.enable_cruise)
+    self.param_memory.put_bool("EnableCruise", self.enable_cruise)
 
     return ret
 
@@ -255,7 +255,7 @@ class CarState(CarStateBase):
     # Check for cruise control button press
     if self.main_buttons[-1] != self.prev_main_buttons:
       self.enable_cruise = not self.enable_cruise
-    self.params_memory.put_bool("EnableCruise", self.enable_cruise)
+    self.param_memory.put_bool("EnableCruise", self.enable_cruise)
 
     return ret
 
