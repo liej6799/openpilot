@@ -260,6 +260,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"ReplayControlsState", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"ReverseCruiseIncrease", PERSISTENT},
     {"RoadEdgesWidth", PERSISTENT},
+    {"RotatingWheel", PERSISTENT},
     {"ScreenBrightness", PERSISTENT},
     {"ShouldDoUpdate", CLEAR_ON_MANAGER_START},
     {"SnoozeUpdate", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
