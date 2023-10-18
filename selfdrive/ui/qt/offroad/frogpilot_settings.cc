@@ -26,6 +26,7 @@ FrogPilotControlsPanel::FrogPilotControlsPanel(QWidget *parent) : FrogPilotPanel
     {"PauseLateralOnSignal", "Pause Lateral On Turn Signal", "Pauses lateral control when a turn signal is active.", "../assets/offroad/icon_lane.png"},
     {"PersonalitiesViaWheel", "Personalities Via UI / Wheel", "Switch personalities using the 'Distance' button on the steering wheel (GM/Lexus/Toyota Only) or via the onroad UI for other makes.\n\n1 bar = Aggressive\n2 bars = Standard\n3 bars = Relaxed", "../assets/offroad/icon_distance.png"},
     {"TurnDesires", "Turn Desires", "Use turn desires when below the minimum lane change speed for more precise turns.", "../assets/navigation/direction_continue_right.png"},
+    {"VisionTurnControl", "Vision Turn Speed Control", "Automatically adjusts the vehicle's speed in accordance of the curvature of the road for smoother turning.", "../assets/offroad/icon_vtc.png"}
   };
 
   for (const auto &[key, label, desc, icon] : toggles) {
@@ -88,6 +89,11 @@ FrogPilotControlsPanel::FrogPilotControlsPanel(QWidget *parent) : FrogPilotPanel
         {"LaneDetection", "Lane Detection"},
         {"OneLaneChange", "One Lane Change Per Signal"},
       }, mainLayout);
+    } else if (key == "VisionTurnControl") {
+      createSubControl(key, label, desc, icon, {
+        new CurveSensitivity(),
+        new TurnAggressiveness(),
+      });
     } else {
       mainLayout->addWidget(control);
       if (key != std::get<0>(toggles.back())) mainLayout->addWidget(horizontalLine());
