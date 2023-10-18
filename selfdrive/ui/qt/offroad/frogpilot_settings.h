@@ -250,6 +250,12 @@ ParamController(LaneLinesWidth, "LaneLinesWidth", "Lanes", "Customize the lane l
   return std::clamp(v, 0, isMetric ? 60 : 24);
 )
 
+ParamController(Model, "Model", "Model Selector (Requires Reboot)", "Select your preferred openpilot model.\n\nNS = Night-Strike(Default)\nB4+B0 = B4+B0 Vision\nFV = Farmville\nNLP = New Lemon Pie\nNI = Non-Inflatable\nOP = Optimus Prime", "../assets/offroad/icon_calibration.png",
+  const int model = params.getInt("Model");
+  return model == 0 ? "NS" : model == 1 ? "B4+B0" : model == 2 ? "FV" : model == 3 ? "NLP" : model == 4 ? "NI" : "OP";,
+  return v >= 0 ? v % 6 : 5;
+)
+
 ParamController(PathEdgeWidth, "PathEdgeWidth", "Path Edges", "Customize the path edge width that displays current driving statuses.\n\nDefault is 20% of the total path.\n\nBlue = Navigation\nLight Blue = Always On Lateral\nGreen = Default with 'FrogPilot Colors'\nLight Green = Default with stock colors\nOrange = Experimental Mode Active\nYellow = Conditional Overriden", "../assets/offroad/icon_blank.png",
   return QString::number(params.getInt("PathEdgeWidth")) + "%";,
   return std::clamp(v, 0, 100);
