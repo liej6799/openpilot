@@ -15,6 +15,7 @@ disable_logging = fire_the_babysitter and params.get_bool("DisableAllLogging")
 mute_dm = fire_the_babysitter and params.get_bool("MuteDM")
 
 not_prime = params.get_int("PrimeType") == 0
+osm = True
 
 WEBCAM = os.getenv("USE_WEBCAM") is not None
 
@@ -100,6 +101,7 @@ procs = [
   PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
 
   # FrogPilot procs
+  PythonProcess("mapd", "selfdrive.mapd", always_run, enabled=osm),
   PythonProcess("otisserv", "selfdrive.navd.otisserv", always_run, enabled=not_prime),
 ]
 

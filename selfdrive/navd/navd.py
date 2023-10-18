@@ -11,6 +11,7 @@ from cereal import log
 from openpilot.common.api import Api
 from openpilot.common.params import Params
 from openpilot.common.realtime import Ratekeeper
+from openpilot.selfdrive.controls.speed_limit_controller import slc
 from openpilot.selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
                                     distance_along_geometry, maxspeed_to_ms,
                                     minimum_distance,
@@ -28,6 +29,7 @@ class RouteEngine:
     self.pm = pm
 
     self.params = Params()
+    self.params_memory = Params("/dev/shm/params")
 
     # Get last gps position from params
     self.last_position = coordinate_from_param("LastGPSPosition", self.params)
@@ -86,6 +88,7 @@ class RouteEngine:
     if self.localizer_valid:
       self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
       self.last_position = Coordinate(location.positionGeodetic.value[0], location.positionGeodetic.value[1])
+      self.params_memory.put("LastGPSPosition", json.dumps({ "latitude": self.last_position.latitude, "longitude": self.last_position.longitude }))
 
   def recompute_route(self):
     if self.last_position is None:
@@ -203,6 +206,12 @@ class RouteEngine:
 
     if self.step_idx is None:
       msg.valid = False
+      slc.load_state()
+      slc.nav_speed_limit = 0
+      slc.write_nav_state()
+
+      if slc.speed_limit != 0:
+        msg.navInstruction.speedLimit = slc.speed_limit
       self.pm.send('navInstruction', msg)
       return
 
@@ -274,6 +283,16 @@ class RouteEngine:
 
     if ('maxspeed' in closest.annotations) and self.localizer_valid:
       msg.navInstruction.speedLimit = closest.annotations['maxspeed']
+      slc.load_state()
+      slc.nav_speed_limit = closest.annotations['maxspeed']
+      slc.write_nav_state()
+    if not self.localizer_valid or ('maxspeed' not in closest.annotations):
+      slc.load_state()
+      slc.nav_speed_limit = 0
+      slc.write_nav_state()
+
+    if slc.speed_limit != 0:
+      msg.navInstruction.speedLimit = slc.speed_limit
 
     # Speed limit sign type
     if 'speedLimitSign' in step:
