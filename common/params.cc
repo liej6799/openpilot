@@ -252,6 +252,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"PathEdgeWidth", PERSISTENT},
     {"PathWidth", PERSISTENT},
     {"PauseLateralOnSignal", PERSISTENT},
+    {"PersonalitiesViaWheel", PERSISTENT},
     {"PrimeType", PERSISTENT},
     {"RecordFront", PERSISTENT},
     {"RecordFrontLock", PERSISTENT},  // for the internal fleet

@@ -162,6 +162,32 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint != CAR.PRIUS_V:
       self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
 
+    # Driving personalities function
+    if self.personalities_via_wheel and ret.cruiseState.available:
+      # Need to subtract by 1 to comply with the personality profiles of "0", "1", and "2"
+      self.personality_profile = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"] - 1
+      # Set personality to previously set personality
+      if self.personality_profile == self.previous_personality_profile:
+        self.profile_restored = True
+      if not self.profile_restored:
+        self.distance_previously_pressed = not self.distance_previously_pressed
+        self.distance_button = not self.distance_previously_pressed
+      else:
+        if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
+          # KRKeegan - Add support for toyota distance button
+          self.distance_button = cp_cam.vl["ACC_CONTROL"]["DISTANCE"]
+
+        if self.CP.carFingerprint in RADAR_ACC_CAR:
+          # These cars have the acc_control on car can
+          self.distance_button = cp.vl["ACC_CONTROL"]["DISTANCE"]
+
+        if self.CP.flags & ToyotaFlags.SMART_DSU:
+          self.distance_button = cp.vl["SDSU"]["FD_BUTTON"]
+
+        if self.personality_profile != self.previous_personality_profile and self.personality_profile >= 0:
+          put_int_nonblocking("LongitudinalPersonality", self.personality_profile)
+          self.previous_personality_profile = self.personality_profile
+
     # Toggle Experimental Mode from steering wheel function
     if self.experimental_mode_via_wheel and ret.cruiseState.available:
       message_keys = ["LDA_ON_MESSAGE", "SET_ME_X02"]
@@ -227,6 +253,9 @@ class CarState(CarStateBase):
       messages += [
         ("PRE_COLLISION", 33),
       ]
+
+    if CP.flags & ToyotaFlags.SMART_DSU:
+      messages.append(("SDSU", 33))
 
     return CANParser(DBC[CP.carFingerprint]["pt"], messages, 0)
 
