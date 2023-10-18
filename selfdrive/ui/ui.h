@@ -169,6 +169,7 @@ typedef struct UIScene {
   bool experimental_mode;
   bool experimental_mode_via_wheel;
   bool map_open;
+  bool mute_dm;
   bool right_hand_dm;
   bool toyota_car = true;
   bool turn_signal_left;

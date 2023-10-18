@@ -119,6 +119,7 @@ private:
   bool conditionalExperimental;
   bool experimentalMode;
   bool mapOpen;
+  bool muteDM;
   bool toyotaCar;
   bool turnSignalLeft;
   bool turnSignalRight;
