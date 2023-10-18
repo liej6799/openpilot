@@ -163,17 +163,23 @@ private:
   bool setupCompleted;
   QLabel *instructionsStep;
   QLabel *mapboxSettingsLabel;
+  QPushButton *clear_public_key_button;
+  QPushButton *clear_secret_key_button;
   QTimer *updateTimer;
-  WifiManager* wifiManager;
+  QWidget *settingsPanel;
+  WifiManager *wifiManager;
 
-  static constexpr const char* imagePath = "../assets/images/";
-  static constexpr const char* ipFormat = "Manage your mapbox settings at %1:8082";
+  static constexpr const char *imagePath = "../assets/images/";
+  static constexpr const char *ipFormat = "Manage your mapbox settings at %1:8082";
 
+  void manageSettings();
   void retrieveAndUpdateStatus();
   void updateIpAddressLabel();
   void updateUI(bool deviceOnline, bool mapboxPublicKeySet, bool mapboxSecretKeySet);
 
 private slots:
+  void onClearPublicKeyButtonClicked();
+  void onClearSecretKeyButtonClicked();
   void updateIpAddress(const QString& newIpAddress);
 };
 
