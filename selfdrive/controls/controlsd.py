@@ -74,7 +74,10 @@ class Controls:
 
     self.log_sock = messaging.sub_sock('androidLog')
 
+    # FrogPilot variables
     self.params = Params()
+    self.params_memory = Params("/dev/shm/params")
+
     ignore = self.sensor_packets + ['testJoystick']
     if SIMULATION:
       ignore += ['driverCameraState', 'managerState']
@@ -92,8 +95,9 @@ class Controls:
       num_pandas = len(messaging.recv_one_retry(self.sm.sock['pandaStates']).pandaStates)
       experimental_long_allowed = self.params.get_bool("ExperimentalLongitudinalEnabled") and not is_release_branch()
       self.CI, self.CP = get_car(self.can_sock, self.pm.sock['sendcan'], experimental_long_allowed, num_pandas)
+      self.CS = self.CI.CS
     else:
-      self.CI, self.CP = CI, CI.CP
+      self.CI, self.CP, self.CS = CI, CI.CP, CI.CS
 
     self.joystick_mode = self.params.get_bool("JoystickDebugMode") or self.CP.notCar
 
@@ -865,6 +869,12 @@ class Controls:
     self.prof.checkpoint("Sent")
 
     self.CS_prev = CS
+
+    # Update FrogPilot parameters
+    frogpilot_toggles_updated = self.params_memory.get_bool("FrogPilotTogglesUpdated")
+    if frogpilot_toggles_updated:
+      self.CI.update_frogpilot_params()
+      self.CS.update_frogpilot_params()
 
   def controlsd_thread(self):
     while True:

@@ -118,6 +118,8 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     paramsdTemporaryError @50;
     paramsdPermanentError @119;
 
+    # FrogPilot Events
+
     radarCanErrorDEPRECATED @15;
     communityFeatureDisallowedDEPRECATED @62;
     radarCommIssueDEPRECATED @67;
@@ -218,6 +220,9 @@ struct CarState {
 
   fuelGauge @41 :Float32; # battery or fuel tank level from 0.0 to 1.0
   charging @43 :Bool;
+
+  # FrogPilot CarStates
+  toyotaCar @48 :Bool;
 
   struct WheelSpeeds {
     # optional wheel speeds
@@ -325,6 +330,8 @@ struct CarControl {
 
   leftBlinker @15: Bool;
   rightBlinker @16: Bool;
+
+  # FrogPilot CarControls
 
   # Any car specific rate limits or quirks applied by
   # the CarController are reflected in actuatorsOutput
@@ -492,6 +499,8 @@ struct CarParams {
   networkLocation @50 :NetworkLocation;  # Where Panda/C2 is integrated into the car's CAN network
 
   wheelSpeedFactor @63 :Float32; # Multiplier on wheels speeds to computer actual speeds
+
+  # FrogPilot CarParams
 
   struct SafetyConfig {
     safetyModel @0 :SafetyModel;

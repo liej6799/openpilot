@@ -2,7 +2,7 @@
 import math
 import numpy as np
 from openpilot.common.numpy_fast import clip, interp
-from openpilot.common.params import Params
+from openpilot.common.params import Params, put_bool_nonblocking
 from cereal import log
 
 import cereal.messaging as messaging
@@ -61,9 +61,15 @@ class LongitudinalPlanner:
     self.j_desired_trajectory = np.zeros(CONTROL_N)
     self.solverExecutionTime = 0.0
     self.params = Params()
+    self.params_memory = Params("/dev/shm/params")
     self.param_read_counter = 0
     self.read_param()
     self.personality = log.LongitudinalPersonality.standard
+    self.is_metric = self.params.get_bool("IsMetric")
+
+    # FrogPilot variables
+    self.longitudinal_tuning = self.params.get_bool("LongitudinalTuning")
+    self.update_frogpilot_params()
 
   def read_param(self):
     try:
@@ -87,7 +93,11 @@ class LongitudinalPlanner:
       j = np.zeros(len(T_IDXS_MPC))
     return x, v, a, j
 
-  def update(self, sm):
+  def update(self, sm, frogpilot_toggles_updated):
+    # Update FrogPilot variables when they are changed
+    if frogpilot_toggles_updated:
+      self.update_frogpilot_params()
+
     if self.param_read_counter % 50 == 0:
       self.read_param()
     self.param_read_counter += 1
@@ -151,6 +161,14 @@ class LongitudinalPlanner:
     self.a_desired = float(interp(DT_MDL, T_IDXS[:CONTROL_N], self.a_desired_trajectory))
     self.v_desired_filter.x = self.v_desired_filter.x + DT_MDL * (self.a_desired + a_prev) / 2.0
 
+    # Set the current driving states for FrogPilot functions
+    carstate, modeldata, radarstate = sm['carState'], sm['modelV2'], sm['radarState']
+    gear = car.CarState.GearShifter
+    gear_check = carstate.gearShifter not in {gear.neutral, gear.park, gear.reverse, gear.unknown}
+    lead_distance = radarstate.leadOne.dRel
+    speed_difference = radarstate.leadOne.vRel * 3.6
+    standstill = carstate.standstill
+
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
 
@@ -172,3 +190,5 @@ class LongitudinalPlanner:
     longitudinalPlan.personality = self.personality
 
     pm.send('longitudinalPlan', plan_send)
+    
+  def update_frogpilot_params(self):
