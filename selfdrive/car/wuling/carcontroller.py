@@ -129,8 +129,8 @@ class CarController:
           print("Cruize button %s " % CC.cruiseControl.resume)
           print("Resule Alert %s " % CS.resume_alert)
         # Send Resume button when planner wants car to move
-          can_sends.append(wulingcan.create_buttons(self.packer_pt, CS.crz_btns_counter+1, CruiseButtons.RES_ACCEL))
-          print("Send Resume 2 %d" % (CS.crz_btns_counter+1))
+          can_sends.append(wulingcan.create_buttons(self.packer_pt, CS.buttons_counter+1, CruiseButtons.RES_ACCEL))
+          print("Send Resume 2 %d" % (CS.buttons_counter+1))
           self.last_button_frame = self.frame
 
     # if CS.steeringPressed:
@@ -140,6 +140,13 @@ class CarController:
     steer_step = self.params.STEER_STEP
     lat_active = CC.latActive
     
+    # test button
+    if CS.out.steeringPressed:
+      if self.frame % 2 == 0:          
+          can_sends.append(wulingcan.create_buttons(self.packer_pt, CS.buttons_counter+1, CruiseButtons.DECEL_SET))
+          # can_sends.append(wulingcan.create_resume_button(0,0,0,0))
+          print("Send button %d" % (CS.buttons_counter))
+          
     self.lka_steering_cmd_counter += 1 if CS.loopback_lka_steering_cmd_updated else 0
 
 
