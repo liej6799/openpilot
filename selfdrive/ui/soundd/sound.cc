@@ -16,6 +16,11 @@ Sound::Sound(QObject *parent) : sm({"controlsState", "microphone"}) {
   qInfo() << "default audio device: " << QAudioDeviceInfo::defaultOutputDevice().deviceName();
 
   // FrogPilot variables
+  isSilentMode = params.getBool("SilentMode");
+
+  isCustomTheme = params.getBool("CustomTheme");
+  customSounds = isCustomTheme ? params.getInt("CustomSounds") : 0;
+
   const std::unordered_map<int, QString> themeConfiguration = {
     {0, "stock"},
     {1, "frog_theme"},
@@ -33,8 +38,8 @@ Sound::Sound(QObject *parent) : sm({"controlsState", "microphone"}) {
     QObject::connect(s, &QSoundEffect::statusChanged, [=]() {
       assert(s->status() != QSoundEffect::Error);
     });
-    s->setSource(QUrl::fromLocalFile("../../assets/sounds/" + fn));
-    s->setVolume(volume);
+    s->setSource(QUrl::fromLocalFile(soundPaths[customSounds] + "/" + fn));
+    s->setVolume(isSilentMode ? 0 : volume);
     sounds[alert] = {s, loops};
   }
 
@@ -64,10 +69,8 @@ void Sound::update() {
 
 void Sound::updateFrogPilotParams() {
   // Update FrogPilot parameters upon toggle change
-  const bool isCustomTheme = params.getBool("CustomTheme");
-  const int customSounds = isCustomTheme ? params.getInt("CustomSounds") : 0;
-
-  const bool isSilentMode = params.getBool("SilentMode");
+  customSounds = isCustomTheme ? params.getInt("CustomSounds") : 0;
+  isSilentMode = params.getBool("SilentMode");
 
   for (auto &[alert, fn, loops, volume] : sound_list) {
     auto &[s, _] = sounds[alert];
