@@ -14,9 +14,9 @@ from openpilot.system.version import get_branch, get_commit, get_origin, get_ver
 
 class SentryProject(Enum):
   # python project
-  SELFDRIVE = "https://5ad1714d27324c74a30f9c538bff3b8d@o4505034923769856.ingest.sentry.io/4505034930651136"
+  SELFDRIVE = "https://6d7702eeff19493d84dd4204555bce96@o1183464.ingest.sentry.io/4505590718922752"
   # native project
-  SELFDRIVE_NATIVE = "https://5ad1714d27324c74a30f9c538bff3b8d@o4505034923769856.ingest.sentry.io/4505034930651136"
+  SELFDRIVE_NATIVE = "https://6d7702eeff19493d84dd4204555bce96@o1183464.ingest.sentry.io/4505590718922752"
 
 
 CRASHES_DIR = '/data/community/crashes/'
