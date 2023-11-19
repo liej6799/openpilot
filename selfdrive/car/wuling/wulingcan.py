@@ -84,7 +84,7 @@ def create_acc_dashboard_command(packer, acc_engaged, idx, target_speed_kph, res
 
   return packer.make_can_msg("ASCMActiveCruiseControlStatus", 0, values)
 
-def create_buttons(packer, idx, button):
+def create_buttons(packer, idx,bus, button):
   resume = 0;
   acc_btn_2 = button;
   if (button == CruiseButtons.RES_ACCEL): 
@@ -100,7 +100,7 @@ def create_buttons(packer, idx, button):
     "COUNTER_2" : (idx+1) % 0x4,
   }
 
-  return packer.make_can_msg("STEER_BTN", 0, values)
+  return packer.make_can_msg("STEER_BTN", bus, values)
 
 
 def create_lkas_hud(packer, bus, lkas_hud_stock_values, lkas_active=0, steer_warning=0):
@@ -195,6 +195,57 @@ def create_lkas_hud(packer, bus, lkas_hud_stock_values, lkas_active=0, steer_war
   # commands.append(packer.make_can_msg("LkasHud", 2, values))
 
   return commands
+
+
+def create_radar_command(packer, cmd_stock, enable, frame, CC, CS):
+  accel = 0
+  ret = []  
+  
+  if CC.longActive: # this is set true in longcontrol.py
+    accel = CC.actuators.accel * 1170
+    accel = accel if accel < 1000 else 1000
+
+  values = {s: cmd_stock[s] for s in [
+      "GAS_CMD",
+      "COUNTER",
+      "STOP_REQUEST",
+      "NEW_SIGNAL_8",
+      "NEW_SIGNAL_7",
+      "NEW_SIGNAL_6",
+      "ENABLE",
+      "NEW_SIGNAL_9",
+      "NEW_SIGNAL_5",
+      "NEW_SIGNAL_1",
+      "NEW_SIGNAL_2",
+      "NEW_SIGNAL_3",
+      "COUNTER_2",
+    ]}
+ 
+  # if enable:
+  #     values.update({
+  #       "ENABLE": 1,
+  #       "GAS_CMD": 10,
+  #       "NEW_SIGNAL_9": 2,
+  #       "NEW_SIGNAL_1": -6,
+  #       "NEW_SIGNAL_2": -40,
+  #       "NEW_SIGNAL_3": -13,
+  #     })
+      
+  if enable:
+      values.update({
+        "ENABLE": 1,
+        "GAS_CMD": -11,
+        "NEW_SIGNAL_9": 0,
+        "NEW_SIGNAL_1": 3,
+        "NEW_SIGNAL_2": -10,
+        "NEW_SIGNAL_3": -3,
+      })
+
+  # print("in wulingcan, packing messages: \r")
+  # print(values)
+  ret.append(packer.make_can_msg("GasCmd", 0, values))
+
+  return ret
 
 def create_adas_time_status(bus, tt, idx):
   dat = [(tt >> 20) & 0xff, (tt >> 12) & 0xff, (tt >> 4) & 0xff,

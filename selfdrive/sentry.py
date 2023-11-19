@@ -76,7 +76,7 @@ def set_tag(key: str, value: str) -> None:
 
 def init(project: SentryProject) -> bool:
   # forks like to mess with this, so double check
-  frogpilot = "FrogAi" in get_origin(default="")
+  frogpilot = "garudapilot" in get_origin(default="")
   if not frogpilot or PC:
     return False
 

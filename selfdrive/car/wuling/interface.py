@@ -42,6 +42,7 @@ class CarInterface(CarInterfaceBase):
     op_params = opParams("wuling car_interface.py for lateral override")
     tire_stiffness_factor = 0.444
 
+    ret.experimentalLongitudinalAvailable = True
     ret.openpilotLongitudinalControl = experimental_long
     ret.pcmCruise = not ret.openpilotLongitudinalControl
 

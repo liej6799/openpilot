@@ -130,11 +130,13 @@ class CarController:
           print("Cruize button %s " % CC.cruiseControl.resume)
           print("Resule Alert %s " % CS.resume_alert)
         # Send Resume button when planner wants car to move
-          can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.cruise_buttons, CruiseButtons.RES_ACCEL)]*25)
+          can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.cruise_buttons,0, CruiseButtons.RES_ACCEL)]*25)
           self.last_button_frame = self.frame
 
-    # if CS.steeringPressed:
-    #     can_sends.append(wulingcan.create_resume_button())
+    # if CS.out.steeringPressed:
+    #     can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.cruise_buttons,0, CruiseButtons.RES_ACCEL)]*25)
+    #     can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.cruise_buttons,1, CruiseButtons.RES_ACCEL)]*25)
+    #     can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.cruise_buttons,2, CruiseButtons.RES_ACCEL)]*25)
     #     print("Send Resume")
     # Steering (Active: 50Hz
     steer_step = self.params.STEER_STEP
@@ -172,6 +174,16 @@ class CarController:
       steer_required = CC.hudControl.visualAlert == VisualAlert.steerRequired
       can_sends.extend(wulingcan.create_lkas_hud(self.packer_pt, 0, CS.lkas_hud, CC.latActive, steer_required))
 
+    """ACC RADAR COMMAND"""                                                    
+    if self.frame % 2 == 0:
+      can_sends.extend(wulingcan.create_radar_command(self.packer_pt, CS.acc_cmd, 0, self.frame, CC, CS))
+      # if CS.out.steeringPressed:
+      #   can_sends.extend(wulingcan.create_radar_command(self.packer_pt, CS.acc_cmd, 1, self.frame, CC, CS))
+      # else:
+      #   can_sends.extend(wulingcan.create_radar_command(self.packer_pt, CS.acc_cmd, 0, self.frame, CC, CS))
+   
+      
+      
     new_actuators = actuators.copy()
     new_actuators.steer = self.apply_steer_last / self.params.STEER_MAX
     new_actuators.steerOutputCan = self.apply_steer_last

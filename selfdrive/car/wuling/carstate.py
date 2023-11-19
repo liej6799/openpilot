@@ -117,7 +117,7 @@ class CarState(CarStateBase):
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
     # ret.cruiseAccStatus = self.pcm_acc_status
     self.acc_active = cp_cruise.vl["AccStatus"]["CruiseMainOn"] != 0
-    ret.cruiseState.standstill = cp_cruise.vl["GasCmd"]["ACC_STATE"] == 13
+    # ret.cruiseState.standstill = cp_cruise.vl["GasCmd"]["ACC_STATE"] == 13
     
     if self.acc_active:
       self.brake_check = False
