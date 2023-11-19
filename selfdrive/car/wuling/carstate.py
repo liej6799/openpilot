@@ -49,6 +49,8 @@ class CarState(CarStateBase):
   def update(self, pt_cp, cam_cp, loopback_cp):
     ret = car.CarState.new_message()
 
+    cp_cruise = cam_cp if self.CP.openpilotLongitudinalControl else pt_cp
+
     self.prev_cruise_buttons = self.cruise_buttons
     self.cruise_buttons = pt_cp.vl["STEER_BTN"]["ACC_BTN_1"]
     self.buttons_counter = pt_cp.vl["STEER_BTN"]["COUNTER_1"]
@@ -57,7 +59,7 @@ class CarState(CarStateBase):
     # self.prev_mads_enabled = self.mads_enabled
     # self.prev_lkas_enabled = self.lkas_enabled
 
-   # Variables used for avoiding LKAS faults
+    # Variables used for avoiding LKAS faults
     self.loopback_lka_steering_cmd_updated = len(loopback_cp.vl_all["STEERING_LKA"]["COUNTER"]) > 0
     if self.loopback_lka_steering_cmd_updated:
       self.loopback_lka_steering_cmd_ts_nanos = loopback_cp.ts_nanos["STEERING_LKA"]["COUNTER"]
@@ -114,8 +116,8 @@ class CarState(CarStateBase):
     ret.parkingBrake = bool(pt_cp.vl["EPBStatus"]["EPBSTATUS"])
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
     # ret.cruiseAccStatus = self.pcm_acc_status
-    self.acc_active = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0
-    ret.cruiseState.standstill = pt_cp.vl["GasCmd"]["ACC_STATE"] == 13
+    self.acc_active = cp_cruise.vl["AccStatus"]["CruiseMainOn"] != 0
+    ret.cruiseState.standstill = cp_cruise.vl["GasCmd"]["ACC_STATE"] == 13
     
     if self.acc_active:
       self.brake_check = False
@@ -124,30 +126,30 @@ class CarState(CarStateBase):
       self.prev_acc_set_btn = False
     self.cruiseState_standstill = ret.cruiseState.standstill
     
-    ret.cruiseState.available = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0
-    ret.cruiseState.enabled = pt_cp.vl["AccStatus"]["CruiseState"] != 0
+    ret.cruiseState.available = cp_cruise.vl["AccStatus"]["CruiseMainOn"] != 0
+    ret.cruiseState.enabled = cp_cruise.vl["AccStatus"]["CruiseState"] != 0
 
     # ret.cruiseState.available = True
     # ret.cruiseState.enabled = True
 
-    self.is_cruise_latch = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0
+    self.is_cruise_latch = cp_cruise.vl["AccStatus"]["CruiseMainOn"] != 0
 
-    if pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 and ret.brakePressed:
+    if cp_cruise.vl["AccStatus"]["CruiseMainOn"] != 0 and ret.brakePressed:
       self.is_cruise_latch = False
     else:
-      pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 and not ret.brakePressed
+      cp_cruise.vl["AccStatus"]["CruiseMainOn"] != 0 and not ret.brakePressed
       self.is_cruise_latch = True
 
     if not ret.cruiseState.available:
       self.is_cruise_latch = False
 
     # ret.cruiseState.enabled = self.is_cruise_latch
-    self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
-    self.acc_state = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
-    self.resume_alert = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCResumeAlert"] ==1 and self.acc_state == 0
-    ret.cruiseState.speed = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
-    self.crz_btns_counter = pt_cp.vl["ASCMActiveCruiseControlStatus"]["COUNTER_1"];
-    self.cruise_gap = pt_cp.vl["ASCMActiveCruiseControlStatus"]['ACCGapLevel']
+    self.pcm_acc_status = cp_cruise.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
+    self.acc_state = cp_cruise.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
+    self.resume_alert = cp_cruise.vl["ASCMActiveCruiseControlStatus"]["ACCResumeAlert"] ==1 and self.acc_state == 0
+    ret.cruiseState.speed = cp_cruise.vl["ASCMActiveCruiseControlStatus"]["ACCSpeedSetpoint"] * CV.KPH_TO_MS
+    self.crz_btns_counter = cp_cruise.vl["ASCMActiveCruiseControlStatus"]["COUNTER_1"];
+    self.cruise_gap = cp_cruise.vl["ASCMActiveCruiseControlStatus"]['ACCGapLevel']
     
     self.VSetDis = ret.cruiseState.speed
     # ret.vSetDis = self.VSetDis
@@ -169,9 +171,10 @@ class CarState(CarStateBase):
     # ret.cruiseState.accActive = self.acc_active
     # ret.cruiseState.cruiseSwState = pt_cp.vl["STEER_BTN"]["ACC_BTN_1"]
     self.cruise_active = self.acc_active
-    ret.stockFcw = bool(pt_cp.vl["AccStatus"]["FCWAlert"])
+    ret.stockFcw = bool(cp_cruise.vl["AccStatus"]["FCWAlert"])
     ret.stockAeb = bool(pt_cp.vl["BRAKE_MODULE"]["AEB"])
-    
+    self.acc_cmd = copy.copy(cp_cruise.vl["GasCmd"])
+
     # self.steeringTorqueSamples.append(ret.steeringTorque)
     # if ret.steeringPressed:
     #   print("Steering pressed")
@@ -191,6 +194,12 @@ class CarState(CarStateBase):
         ("STEERING_LKA", 50),
         ("LkasHud", 20),
       ]
+      if CP.openpilotLongitudinalControl:
+        messages += [
+          ("GasCmd", 50),
+          ("AccStatus", 20),
+          ("ASCMActiveCruiseControlStatus", 10),
+        ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], messages, CanBus.CAMERA)
 
@@ -206,8 +215,6 @@ class CarState(CarStateBase):
       ("EBCMWheelSpdFront", 20),
       ("EBCMWheelSpdRear", 20),
       ("PSCMSteeringAngle", 100),
-      ("ASCMActiveCruiseControlStatus", 10),
-      ("AccStatus", 20),
       ("STEER_RELATED", 20),
       ("STEER_STATUS", 10),
       ("GAS_PEDAL", 10),
@@ -215,13 +222,17 @@ class CarState(CarStateBase):
       ("BCMTurnSignals", 30),
       ("STEER_BTN", 50),
       ("EBCMVehicleDynamic", 50),
-      ("GasCmd", 50),
       ("BRAKE_MODULE", 50),
     ]
 
+    if not CP.openpilotLongitudinalControl:
+      messages += [
+        ("GasCmd", 50),
+        ("AccStatus", 20),
+        ("ASCMActiveCruiseControlStatus", 10),
+      ]
      # Used to read back last counter sent to PT by camera
     if CP.networkLocation == NetworkLocation.fwdCamera:
-     
       messages += [
         ("STEERING_LKA", 0),
       ]

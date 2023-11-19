@@ -42,14 +42,13 @@ class CarInterface(CarInterfaceBase):
     op_params = opParams("wuling car_interface.py for lateral override")
     tire_stiffness_factor = 0.444
 
-    if experimental_long:
-        ret.pcmCruise = False
-        ret.openpilotLongitudinalControl = True
-        
+    ret.openpilotLongitudinalControl = experimental_long
+    ret.pcmCruise = not ret.openpilotLongitudinalControl
+
     ret.mass = 1950. + STD_CARGO_KG
     ret.wheelbase = 2.75
     ret.steerRatio = op_params.get('steer_ratio', force_update=True)
-    tire_stiffness_factor = 1  # Stock Michelin Energy Saver A/S, LiveParameters
+    ret.tireStiffnessFactor = 0.8
     ret.centerToFront = ret.wheelbase * 0.4
 
     ret.steerLimitTimer = 0.4
@@ -79,8 +78,16 @@ class CarInterface(CarInterfaceBase):
     CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
     
     params = Params()
+    ret.longitudinalTuning.kpV = [0.1]
+    ret.longitudinalTuning.kiV = [0.0]
+    ret.stoppingControl = True
+    ret.autoResumeSng = True
+    ret.startingState = True
+    ret.vEgoStarting = 0.1
+    ret.startAccel = 0.8
     # ret.openpilotLongitudinalControl = False
-
+    ret.longitudinalActuatorDelayLowerBound = 0.5
+    ret.longitudinalActuatorDelayUpperBound = 0.5
     # ret.pcmCruise = not ret.openpilotLongitudinalControl
     
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
