@@ -174,9 +174,9 @@ class CarController:
       steer_required = CC.hudControl.visualAlert == VisualAlert.steerRequired
       can_sends.extend(wulingcan.create_lkas_hud(self.packer_pt, 0, CS.lkas_hud, CC.latActive, steer_required))
 
-    """ACC RADAR COMMAND"""                                                    
-    if self.frame % 2 == 0:
-      can_sends.extend(wulingcan.create_radar_command(self.packer_pt, CS.acc_cmd, 0, self.frame, CC, CS))
+    # """ACC RADAR COMMAND"""                                                    
+    # if self.frame % 2 == 0:
+    #   can_sends.extend(wulingcan.create_radar_command(self.packer_pt, CS.acc_cmd, 0, self.frame, CC, CS))
       # if CS.out.steeringPressed:
       #   can_sends.extend(wulingcan.create_radar_command(self.packer_pt, CS.acc_cmd, 1, self.frame, CC, CS))
       # else:

@@ -231,15 +231,19 @@ def create_radar_command(packer, cmd_stock, enable, frame, CC, CS):
   #       "NEW_SIGNAL_3": -13,
   #     })
       
-  if enable:
-      values.update({
-        "ENABLE": 1,
-        "GAS_CMD": -11,
-        "NEW_SIGNAL_9": 0,
-        "NEW_SIGNAL_1": 3,
-        "NEW_SIGNAL_2": -10,
-        "NEW_SIGNAL_3": -3,
-      })
+  # values.update({
+  #     "GAS_CMD": 0,
+  #   })
+    
+  # if enable:
+  #     values.update({
+  #       "ENABLE": 1,
+  #       "GAS_CMD": -11,
+  #       "NEW_SIGNAL_9": 0,
+  #       "NEW_SIGNAL_1": 3,
+  #       "NEW_SIGNAL_2": -10,
+  #       "NEW_SIGNAL_3": -3,
+  #     })
 
   # print("in wulingcan, packing messages: \r")
   # print(values)
