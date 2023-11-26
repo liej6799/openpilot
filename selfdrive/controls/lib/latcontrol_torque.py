@@ -137,6 +137,10 @@ class LatControlTorque(LatControl):
        self.torque_params.friction = friction
        self.torque_params.latAccelFactor = latAccelFactor
        self.torque_params.latAccelOffset = latAccelOffset
+       if self.mpc_frame % 300 == 0:
+         print("torque_params Ori.friction : %d", self.torque_params.friction)
+         print("torque_params Ori.latAccelFactor : %d", self.torque_params.latAccelFactor)
+
     else:
       self.torque_params.friction = self.friction
       self.torque_params.latAccelFactor = self.lat_accel
