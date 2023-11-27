@@ -173,6 +173,7 @@ class CarState(CarStateBase):
     self.cruise_active = self.acc_active
     ret.stockFcw = bool(cp_cruise.vl["AccStatus"]["FCWAlert"])
     ret.stockAeb = bool(pt_cp.vl["BRAKE_MODULE"]["AEB"])
+    # ret.fcw = bool(pt_cp.vl["BRAKE_MODULE"]["AEB"])
     self.acc_cmd = copy.copy(cp_cruise.vl["GasCmd"])
 
     # self.steeringTorqueSamples.append(ret.steeringTorque)
