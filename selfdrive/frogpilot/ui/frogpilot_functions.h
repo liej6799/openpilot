@@ -363,6 +363,120 @@ private:
   }
 };
 
+class FrogPilotParamValueControlFloat : public ParamControl {
+  Q_OBJECT
+
+public:
+  FrogPilotParamValueControlFloat(const QString &param, const QString &title, const QString &desc, const QString &icon,
+                    const float &minValue, const float &maxValue, const std::map<int, QString> &valueLabels,
+                    QWidget *parent = nullptr, const bool &loop = true, const QString &label = "", const float &division = 1.0f)
+    : ParamControl(param, title, desc, icon, parent),
+      minValue(minValue), maxValue(maxValue), valueLabelMappings(valueLabels), loop(loop), labelText(label), division(division) {
+        key = param.toStdString();
+
+        valueLabel = new QLabel(this);
+        hlayout->addWidget(valueLabel);
+
+        QPushButton *decrementButton = createButton("-", this);
+        QPushButton *incrementButton = createButton("+", this);
+
+        hlayout->addWidget(decrementButton);
+        hlayout->addWidget(incrementButton);
+
+        connect(decrementButton, &QPushButton::clicked, this, [=]() {
+          updateValue(-1.0f);
+        });
+
+        connect(incrementButton, &QPushButton::clicked, this, [=]() {
+          updateValue(1.0f);
+        });
+
+        toggle.hide();
+      }
+
+  void updateValue(float increment) {
+    value += increment * 0.1f;
+
+    if (loop) {
+      if (value < minValue) value = maxValue;
+      else if (value > maxValue) value = minValue;
+    } else {
+      value = std::max(minValue, std::min(maxValue, value));
+    }
+
+    params.putFloat(key, value);
+    refresh();
+    emit buttonPressed();
+    emit valueChanged(value);
+  }
+
+  void refresh() {
+    value = params.getFloat(key);
+
+    QString text;
+    auto it = valueLabelMappings.find(value);
+    if (division > 0.1f) {
+      text = QString::number(value, 'f', 1);
+    } else {
+      text = it != valueLabelMappings.end() ? it->second : QString::number(value, 'f', 1);
+    }
+    if (!labelText.isEmpty()) {
+      text += labelText;
+    }
+    valueLabel->setText(text);
+    valueLabel->setStyleSheet("QLabel { color: #E0E879; }");
+  }
+
+  void updateControl(float newMinValue, float newMaxValue, const QString &newLabel, float newDivision = 1.0f) {
+    minValue = newMinValue;
+    maxValue = newMaxValue;
+    labelText = newLabel;
+    division = newDivision;
+  }
+
+  void showEvent(QShowEvent *event) override {
+    refresh();
+  }
+
+signals:
+  void buttonPressed();
+  void valueChanged(float value);
+
+private:
+  bool loop;
+  float division;
+  float maxValue;
+  float minValue;
+  float value;
+  QLabel *valueLabel;
+  QString labelText;
+  std::map<int, QString> valueLabelMappings;
+  std::string key;
+  Params params;
+
+  QPushButton *createButton(const QString &text, QWidget *parent) {
+    QPushButton *button = new QPushButton(text, parent);
+    button->setFixedSize(150, 100);
+    button->setAutoRepeat(true);
+    button->setAutoRepeatInterval(150);
+    button->setStyleSheet(R"(
+      QPushButton {
+        border-radius: 50px;
+        font-size: 50px;
+        font-weight: 500;
+        height: 100px;
+        padding: 0 25 0 25;
+        color: #E4E4E4;
+        background-color: #393939;
+      }
+      QPushButton:pressed {
+        background-color: #4a4a4a;
+      }
+    )");
+    return button;
+  }
+};
+
 class FrogPilotDualParamControl : public QFrame {
   Q_OBJECT
 
