@@ -10,12 +10,7 @@ MODELS_SOURCE = os.path.join(DESTINATION_PATH, "models")
 THNEED_FILE = os.path.join(DESTINATION_PATH, "supercombo.thneed")
 
 MODEL_NAME = {
-  0: "new-delhi",
-  1: "blue-diamond-v1",
-  2: "blue-diamond-v2",
-  3: "farmville",
-  4: "los-angeles",
-  5: "new-lemon-pie",
+  0: "los-angeles",
 }
 
 def set_model_list_parameter(params):
