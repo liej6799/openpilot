@@ -1006,7 +1006,7 @@ class Controls:
     self.green_light_alert = self.params.get_bool("GreenLightAlert")
 
     lateral_tune = self.params.get_bool("LateralTune")
-    self.steer_ratio = self.params.get_float("SteerRatio") if lateral_tune else self.params.get_float("SteerRatioStock")
+    self.steer_ratio = self.params.get_float("SteerRatioStock")
 
     longitudinal_tune = self.params.get_bool("LongitudinalTune")
     self.sport_plus = self.params.get_int("AccelerationProfile") == 3 and longitudinal_tune
