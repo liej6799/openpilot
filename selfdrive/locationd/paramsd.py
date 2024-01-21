@@ -134,8 +134,10 @@ def main():
     CP = msg
   cloudlog.info("paramsd got CarParams")
 
+  steer_ratio = params_reader.get_float("SteerRatio")
   steer_ratio_stock = params_reader.get_float("SteerRatioStock")
-  if steer_ratio_stock != CP.steerRatio:
+
+  if steer_ratio_stock != CP.steerRatio or steer_ratio >= steer_ratio_stock * 2:
     params_reader.put_float("SteerRatio", CP.steerRatio)
     params_reader.put_float("SteerRatioStock", CP.steerRatio)
     params_reader.put_bool("DoReboot", True)
