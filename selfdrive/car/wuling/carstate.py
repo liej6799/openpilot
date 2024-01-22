@@ -81,7 +81,6 @@ class CarState(CarStateBase):
     # sample rear wheel speeds, standstill=True if ECM allows engagement with brake
     # ret.standstill = ret.wheelSpeeds.rl <= STANDSTILL_THRESHOLD and ret.wheelSpeeds.rr <= STANDSTILL_THRESHOLD
     ret.standstill = ret.vEgoRaw < 0.1
-    self.lkas_hud = copy.copy(cam_cp.vl["LkasHud"])
 
     ret.steeringAngleDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
     ret.steeringTorque = pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]

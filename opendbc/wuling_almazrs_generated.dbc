@@ -92,14 +92,16 @@ BO_ 608 GasCmd: 8 XXX
  SG_ GAS_CMD : 3|12@0- (1,0) [0|255] "" XXX
  SG_ COUNTER : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ STOP_REQUEST : 16|1@0+ (1,0) [0|1] "" XXX
- SG_ NEW_SIGNAL_8 : 17|1@0+ (1,0) [0|1] "" XXX
- SG_ NEW_SIGNAL_7 : 29|1@0+ (1,0) [0|1] "" XXX
- SG_ NEW_SIGNAL_6 : 30|1@0+ (1,0) [0|1] "" XXX
- SG_ ENABLE : 31|1@0+ (1,0) [0|1] "" XXX
- SG_ NEW_SIGNAL_9 : 32|4@1+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_4 : 17|7@1+ (1,0) [0|127] "" XXX
+ SG_ ACC_STATE : 29|3@1+ (1,0) [0|7] "" XXX
+ SG_ NEW_SIGNAL_9 : 32|4@1- (1,0) [0|15] "" XXX
  SG_ NEW_SIGNAL_5 : 36|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_11 : 37|3@1+ (1,0) [0|7] "" XXX
  SG_ NEW_SIGNAL_1 : 43|4@0- (1,0) [0|65535] "" XXX
- SG_ NEW_SIGNAL_2 : 55|8@0- (1,0) [0|255] "" XXX
+ SG_ STOPPING_T1 : 44|1@0+ (1,0) [0|1] "" XXX
+ SG_ FULL_STOP : 45|3@1+ (1,0) [0|7] "" XXX
+ SG_ NEW_SIGNAL_2 : 53|6@0- (1,0) [0|255] "" XXX
+ SG_ FULL_STOP_INV : 54|2@1+ (1,0) [0|3] "" XXX
  SG_ NEW_SIGNAL_3 : 61|6@0- (1,0) [0|63] "" XXX
  SG_ COUNTER_2 : 63|2@0+ (1,0) [0|3] "" XXX
 
@@ -108,19 +110,22 @@ BO_ 880 ASCMActiveCruiseControlStatus: 8 K124_ASCM
  SG_ COUNTER_1 : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ ACCAlwaysOne2 : 13|2@0+ (1,0) [0|0] "" Vector__XXX
  SG_ ACCAlwaysOne : 15|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ ACCSpeedSetpoint : 19|12@0+ (1,0) [0|200] "km/h" NEO
  SG_ ACCCmdActive : 23|1@0+ (1,0) [0|0] "" NEO
+ SG_ ACCSpeedSetpoint : 31|8@0- (1,0) [0|200] "km/h" NEO
  SG_ ACCResumeAlert : 32|1@0+ (1,0) [0|1] "" XXX
  SG_ ACCResumeButton : 33|1@0+ (1,0) [0|1] "" XXX
  SG_ ACCBUTTON : 35|2@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_1 : 38|3@0+ (1,0) [0|1] "" XXX
  SG_ FCWAlert : 41|2@0+ (1,0) [0|3] "" XXX
+ SG_ GAPDisplay : 46|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_3 : 48|1@0+ (1,0) [0|1] "" XXX
  SG_ FCW : 49|1@0+ (1,0) [0|1] "" XXX
  SG_ ACCSTATE : 53|1@0+ (1,0) [0|1] "" XXX
- SG_ ACCLeadCar : 54|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ SET_ME_X16 : 56|6@1+ (1,0) [0|63] "" XXX
+ SG_ ACCSTATE2 : 54|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ NEW_SIGNAL_2 : 55|1@0+ (1,0) [0|1] "" XXX
+ SG_ SET_ME_X16 : 56|4@1- (1,0) [0|63] "" XXX
+ SG_ NEW_SIGNAL_4 : 60|2@1+ (1,0) [0|3] "" XXX
  SG_ COUNTER_2 : 63|2@0+ (1,0) [0|3] "" XXX
-
 
 BO_ 1001 ECMVehicleSpeed: 8 K20_ECM
  SG_ VehicleSpeed : 7|16@0+ (0.01,0) [0|0] "mph" NEO
@@ -146,31 +151,40 @@ BO_ 883 LkasHud: 8 K20_ECM
  SG_ ALERT : 0|1@0+ (1,0) [0|1] "" XXX
  SG_ LKA_ACTIVE : 1|1@0+ (1,0) [0|1] "" NEO
  SG_ LEAD_FOLLOW_1 : 2|1@0+ (1,0) [0|1] "" XXX
- SG_ LEAD_FOLLOW_2 : 11|1@0+ (1,0) [0|1] "" XXX
+ SG_ UNKNOWN_1 : 3|3@1+ (1,0) [0|7] "" XXX
+ SG_ UNKNOWN_2 : 24|8@1+ (1,0) [0|255] "" XXX
+ SG_ UNKNOWN_3 : 14|1@0+ (1,0) [0|1] "" XXX
  SG_ LKAS_STATE : 10|1@0+ (1,0) [0|1] "" NEO
+ SG_ LEAD_FOLLOW_2 : 11|1@0+ (1,0) [0|1] "" XXX
  SG_ LKA_LINE : 13|2@0+ (1,0) [0|3] "" XXX
  SG_ LKA_LINE_2 : 60|2@1+ (1,0) [0|3] "" XXX
  SG_ ALERT_DEPART1 : 15|1@0+ (1,0) [0|1] "" XXX
  SG_ HUD_ALERT : 16|3@1+ (1,0) [0|7] "" XXX
- SG_ STEER_WARNING : 56|4@1+ (1,0) [0|15] "" XXX
  SG_ NEW_SIGNAL_1 : 8|2@1+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_4 : 19|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_2 : 20|1@0+ (1,0) [0|1] "" XXX
- SG_ NEW_SIGNAL_6 : 48|8@1+ (1,0) [0|255] "" XXX
- SG_ NEW_SIGNAL_7 : 40|8@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_3 : 21|3@1+ (1,0) [0|7] "" XXX
  SG_ NEW_SIGNAL_8 : 32|8@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_7 : 40|8@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_6 : 48|8@1+ (1,0) [0|255] "" XXX
+ SG_ STEER_WARNING : 56|4@1+ (1,0) [0|15] "" XXX
  SG_ COUNTER_1 : 6|2@1+ (1,0) [0|3] "" XXX
  SG_ COUNTER_2 : 62|2@1+ (1,0) [0|3] "" XXX
 
 BO_ 611 AccStatus: 8 XXX
  SG_ NEW_SIGNAL_5 : 0|6@1+ (1,0) [0|63] "" XXX
+ SG_ COUNTER_1 : 6|2@1+ (1,0) [0|3] "" XXX
  SG_ NEW_SIGNAL_2 : 8|8@1+ (1,0) [0|255] "" XXX
  SG_ NEW_SIGNAL_4 : 19|1@0+ (1,0) [0|1] "" XXX
  SG_ CruiseState : 21|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_1 : 22|2@1+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_8 : 28|2@1+ (1,0) [0|3] "" XXX
  SG_ CruiseMainOn : 38|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_7 : 39|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_3 : 56|4@1+ (1,0) [0|63] "" XXX
  SG_ FCWAlert : 60|1@1+ (1,0) [0|3] "" XXX
  SG_ NEW_SIGNAL_6 : 61|1@0+ (1,0) [0|1] "" XXX
+ SG_ COUNTER_2 : 62|2@1+ (1,0) [0|3] "" XXX
 
 BO_ 401 GAS_PEDAL: 8 XXX
  SG_ NEW_SIGNAL_3 : 2|11@0+ (1,0) [0|2047] "" XXX
