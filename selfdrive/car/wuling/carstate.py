@@ -175,6 +175,11 @@ class CarState(CarStateBase):
     ret.stockAeb = bool(pt_cp.vl["BRAKE_MODULE"]["AEB"])
     # ret.fcw = bool(pt_cp.vl["BRAKE_MODULE"]["AEB"])
     self.acc_cmd = copy.copy(cp_cruise.vl["GasCmd"])
+    self.acc_status = copy.copy(cp_cruise.vl["AccStatus"])
+    self.ascm_cc_status = copy.copy(cp_cruise.vl["ASCMActiveCruiseControlStatus"])
+    self.gap_dist_button = self.cruise_gap
+    self.lkas_enabled = cam_cp.vl["LkasHud"]["LKA_ACTIVE"];
+    self.lkas_status = pt_cp.vl["PSCMSteeringAngle"]["STEER_STATUS"]
 
     # self.steeringTorqueSamples.append(ret.steeringTorque)
     # if ret.steeringPressed:
