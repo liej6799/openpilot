@@ -42,11 +42,18 @@ class CarControllerParams:
   # to apply some more braking if we're on a downhill slope.
   # Our controller should still keep the 2 second average above
   # -3.5 m/s^2 as per planner limits
-  ACCEL_MAX = 2.  # m/s^2
-  ACCEL_MIN = -4.  # m/s^2
+  ACCEL_MAX = 2.0  # m/s^2
+  ACCEL_MIN = -3.5  # m/s^2
+
+  GAS_MAX = 241
+  GAS_MIN = -600
+
+  ACCEL_LOOKUP_BP = [ACCEL_MIN, ACCEL_MAX]
+  ACCEL_LOOKUP_V = [GAS_MIN, GAS_MAX]
 
   def __init__(self, CP):
-   pass
+    self.ZERO_GAS = 0  # Coasting    
+
 
 class CAR(StrEnum):
  ALMAS_RS_PRO = "WULING ALMAZ RS PRO 2022"
@@ -138,8 +145,6 @@ FW_VERSIONS = {
      (Ecu.eps, 0x720, None): [
        b'\xf1\x8b210704\xf1\x95\x00\x00\x00y\xf1\x91\x01i\x0c\xf9\xf1\x94\x08"\t'
      ],
-     (Ecu.fwdCamera, 0x750, None): [
-    ],
    }
 }
 DBC = {

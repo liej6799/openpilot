@@ -44,7 +44,7 @@ class CarInterface(CarInterfaceBase):
     ret.experimentalLongitudinalAvailable = True
     ret.openpilotLongitudinalControl = experimental_long
     ret.pcmCruise = not ret.openpilotLongitudinalControl
-
+    ret.mass = 1950.
     ret.wheelbase = 2.75
     ret.steerRatio = op_params.get('steer_ratio', force_update=True)
     ret.tireStiffnessFactor = 0.8

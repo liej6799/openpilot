@@ -130,7 +130,7 @@ class CarController:
           print("Cruize button %s " % CC.cruiseControl.resume)
           print("Resule Alert %s " % CS.resume_alert)
         # Send Resume button when planner wants car to move
-          can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.cruise_buttons,0, CruiseButtons.RES_ACCEL)]*25)
+          can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.buttons_counter, CruiseButtons.RES_ACCEL)]*25)
           self.last_button_frame = self.frame
 
     # if CS.out.steeringPressed:
@@ -167,6 +167,13 @@ class CarController:
     lka_critical = lka_active and abs(actuators.steer) > 0.9
     lka_icon_status = (lka_active, lka_critical)
 
+    # send Acc dashboard message
+    if self.frame % 5 == 0:
+      #  print(CS.acc_cmd)
+       lead_distance = 0
+       set_speed = int(round(hud_v_cruise * CV.MS_TO_KPH))
+       can_sends.append(wulingcan.create_acc_hud_control(self.packer_pt, 0, CS.ascm_cc_status,CC.enabled and CS.out.cruiseState.enabled, set_speed, 0, CS.gac_tr_cluster))
+
     # send HUD alerts
     if self.frame % 5 == 0:
       # TODO: find a way to silence audible warnings so we can add more hud alerts
@@ -174,15 +181,28 @@ class CarController:
       steer_required = CC.hudControl.visualAlert == VisualAlert.steerRequired
       can_sends.extend(wulingcan.create_lkas_hud(self.packer_pt, 0, CS.lkas_hud, CC.latActive, steer_required))
 
-    # """ACC RADAR COMMAND"""                                                    
-    # if self.frame % 2 == 0:
-    #   can_sends.extend(wulingcan.create_radar_command(self.packer_pt, CS.acc_cmd, 0, self.frame, CC, CS))
+    """ACC RADAR COMMAND"""
+    if self.frame % 2 == 0:
+      lead_distance = 0
+      if self.CP.openpilotLongitudinalControl:
+        stopping = actuators.longControlState == LongCtrlState.stopping
+        if not CC.longActive:
+          # ASCM sends max regen when not enabled
+          self.apply_gas = 0
+          self.apply_brake = 0
+        else:
+          self.apply_gas = int(round(interp(actuators.accel, self.params.ACCEL_LOOKUP_BP, self.params.ACCEL_LOOKUP_V)))
+
+        idx = (self.frame // 4) % 4
+
+        at_full_stop = CC.longActive and CS.out.standstill
+        near_stop = CC.longActive and (CS.out.vEgo < self.params.NEAR_STOP_BRAKE_PHASE)
+      print(self.apply_gas)
+      can_sends.extend(wulingcan.create_radar_command(self.packer_pt, CS.acc_cmd, 0, self.frame, CC, CS))
       # if CS.out.steeringPressed:
       #   can_sends.extend(wulingcan.create_radar_command(self.packer_pt, CS.acc_cmd, 1, self.frame, CC, CS))
       # else:
       #   can_sends.extend(wulingcan.create_radar_command(self.packer_pt, CS.acc_cmd, 0, self.frame, CC, CS))
-   
-      
       
     new_actuators = actuators.copy()
     new_actuators.steer = self.apply_steer_last / self.params.STEER_MAX

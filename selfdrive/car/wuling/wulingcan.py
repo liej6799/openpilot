@@ -10,8 +10,6 @@ def wuling_checksum(dat):
   return sum(dat) & 0xFF
 
 def create_steering_control(packer, apply_steer, frame, steer_req):
-
-
   idx = (apply_steer) % 255
   # apply_steer  = clip(apply_steer,-100,100);
   values = {
@@ -84,7 +82,7 @@ def create_acc_dashboard_command(packer, acc_engaged, idx, target_speed_kph, res
 
   return packer.make_can_msg("ASCMActiveCruiseControlStatus", 0, values)
 
-def create_buttons(packer, idx,bus, button):
+def create_buttons(packer, idx, button):
   resume = 0;
   acc_btn_2 = button;
   if (button == CruiseButtons.RES_ACCEL): 
@@ -100,7 +98,8 @@ def create_buttons(packer, idx,bus, button):
     "COUNTER_2" : (idx+1) % 0x4,
   }
 
-  return packer.make_can_msg("STEER_BTN", bus, values)
+  return packer.make_can_msg("STEER_BTN",  2, values)
+
 
 
 def create_lkas_hud(packer, bus, lkas_hud_stock_values, lkas_active=0, steer_warning=0):
@@ -110,6 +109,9 @@ def create_lkas_hud(packer, bus, lkas_hud_stock_values, lkas_active=0, steer_war
     "ALERT",
     "LKA_ACTIVE",
     "LEAD_FOLLOW_1",
+    "UNKNOWN_1",
+    "UNKNOWN_2",
+    "UNKNOWN_3",
     "LEAD_FOLLOW_2",
     "LKAS_STATE",
     "LKA_LINE",
@@ -121,6 +123,8 @@ def create_lkas_hud(packer, bus, lkas_hud_stock_values, lkas_active=0, steer_war
     "COUNTER_2",
     "NEW_SIGNAL_1",
     "NEW_SIGNAL_2",
+    "NEW_SIGNAL_3",
+    "NEW_SIGNAL_4",
     "NEW_SIGNAL_6",
     "NEW_SIGNAL_7",
     "NEW_SIGNAL_8"
@@ -196,6 +200,61 @@ def create_lkas_hud(packer, bus, lkas_hud_stock_values, lkas_active=0, steer_war
 
   return commands
 
+def create_acc_hud_control(packer, bus, acc_hud_stock, enabled, target_speed_kph, lead_distance, gac_tr_cluster):
+  target_speed = min(target_speed_kph, 255)
+  # target_speed=30
+  values = {s: acc_hud_stock[s] for s in [
+      "ACCGapLevel",
+      "ACCAlwaysOne2",
+      "ACCAlwaysOne",
+      "ACCSpeedSetpoint",
+      "ACCCmdActive",
+      "ACCResumeAlert",
+      "ACCResumeButton",
+      "ACCBUTTON",
+      "NEW_SIGNAL_1",
+      "NEW_SIGNAL_2",
+      "NEW_SIGNAL_3",
+      "NEW_SIGNAL_4",
+      "FCWAlert",
+      "GAPDisplay",
+      "FCW",
+      "ACCSTATE",
+      "ACCSTATE2",
+      "SET_ME_X16",
+      "COUNTER_1",
+      "COUNTER_2",
+    ]}
+  my_array = [30, 31, 35, 38, 40, 44, 45, 50, 55, 60, 65, 70, 75, 80]
+  my_array2 = [4, 5, -7, 7, -2, -3, 3, -8, -3, 2, 7, -4, 1, 6]
+ 
+  # try:
+  #   index_of_value = my_array.index(target_speed)
+  #   me_x_16 = my_array2[index_of_value]
+  #   if enabled:
+  #     values["ACCSpeedSetpoint"] = target_speed
+  #     values["SET_ME_X16"] = me_x_16
+  # except ValueError:
+  #   pass
+
+    # print(f"{value_to_find} not found in the list.")
+  # if target_speed == 60 and enabled:
+  #   values["ACCSpeedSetpoint"] = 80
+  #   values["SET_ME_X16"]  = 6
+  #   values["NEW_SIGNAL_4"]  = 1
+    
+  # values["ACCGapLevel"] = gac_tr_cluster * enabled
+  # if enabled:
+  #   values["ACCSTATE"]  = 1
+  #   values["ACCBUTTON"]  = 0
+  #   values["ACCLeadCar"]  = 1
+  #   values["SET_ME_X16"]  = 11
+  #   values["NEW_SIGNAL_1"]  = 3
+
+  # print(values)
+
+  return packer.make_can_msg("ASCMActiveCruiseControlStatus", bus, values)
+
 
 def create_radar_command(packer, cmd_stock, enable, frame, CC, CS):
   accel = 0
@@ -209,14 +268,16 @@ def create_radar_command(packer, cmd_stock, enable, frame, CC, CS):
       "GAS_CMD",
       "COUNTER",
       "STOP_REQUEST",
-      "NEW_SIGNAL_8",
-      "NEW_SIGNAL_7",
-      "NEW_SIGNAL_6",
-      "ENABLE",
+      "NEW_SIGNAL_4",
+      "ACC_STATE",
       "NEW_SIGNAL_9",
       "NEW_SIGNAL_5",
+      "NEW_SIGNAL_11",
       "NEW_SIGNAL_1",
+      "STOPPING_T1",
+      "FULL_STOP",
       "NEW_SIGNAL_2",
+      "FULL_STOP_INV",
       "NEW_SIGNAL_3",
       "COUNTER_2",
     ]}
@@ -290,6 +351,7 @@ def create_lka_icon_command(bus, active, critical, steer):
   return make_can_msg(0x104c006c, dat, bus)
 
 def create_resume_button(bus, active, critical, steer):
-  dat = b"\x48\x08\x00\x00\x00\x00\x00\x50"
+  # dat = b"\x48\x08\x00\x00\x00\x00\x00\x50"
+  dat = b"\x80\x20\x00\x00\x00\x00\x00\xa0"
   return make_can_msg(0x1e1, dat, bus)
 
