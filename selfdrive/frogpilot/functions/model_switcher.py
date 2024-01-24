@@ -11,6 +11,7 @@ THNEED_FILE = os.path.join(DESTINATION_PATH, "supercombo.thneed")
 
 MODEL_NAME = {
   0: "los-angeles",
+  1: "los-angeles-v2",
 }
 
 def set_model_list_parameter(params):
