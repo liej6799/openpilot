@@ -416,15 +416,23 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
                                        priority=Priority.LOWEST),
   },
 
-  EventName.stockAeb: {
+  # EventName.stockAeb: {
+  #   ET.PERMANENT: Alert(
+  #     "BRAKE!",
+  #     "Stock AEB: Risk of Collision",
+  #     AlertStatus.critical, AlertSize.full,
+  #     Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.none, 2.),
+  #   ET.NO_ENTRY: NoEntryAlert("Stock AEB: Risk of Collision"),
+  # },
+
+ EventName.stockAeb: {
     ET.PERMANENT: Alert(
       "BRAKE!",
       "Stock AEB: Risk of Collision",
       AlertStatus.critical, AlertSize.full,
-      Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.none, 2.),
-    ET.NO_ENTRY: NoEntryAlert("Stock AEB: Risk of Collision"),
+      Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.warningSoft, 2.),
   },
-
+ 
   EventName.fcw: {
     ET.PERMANENT: Alert(
       "BRAKE!",
