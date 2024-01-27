@@ -156,7 +156,7 @@ static int wuling_fwd_hook(int bus, int addr)
     // bool block = (addr == STEERING_LKAS) || (addr == ACC_CMD);
     bool is_lkas_msg = (addr == LKAS_HUD);
     bool is_acc_md = (addr == ACC_CMD);
-    bool block = (addr == STEERING_LKAS) || is_lkas_msg || (addr == CRZ_CTRL); 
+    bool block = (addr == STEERING_LKAS) || is_lkas_msg || (addr == CRZ_CTRL) || is_acc_md; 
     if (!block)
     {
       bus_fwd = BUS_MAIN;
