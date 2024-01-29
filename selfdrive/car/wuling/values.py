@@ -65,6 +65,7 @@ class CarControllerParams:
 
 class CAR:
  ALMAS_RS_PRO = "WULING ALMAZ RS PRO 2022"
+ ALVEZ = "WULING ALVEZ"
 
 
 class Footnote(Enum):
@@ -81,6 +82,7 @@ class GMCarInfo(CarInfo):
 
 CAR_INFO: Dict[str, Union[GMCarInfo, List[GMCarInfo]]] = {
   CAR.ALMAS_RS_PRO: GMCarInfo("Wuling Almaz RS Pro 2022"),
+  CAR.ALVEZ: GMCarInfo("Wuling Alvez"),
 }
 
 class CruiseButtons:
@@ -109,14 +111,19 @@ class CanBus:
 FINGERPRINTS = {
   CAR.ALMAS_RS_PRO: [{
     193: 8, 197: 8, 201: 8, 225: 8, 288: 5, 296: 8, 298: 8, 320: 4, 381: 8, 401: 8, 404: 8, 413: 8, 451: 8, 454: 8, 481: 8, 485: 8, 489: 8, 497: 8, 501: 8, 549: 8, 560: 8, 608: 8, 611: 8, 617: 8, 840: 6, 842: 6, 844: 6, 846: 6, 880: 8, 883: 8, 996: 8, 997: 8, 1041: 8, 1043: 8, 1045: 8, 1047: 8, 1053: 8, 1065: 8, 1217: 8, 1225: 8, 1341: 8, 1381: 8, 1406: 8, 1417: 8, 1538: 8, 1541: 8, 1543: 8, 1552: 8, 1569: 8
+  }],
+  CAR.ALVEZ: [{
+    193: 8, 197: 8, 201: 8, 225: 8, 258: 8, 288: 5, 296: 8, 298: 8, 320: 4, 381: 8, 401: 8, 411: 8, 413: 8, 451: 8, 454: 8, 481: 8, 485: 8, 489: 8, 497: 8, 501: 8, 549: 8, 560: 8, 563: 8, 608: 8, 611: 8, 617: 8, 840: 6, 842: 6, 844: 6, 846: 6, 880: 8, 883: 8, 996: 8, 997: 8, 1041: 8, 1043: 8, 1045: 8, 1047: 8, 1053: 8, 1065: 8, 1217: 8, 1225: 8, 1341: 8, 1381: 8, 1406: 8, 1417: 8, 1538: 8, 1541: 8, 1552: 8, 1569: 8
   }]
 }
 
 FW_VERSIONS = {
-   CAR.ALMAS_RS_PRO: {}
+   CAR.ALMAS_RS_PRO: {},
+   CAR.ALVEZ: {}
 }
 DBC = {
   CAR.ALMAS_RS_PRO: dbc_dict('wuling_almazrs_generated', None),
+  CAR.ALVEZ: dbc_dict('wuling_almazrs_generated', None),
 }
 
 PREGLOBAL_CARS = []

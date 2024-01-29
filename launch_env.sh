@@ -20,4 +20,4 @@ fi
 
 export STAGING_ROOT="/data/safe_staging"
 export SKIP_FW_QUERY=1
-export FINGERPRINT="WULING ALMAZ RS PRO 2022"
+export FINGERPRINT="WULING ALVEZ"
