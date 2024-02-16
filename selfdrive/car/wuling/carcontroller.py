@@ -91,7 +91,7 @@ class CarController:
         apply_steer = apply_driver_steer_torque_limits(-new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
       # else:
       #   apply_steer = 0
-      print('car controller new_steer', new_steer)
+      
       print('car controller CS.out.steeringTorque', CS.out.steeringTorque)
       print('car controller CC.latActive', CC.latActive)
       print('car controller apply_steer', apply_steer)
