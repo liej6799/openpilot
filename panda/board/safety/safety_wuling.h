@@ -26,7 +26,7 @@ static int wuling_rx_hook(CANPacket_t *to_push)
 {
 
   bool valid = addr_safety_check(to_push, &wl_rx_checks, NULL, NULL, NULL, NULL);
-  int bus = GET_BUS(to_push);
+
   if (valid && ((int)GET_BUS(to_push) == BUS_MAIN))
   {
     int addr = GET_ADDR(to_push);
