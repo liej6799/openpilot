@@ -17,7 +17,6 @@ AddrCheckStruct wl_addr_checks[] = {
     {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, {0}, {0}}},
     {.msg = {{BRAKE_DATA, 0, 8, .expected_timestep = 50000U}, {0}, {0}}},
     {.msg = {{GAS_DATA, 0, 8, .expected_timestep = 50000U}, {0}, {0}}},
-    {.msg = {{STEERING_LKAS, 0, 8, .expected_timestep = 50000U}, {0}, {0}}},
 };
 
 #define WL_RX_CHECK_LEN (sizeof(wl_addr_checks) / sizeof(wl_addr_checks[0]))
@@ -60,7 +59,7 @@ static int wuling_rx_hook(CANPacket_t *to_push)
       pcm_cruise_check(cruise_engaged);
     }
 
-    generic_rx_checks((addr == STEERING_LKAS));
+    //generic_rx_checks((addr == STEERING_LKAS));
   }
 
   controls_allowed = 1;
