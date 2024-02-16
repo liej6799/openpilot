@@ -235,7 +235,7 @@ class CarState(CarStateBase):
         ("COUNTER", "STEERING_LKA"),
       ]
       checks += [
-        ("STEERING_LKA", 0),
+        ("STEERING_LKA", 50),
       ]
 
 
@@ -248,7 +248,7 @@ class CarState(CarStateBase):
     ]
 
     checks = [
-      ("STEERING_LKA", 0),
+      ("STEERING_LKA", 50),
     ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.LOOPBACK, enforce_checks=False)
