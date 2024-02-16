@@ -51,12 +51,12 @@ class CarState(CarStateBase):
     self.engineRPM = pt_cp.vl["ECMEngineStatus"]['EngineRPM']
 
    # Variables used for avoiding LKAS faults
-    self.loopback_lka_steering_cmd_updated = len(loopback_cp.vl_all["STEERING_LKA"]["COUNTER"]) > 0
+    self.loopback_lka_steering_cmd_updated = len(loopback_cp.vl_all["ALVEZ_CMD"]["COUNTER"]) > 0
     if self.loopback_lka_steering_cmd_updated:
-      self.loopback_lka_steering_cmd_ts_nanos = loopback_cp.ts_nanos["STEERING_LKA"]["COUNTER"]
+      self.loopback_lka_steering_cmd_ts_nanos = loopback_cp.ts_nanos["ALVEZ_CMD"]["COUNTER"]
     if self.CP.networkLocation == NetworkLocation.fwdCamera:
-      self.pt_lka_steering_cmd_counter = pt_cp.vl["STEERING_LKA"]["COUNTER"]
-      self.cam_lka_steering_cmd_counter = cam_cp.vl["STEERING_LKA"]["COUNTER"]
+      self.pt_lka_steering_cmd_counter = pt_cp.vl["ALVEZ_CMD"]["COUNTER"]
+      self.cam_lka_steering_cmd_counter = cam_cp.vl["ALVEZ_CMD"]["COUNTER"]
 
 
     ret.wheelSpeeds = self.get_wheel_speeds(
@@ -148,7 +148,7 @@ class CarState(CarStateBase):
     checks = []
     if CP.networkLocation == NetworkLocation.fwdCamera:
       signals += [
-        ("COUNTER", "STEERING_LKA"),
+        ("COUNTER", "ALVEZ_CMD"),
         ("ACCBUTTON", "ASCMActiveCruiseControlStatus"),
         ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
         ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
@@ -156,7 +156,7 @@ class CarState(CarStateBase):
         ("COUNTER_1", "ASCMActiveCruiseControlStatus"),
       ]
       checks += [
-        ("STEERING_LKA", 50),
+        ("ALVEZ_CMD", 50),
         ("ASCMActiveCruiseControlStatus", 20),
       ]
 
@@ -232,10 +232,10 @@ class CarState(CarStateBase):
      # Used to read back last counter sent to PT by camera
     if CP.networkLocation == NetworkLocation.fwdCamera:
       signals += [
-        ("COUNTER", "STEERING_LKA"),
+        ("COUNTER", "ALVEZ_CMD"),
       ]
       checks += [
-        ("STEERING_LKA", 50),
+        ("ALVEZ_CMD", 50),
       ]
 
 
@@ -244,11 +244,11 @@ class CarState(CarStateBase):
   @staticmethod
   def get_loopback_can_parser(CP):
     signals = [
-      ("COUNTER", "STEERING_LKA"),
+      ("COUNTER", "ALVEZ_CMD"),
     ]
 
     checks = [
-      ("STEERING_LKA", 50),
+      ("ALVEZ_CMD", 50),
     ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.LOOPBACK, enforce_checks=False)
