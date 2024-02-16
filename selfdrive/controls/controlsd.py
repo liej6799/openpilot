@@ -706,6 +706,7 @@ class Controls:
       else:
         CC.latActive = True
 
+ 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state
 
@@ -755,8 +756,9 @@ class Controls:
       if self.sm.rcv_frame['testJoystick'] > 0:
         if CC.longActive:
           actuators.accel = 4.0*clip(self.sm['testJoystick'].axes[0], -1, 1)
+        CC.latActive = True
         print('controlsd CC.latActive', CC.latActive)
-
+   
         if CC.latActive:
           steer = clip(self.sm['testJoystick'].axes[1], -1, 1)
           print('controlsd steer', steer)
