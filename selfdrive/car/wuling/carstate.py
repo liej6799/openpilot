@@ -235,7 +235,7 @@ class CarState(CarStateBase):
         ("COUNTER", "ALVEZ_CMD"),
       ]
       checks += [
-        ("ALVEZ_CMD", 50),
+        ("ALVEZ_CMD", 0),
       ]
 
 
@@ -248,7 +248,7 @@ class CarState(CarStateBase):
     ]
 
     checks = [
-      ("ALVEZ_CMD", 50),
+      ("ALVEZ_CMD", 0),
     ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.LOOPBACK, enforce_checks=False)
