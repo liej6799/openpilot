@@ -6,6 +6,7 @@ from selfdrive.car import make_can_msg
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
 def wuling_checksum(dat):
+  print('test checksum', dat)
   return sum(dat) & 0xFF
 
 def create_steering_control(packer, apply_steer, frame):
@@ -24,6 +25,7 @@ def create_steering_control(packer, apply_steer, frame):
   
   dat = packer.make_can_msg("STEERING_LKA", 0, values)[2]
 
+  
   crc = wuling_checksum(dat[:-1])
   values["CHECKSUM"] = crc
 
