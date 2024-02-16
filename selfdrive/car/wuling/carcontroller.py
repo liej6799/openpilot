@@ -95,6 +95,8 @@ class CarController:
       
       print('car controller CS.out.steeringTorque', CS.out.steeringTorque)
       print('car controller CC.latActive', CC.latActive)
+      print('car controller actuators.steer', actuators.steer)
+      print('car controller new_steer', int(round(actuators.steer * self.params.STEER_MAX)))
       self.last_steer_frame = self.frame
       self.apply_steer_last = apply_steer
       # idx = self.lka_steering_cmd_counter % 4
