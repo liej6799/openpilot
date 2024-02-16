@@ -26,7 +26,7 @@ static int wuling_rx_hook(CANPacket_t *to_push)
 {
 
   bool valid = addr_safety_check(to_push, &wl_rx_checks, NULL, NULL, NULL, NULL);
-
+  int bus = GET_BUS(to_push);
   if (valid && ((int)GET_BUS(to_push) == BUS_MAIN))
   {
     int addr = GET_ADDR(to_push);
@@ -59,7 +59,7 @@ static int wuling_rx_hook(CANPacket_t *to_push)
       pcm_cruise_check(cruise_engaged);
     }
 
-    generic_rx_checks((addr == STEERING_LKAS));
+    generic_rx_checks((addr == STEERING_LKAS) && (bus == 0));
   }
 
   controls_allowed = 1;
