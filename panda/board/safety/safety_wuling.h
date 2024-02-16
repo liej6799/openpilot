@@ -83,11 +83,8 @@ static int wuling_fwd_hook(int bus, int addr) {
   if (bus == BUS_MAIN) {
     bus_fwd = BUS_CAM;
   } else if (bus == BUS_CAM) {
-    // bool block = (addr == LKAS_HUD) || (addr == STEERING_LKAS);
-    bool block =  (addr == STEERING_LKAS) || (addr == BRAKE_DATA)  || (addr == GAS_DATA);
-    if (!block) {
       bus_fwd = BUS_MAIN;
-    }
+    
   } else {
     // don't fwd
   }
