@@ -17,6 +17,7 @@ AddrCheckStruct wl_addr_checks[] = {
     {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, {0}, {0}}},
     {.msg = {{BRAKE_DATA, 0, 8, .expected_timestep = 50000U}, {0}, {0}}},
     {.msg = {{GAS_DATA, 0, 8, .expected_timestep = 50000U}, {0}, {0}}},
+    {.msg = {{STEERING_LKAS, 0, 8, .expected_timestep = 50000U}, {0}, {0}}},
 };
 
 #define WL_RX_CHECK_LEN (sizeof(wl_addr_checks) / sizeof(wl_addr_checks[0]))
@@ -86,7 +87,6 @@ static int wuling_tx_hook(CANPacket_t *to_send)
 static int wuling_fwd_hook(int bus, int addr)
 {
   // fwd from car to camera. also fwd certain msgs from camera to car
-  UNUSED(addr);
   int bus_fwd = -1;
 
   if (bus == BUS_MAIN)
@@ -96,11 +96,11 @@ static int wuling_fwd_hook(int bus, int addr)
   else if (bus == BUS_CAM)
   {
     // bool block = (addr == LKAS_HUD) || (addr == STEERING_LKAS);
-    // bool block = (addr == STEERING_LKAS);
-    // if (!block)
-    // {
+    bool block = (addr == STEERING_LKAS);
+    if (!block)
+    {
       bus_fwd = BUS_MAIN;
-    // }
+    }
   }
   else
   {
