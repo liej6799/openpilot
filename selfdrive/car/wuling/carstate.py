@@ -235,20 +235,9 @@ class CarState(CarStateBase):
         ("COUNTER", "STEERING_LKA"),
       ]
       checks += [
-        ("STEERING_LKA", 0),
+        ("STEERING_LKA", 50),
       ]
 
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.POWERTRAIN)
 
-  @staticmethod
-  def get_loopback_can_parser(CP):
-    signals = [
-      ("COUNTER", "STEERING_LKA"),
-    ]
-
-    checks = [
-      ("STEERING_LKA", 0),
-    ]
-
-    return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.LOOPBACK, enforce_checks=False)
