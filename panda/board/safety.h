@@ -18,7 +18,7 @@
 #include "safety/safety_volkswagen_pq.h"
 #include "safety/safety_elm327.h"
 #include "safety/safety_body.h"
-#include "safety/safety_wuling.h"
+
 
 // CAN-FD only safety modes
 #ifdef CANFD
@@ -52,7 +52,7 @@
 #define SAFETY_FAW 26U
 #define SAFETY_BODY 27U
 #define SAFETY_HYUNDAI_CANFD 28U
-#define SAFETY_WULING 29U
+
 
 uint16_t current_safety_mode = SAFETY_SILENT;
 uint16_t current_safety_param = 0;
@@ -298,7 +298,6 @@ const safety_hook_config safety_hook_registry[] = {
   {SAFETY_TOYOTA, &toyota_hooks},
   {SAFETY_ELM327, &elm327_hooks},
   {SAFETY_GM, &gm_hooks},
-  {SAFETY_WULING, &wuling_hooks},
   {SAFETY_HONDA_BOSCH, &honda_bosch_hooks},
   {SAFETY_HYUNDAI, &hyundai_hooks},
   {SAFETY_CHRYSLER, &chrysler_hooks},
