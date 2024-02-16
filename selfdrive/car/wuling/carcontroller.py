@@ -61,7 +61,6 @@ class CarController:
     else:
       self.brake_counter = 0
 #      print("Cruize button %s " % CC.cruiseControl.resume)
-      print("Resule Alert %s " % CS.resume_alert)
       if self.frame % 5 == 0 and CS.resume_alert == 1:
         # Mazda Stop and Go requires a RES button (or gas) press if the car stops more than 3 seconds
         # Send Resume button when planner wants car to move
@@ -87,12 +86,15 @@ class CarController:
       if CS.loopback_lka_steering_cmd_ts_nanos == 0:
         self.lka_steering_cmd_counter = CS.pt_lka_steering_cmd_counter + 1
 
-      if CC.latActive:
+      # if CC.latActive:
         new_steer = int(round(actuators.steer * self.params.STEER_MAX))
         apply_steer = apply_driver_steer_torque_limits(-new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
-      else:
-        apply_steer = 0
-
+      # else:
+      #   apply_steer = 0
+      print('car controller new_steer', new_steer)
+      print('car controller CS.out.steeringTorque', CS.out.steeringTorque)
+      print('car controller CC.latActive', CC.latActive)
+      print('car controller apply_steer', apply_steer)
       self.last_steer_frame = self.frame
       self.apply_steer_last = apply_steer
       # idx = self.lka_steering_cmd_counter % 4
