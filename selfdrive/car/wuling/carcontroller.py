@@ -85,12 +85,13 @@ class CarController:
       # Initialize ASCMLKASteeringCmd counter using the camera until we get a msg on the bus
       if CS.loopback_lka_steering_cmd_ts_nanos == 0:
         self.lka_steering_cmd_counter = CS.pt_lka_steering_cmd_counter + 1
-
-      # if CC.latActive:
+      CC.latActive = true
+      
+      if CC.latActive:
         new_steer = int(round(actuators.steer * self.params.STEER_MAX))
         apply_steer = apply_driver_steer_torque_limits(-new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
-      # else:
-      #   apply_steer = 0
+      else:
+        apply_steer = 0
       
       print('car controller CS.out.steeringTorque', CS.out.steeringTorque)
       print('car controller CC.latActive', CC.latActive)
