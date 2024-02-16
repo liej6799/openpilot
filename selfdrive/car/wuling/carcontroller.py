@@ -96,7 +96,7 @@ class CarController:
       self.last_steer_frame = self.frame
       self.apply_steer_last = apply_steer
       # idx = self.lka_steering_cmd_counter % 4
-      can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_steer, self.frame))
+      #can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_steer, self.frame))
 
     # Show green icon when LKA torque is applied, and
     # alarming orange icon when approaching torque limit.
