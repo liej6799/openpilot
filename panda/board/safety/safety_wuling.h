@@ -77,14 +77,17 @@ static int wuling_tx_hook(CANPacket_t *to_send) {
 
 static int wuling_fwd_hook(int bus, int addr) {
   // fwd from car to camera. also fwd certain msgs from camera to car
-  UNUSED(addr);
+
   int bus_fwd = -1;
 
   if (bus == BUS_MAIN) {
     bus_fwd = BUS_CAM;
   } else if (bus == BUS_CAM) {
+    // bool block = (addr == LKAS_HUD) || (addr == STEERING_LKAS);
+    bool block =  (addr == STEERING_LKA);
+    if (!block) {
       bus_fwd = BUS_MAIN;
-    
+    }
   } else {
     // don't fwd
   }
