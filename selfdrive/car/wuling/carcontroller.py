@@ -94,7 +94,6 @@ class CarController:
       
       print('car controller CS.out.steeringTorque', CS.out.steeringTorque)
       print('car controller CC.latActive', CC.latActive)
-      print('car controller apply_steer', apply_steer)
       self.last_steer_frame = self.frame
       self.apply_steer_last = apply_steer
       # idx = self.lka_steering_cmd_counter % 4
