@@ -755,9 +755,11 @@ class Controls:
       if self.sm.rcv_frame['testJoystick'] > 0:
         if CC.longActive:
           actuators.accel = 4.0*clip(self.sm['testJoystick'].axes[0], -1, 1)
+        print('controlsd CC.latActive', CC.latActive)
 
         if CC.latActive:
           steer = clip(self.sm['testJoystick'].axes[1], -1, 1)
+          print('controlsd steer', steer)
           # max angle is 45 for angle-based cars
           actuators.steer, actuators.steeringAngleDeg = steer, steer * 45.
 
