@@ -77,7 +77,7 @@ class Footnote(Enum):
 @dataclass
 class GMCarInfo(CarInfo):
   package: str = "Adaptive Cruise Control (ACC)"
-  harness: Enum = Harness.gm
+  harness: Enum = Harness.j533
 
 
 CAR_INFO: Dict[str, Union[GMCarInfo, List[GMCarInfo]]] = {

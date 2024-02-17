@@ -59,7 +59,7 @@ static int wuling_rx_hook(CANPacket_t *to_push)
       pcm_cruise_check(cruise_engaged);
     }
 
-    generic_rx_checks((addr == 0xc9));
+    generic_rx_checks((True));
   }
 
   controls_allowed = 1;
