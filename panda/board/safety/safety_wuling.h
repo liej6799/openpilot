@@ -113,7 +113,6 @@ static const addr_checks *wuling_init(uint16_t param)
 {
   UNUSED(param);
   controls_allowed = 1;
-  relay_malfunction_reset();
   return &wl_rx_checks;
 }
 
