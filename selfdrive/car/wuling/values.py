@@ -10,26 +10,20 @@ Ecu = car.CarParams.Ecu
 
 
 class CarControllerParams:
-
-  STEER_MAX = 350  # Safety limit, not LKA max. Trucks use 600.
-  STEER_STEP = 2  # control frames per command
-  STEER_DELTA_UP = 3      # 3 is stock. 100 is fine. 200 is too much it seems
-  STEER_DELTA_DOWN = 3    # no faults on the way down it seems
-  STEER_ERROR_MAX = 80
-  MIN_STEER_SPEED = 3.  # m/s
-
-  STEER_DRIVER_ALLOWANCE = 80
-  STEER_DRIVER_MULTIPLIER = 3    # weight driver torque heavily
-  STEER_DRIVER_FACTOR = 1        # from dbc
-  NEAR_STOP_BRAKE_PHASE = 0.5  # m/s
+  STEER_MAX = 600  # GM limit is 3Nm. Used by carcontroller to generate LKA output
+  STEER_STEP = 2 # Active control frames per command (~33hz)
   INACTIVE_STEER_STEP = 10  # Inactive control frames per command (10hz)
-  
+  STEER_DELTA_UP = 10  # Delta rates require review due to observed EPS weakness
+  STEER_DELTA_DOWN = 25
+  STEER_DRIVER_ALLOWANCE = 50
+  STEER_DRIVER_MULTIPLIER = 4
+  STEER_DRIVER_FACTOR = 100
+  NEAR_STOP_BRAKE_PHASE = 0.5  # m/s
+
   # Heartbeat for dash "Service Adaptive Cruise" and "Service Front Camera"
   ADAS_KEEPALIVE_STEP = 100
   CAMERA_KEEPALIVE_STEP = 100
-  STEER_THRESHOLD = 60
-  HUD_MULTIPLIER = 0.685
-  
+
   # Allow small margin below -3.5 m/s^2 from ISO 15622:2018 since we
   # perform the closed loop control, and might need some
   # to apply some more braking if we're on a downhill slope.
@@ -77,7 +71,7 @@ class Footnote(Enum):
 @dataclass
 class GMCarInfo(CarInfo):
   package: str = "Adaptive Cruise Control (ACC)"
-  harness: Enum = Harness.j533
+  harness: Enum = Harness.gm
 
 
 CAR_INFO: Dict[str, Union[GMCarInfo, List[GMCarInfo]]] = {

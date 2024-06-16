@@ -9,26 +9,23 @@ def wuling_checksum(dat):
   return sum(dat) & 0xFF
 
 def create_steering_control(packer, apply_steer, frame):
-  print('test apply_steer', apply_steer)
+
   idx = (apply_steer) % 255
   # apply_steer  = clip(apply_steer,-100,100);
   values = {
       "STEER_TORQUE_CMD": apply_steer,
-      # "SET_ME_X0": 0x00,
+      "SET_ME_X0": 0x00,
       "COUNTER": (frame/2) % 4,
-      "STEER_REQUEST": 1 if apply_steer != 0 else 0
-      # "STEER_LOCK": 1 if apply_steer != 0 else 0,
-      # "STEER_ANGLE_CMD": apply_steer
+      "STEER_REQUEST": 1 if apply_steer != 0 else 0,
   }
   values["COUNTER"] = (values["COUNTER"] + 1) % 0x11
   
-  dat = packer.make_can_msg("ALVEZ_CMD", 0, values)[2]
+  dat = packer.make_can_msg("STEERING_LKA", 0, values)[2]
 
-  
   crc = wuling_checksum(dat[:-1])
   values["CHECKSUM"] = crc
 
-  return packer.make_can_msg("ALVEZ_CMD", 0, values)
+  return packer.make_can_msg("STEERING_LKA", 0, values)
 
 def create_steering_status(packer, apply_steer, frame, steer_step):
   return packer.make_can_msg("ES_LKAS_State", 0, {})
@@ -135,8 +132,3 @@ def create_adas_headlights_status(packer, bus):
 def create_lka_icon_command(bus, active, critical, steer):
   dat = b"\xc6\x3d\x01\x00\xac\x90\x02\x42"
   return make_can_msg(0x104c006c, dat, bus)
-
-def create_resume_button(bus, active, critical, steer):
-  dat = b"\x48\x08\x00\x00\x00\x00\x00\x50"
-  return make_can_msg(0x1e1, dat, bus)
-

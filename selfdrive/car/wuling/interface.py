@@ -7,7 +7,6 @@ from selfdrive.car import STD_CARGO_KG,scale_tire_stiffness,create_button_event,
 from selfdrive.car.interfaces import CarInterfaceBase
 from selfdrive.car.wuling.values import CAR, CruiseButtons, PREGLOBAL_CARS, CarControllerParams, CanBus
 from common.params import Params
-from common.op_params import opParams
 
 ButtonType = car.CarState.ButtonEvent.Type
 TransmissionType = car.CarParams.TransmissionType
@@ -38,50 +37,37 @@ class CarInterface(CarInterfaceBase):
     ret.autoResumeSng = False
     ret.notCar = False
     ret.lateralTuning.init('pid')
-    
-    op_params = opParams("wuling car_interface.py for lateral override")
-    tire_stiffness_factor = 0.444
 
     ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.wuling)]
 
     ret.mass = 1950. + STD_CARGO_KG
     ret.wheelbase = 2.75
-    ret.steerRatio = 15.0
+    ret.steerRatio = 17.7  # Stock 15.7, LiveParameters
     tire_stiffness_factor = 1  # Stock Michelin Energy Saver A/S, LiveParameters
     ret.centerToFront = ret.wheelbase * 0.4
     ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 500], [0, 500]]
-    ret.openpilotLongitudinalControl = False
 
     ret.steerLimitTimer = 0.4
-    ret.steerActuatorDelay = 0.1
+    ret.steerActuatorDelay = 0.2
 
     ret.transmissionType = TransmissionType.automatic
 
-    # CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
-    # CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
+    CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
+    CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
     
-    # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 41.0], [0., 41.0]]
-    # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0002, 0.004], [0.1, 0.7]]
-    # ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
-
-    bp = [i * CV.MPH_TO_MS for i in op_params.get("TUNE_LAT_PID_bp_mph", force_update=True)]
-    kpV = [i for i in op_params.get("TUNE_LAT_PID_kp", force_update=True)]
-    kiV = [i for i in op_params.get("TUNE_LAT_PID_ki", force_update=True)]
-    ret.lateralTuning.pid.kpV = kpV
-    ret.lateralTuning.pid.kiV = kiV
-    ret.lateralTuning.pid.kpBP = bp
-    ret.lateralTuning.pid.kiBP = bp
-    ret.lateralTuning.pid.kf = op_params.get('TUNE_LAT_PID_kf', force_update=True)
-        
-    ret.minEnableSpeed = 18 * CV.MPH_TO_MS
-    ret.minSteerSpeed = 7 * CV.MPH_TO_MS
+    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 41.0], [0., 41.0]]
+    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0002, 0.004], [0.1, 0.7]]
+    ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
+    ret.steerActuatorDelay = 0.1  # Default delay, not measured yet
+    
+    ret.minEnableSpeed = -1
     
     params = Params()
     if int(params.get("dp_atl").decode('utf-8')) == 1:
       ret.openpilotLongitudinalControl = False
     ret.pcmCruise = not ret.openpilotLongitudinalControl
     
-    # CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
+    CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
     
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
                                                                          tire_stiffness_factor=tire_stiffness_factor)
@@ -94,15 +80,17 @@ class CarInterface(CarInterfaceBase):
     ret = self.CS.update(self.cp, self.cp_cam, self.cp_loopback)
     ret.engineRPM = self.CS.engineRPM
     
-    # if self.CS.cruise_buttons != self.CS.prev_cruise_buttons and self.CS.prev_cruise_buttons != CruiseButtons.INIT:
-    #   buttonEvents = [create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS)]
-    #   # Handle ACCButtons changing buttons mid-press
-    #   if self.CS.cruise_buttons != CruiseButtons.UNPRESS and self.CS.prev_cruise_buttons != CruiseButtons.UNPRESS:
-    #     buttonEvents.append(create_button_event(CruiseButtons.UNPRESS, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS))
+    if self.CS.cruise_buttons != self.CS.prev_cruise_buttons and self.CS.prev_cruise_buttons != CruiseButtons.INIT:
+      buttonEvents = [create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS)]
+      # Handle ACCButtons changing buttons mid-press
+      if self.CS.cruise_buttons != CruiseButtons.UNPRESS and self.CS.prev_cruise_buttons != CruiseButtons.UNPRESS:
+        buttonEvents.append(create_button_event(CruiseButtons.UNPRESS, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS))
 
-    #   ret.buttonEvents = buttonEvents
+      ret.buttonEvents = buttonEvents
 
-    events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.low, GearShifter.eco, GearShifter.manumatic], pcm_enable=self.CP.pcmCruise)
+    events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.low,
+                                                         GearShifter.eco, GearShifter.manumatic],
+                                       pcm_enable=self.CP.pcmCruise, enable_buttons=(ButtonType.decelCruise,))                                                 
     # Enabling at a standstill with brake is allowed
     # TODO: verify 17 Volt can enable for the first time at a stop and allow for all GMs
     below_min_enable_speed = ret.vEgo < self.CP.minEnableSpeed
@@ -112,8 +100,8 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.parkBrake)
     if ret.cruiseState.standstill:
       events.add(EventName.resumeRequired)
-    # if ret.vEgo < self.CP.minSteerSpeed:
-    #   events.add(EventName.belowSteerSpeed)
+    if ret.vEgo < self.CP.minSteerSpeed:
+      events.add(EventName.belowSteerSpeed)
 
     ret.events = events.to_msg()
     return ret

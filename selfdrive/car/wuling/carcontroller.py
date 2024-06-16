@@ -32,8 +32,6 @@ class CarController:
     self.cancel_counter = 0
 
     self.lka_steering_cmd_counter = 0
-    self.lka_steering_cmd_counter_last = -1
-
     self.lka_icon_status_last = (False, False)
 
     self.params = CarControllerParams(self.CP)
@@ -60,16 +58,11 @@ class CarController:
       #   can_sends.append(mazdacan.create_button_cmd(self.packer, self.CP.carFingerprint, CS.crz_btns_counter, Buttons.CANCEL))
     else:
       self.brake_counter = 0
-#      print("Cruize button %s " % CC.cruiseControl.resume)
-      if self.frame % 5 == 0 and CS.resume_alert == 1:
+      if CC.cruiseControl.resume and self.frame % 5 == 0:
         # Mazda Stop and Go requires a RES button (or gas) press if the car stops more than 3 seconds
         # Send Resume button when planner wants car to move
-        can_sends.append(wulingcan.create_resume_cmd(self.packer_pt, CS.crz_btns_counter, 1))
-        print("Send Resume")
+        can_sends.append(wulingcan.create_resume_cmd(self.packer, CS.crz_btns_counter, 1))
 
-    # if CS.steeringPressed:
-    #     can_sends.append(wulingcan.create_resume_button())
-    #     print("Send Resume")
     # Steering (Active: 50Hz
     steer_step = self.params.STEER_STEP
 
@@ -78,21 +71,17 @@ class CarController:
     # Avoid GM EPS faults when transmitting messages too close together: skip this transmit if we
     # received the ASCMLKASteeringCmd loopback confirmation too recently
     last_lka_steer_msg_ms = (now_nanos - CS.loopback_lka_steering_cmd_ts_nanos) * 1e-6
-    # if (self.frame - self.last_steer_frame) >= steer_step and last_lka_steer_msg_ms > MIN_STEER_MSG_INTERVAL_MS:
-    if CS.lka_steering_cmd_counter != self.lka_steering_cmd_counter_last:
-      self.lka_steering_cmd_counter_last = CS.lka_steering_cmd_counter
-    elif  (self.frame  % self.params.STEER_STEP) == 0:
+    if (self.frame - self.last_steer_frame) >= steer_step and last_lka_steer_msg_ms > MIN_STEER_MSG_INTERVAL_MS:
       # Initialize ASCMLKASteeringCmd counter using the camera until we get a msg on the bus
       if CS.loopback_lka_steering_cmd_ts_nanos == 0:
         self.lka_steering_cmd_counter = CS.pt_lka_steering_cmd_counter + 1
-   
-      CC.latActive = True
+
       if CC.latActive:
         new_steer = int(round(actuators.steer * self.params.STEER_MAX))
         apply_steer = apply_driver_steer_torque_limits(-new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
       else:
         apply_steer = 0
-      
+
       self.last_steer_frame = self.frame
       self.apply_steer_last = apply_steer
       # idx = self.lka_steering_cmd_counter % 4
