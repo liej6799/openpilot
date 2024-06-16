@@ -61,7 +61,7 @@ class CarController:
     else:
       self.brake_counter = 0
 #      print("Cruize button %s " % CC.cruiseControl.resume)
-      print("Resule Alert %s " % CS.resume_alert)
+      # print("Resule Alert %s " % CS.resume_alert)
       if self.frame % 5 == 0 and CS.resume_alert == 1:
         # Mazda Stop and Go requires a RES button (or gas) press if the car stops more than 3 seconds
         # Send Resume button when planner wants car to move
