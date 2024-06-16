@@ -2,7 +2,8 @@
 // safety wuling
 #define ENGINE_DATA 0xc9
 #define LKAS_HUD 0x373
-#define STEERING_LKAS 0x233
+#define STEERING_LKAS 0x225
+#define ALVEZ_CMD 0x233
 #define BRAKE_DATA 0x269
 #define GAS_DATA 0x260
 
@@ -27,40 +28,40 @@ static int wuling_rx_hook(CANPacket_t *to_push)
 
   bool valid = addr_safety_check(to_push, &wl_rx_checks, NULL, NULL, NULL, NULL);
 
-  if (valid && ((int)GET_BUS(to_push) == BUS_MAIN))
-  {
-    int addr = GET_ADDR(to_push);
+  // if (valid && ((int)GET_BUS(to_push) == BUS_MAIN))
+  // {
+  //   int addr = GET_ADDR(to_push);
 
-    if (addr == 840)
-    {
-      vehicle_moving = GET_BYTE(to_push, 0) | GET_BYTE(to_push, 1);
-    }
+  //   if (addr == 840)
+  //   {
+  //     vehicle_moving = GET_BYTE(to_push, 0) | GET_BYTE(to_push, 1);
+  //   }
 
-    if (addr == 485)
-    {
-      int torque_driver_new = GET_BYTE(to_push, 6);
-      // update array of samples
-      update_sample(&torque_driver, torque_driver_new);
-    }
+  //   if (addr == 485)
+  //   {
+  //     int torque_driver_new = GET_BYTE(to_push, 6);
+  //     // update array of samples
+  //     update_sample(&torque_driver, torque_driver_new);
+  //   }
 
-    if (addr == 201)
-    {
-      brake_pressed = GET_BIT(to_push, 40U) != 0U;
-    }
+  //   if (addr == 201)
+  //   {
+  //     brake_pressed = GET_BIT(to_push, 40U) != 0U;
+  //   }
 
-    if (addr == 0x191)
-    {
-      gas_pressed = GET_BYTE(to_push, 6) != 0U;
-    }
+  //   if (addr == 0x191)
+  //   {
+  //     gas_pressed = GET_BYTE(to_push, 6) != 0U;
+  //   }
 
-    if ((addr == 0x263))
-    {
-      bool cruise_engaged = GET_BIT(to_push, 38U) != 0U;
-      pcm_cruise_check(cruise_engaged);
-    }
+  //   if ((addr == 0x263))
+  //   {
+  //     bool cruise_engaged = GET_BIT(to_push, 38U) != 0U;
+  //     pcm_cruise_check(cruise_engaged);
+  //   }
 
-    generic_rx_checks((addr == STEERING_LKAS));
-  }
+  //   generic_rx_checks((addr == STEERING_LKAS));
+  // }
 
   controls_allowed = 1;
   return valid;
@@ -95,7 +96,7 @@ static int wuling_fwd_hook(int bus, int addr)
   else if (bus == BUS_CAM)
   {
     // bool block = (addr == LKAS_HUD) || (addr == STEERING_LKAS);
-    bool block =  (addr == STEERING_LKAS) || (addr == BRAKE_DATA)  || (addr == GAS_DATA);
+    bool block =  (addr == STEERING_LKAS) || (addr == BRAKE_DATA)  || (addr == GAS_DATA) || (addr == ALVEZ_CMD);
     if (!block)
     {
       bus_fwd = BUS_MAIN;
