@@ -7,7 +7,7 @@ from common.numpy_fast import mean
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
 from selfdrive.car.interfaces import CarStateBase
-from selfdrive.car.wuling.values import DBC, AccState, CanBus,HUD_MULTIPLIER, STEER_THRESHOLD, CAR, PREGLOBAL_CARS 
+from selfdrive.car.wuling.values import DBC, AccState, CanBus,CAR, PREGLOBAL_CARS,CarControllerParams
 
 TransmissionType = car.CarParams.TransmissionType
 NetworkLocation = car.CarParams.NetworkLocation
@@ -34,6 +34,9 @@ class CarState(CarStateBase):
     self.resume_alert = False
         
     self.crz_btns_counter = 0
+    self.is_cruise_latch = False
+    self.params = CarControllerParams(CP)
+    self.lka_steering_cmd_counter = 0
 
 
   def update(self, pt_cp, cam_cp, loopback_cp):
@@ -61,11 +64,11 @@ class CarState(CarStateBase):
       pt_cp.vl["EBCMWheelSpdRear"]["RLWheelSpd"],
     )
     
-    ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr]) * HUD_MULTIPLIER
+    ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr]) * self.params.HUD_MULTIPLIER
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     # sample rear wheel speeds, standstill=True if ECM allows engagement with brake
-    ret.standstill = ret.wheelSpeeds.rl <= STANDSTILL_THRESHOLD and ret.wheelSpeeds.rr <= STANDSTILL_THRESHOLD
-
+    #ret.standstill = ret.wheelSpeeds.rl <= STANDSTILL_THRESHOLD and ret.wheelSpeeds.rr <= STANDSTILL_THRESHOLD
+    ret.standstill = ret.vEgoRaw < 0.1
     ret.steeringAngleDeg = -pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
     ret.steeringTorque = -pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]
     ret.steeringTorqueEps = -pt_cp.vl["STEER_RELATED"]["STEER_TORQUE"]
