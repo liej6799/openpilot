@@ -88,6 +88,7 @@ static int wuling_fwd_hook(int bus, int addr)
 {
   // fwd from car to camera. also fwd certain msgs from camera to car
   int bus_fwd = -1;
+  UNUSED(addr);
 
   if (bus == BUS_MAIN)
   {
