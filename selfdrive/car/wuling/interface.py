@@ -109,15 +109,17 @@ class CarInterface(CarInterfaceBase):
     events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.low, GearShifter.eco, GearShifter.manumatic], pcm_enable=self.CP.pcmCruise)
     # Enabling at a standstill with brake is allowed
     # TODO: verify 17 Volt can enable for the first time at a stop and allow for all GMs
+    print('last event', events)
+    
     below_min_enable_speed = ret.vEgo < self.CP.minEnableSpeed
-    if below_min_enable_speed and not (ret.standstill and ret.brake >= 20):
-      events.add(EventName.belowEngageSpeed)
-    if self.CS.park_brake:
-      events.add(EventName.parkBrake)
-    if ret.cruiseState.standstill:
-      events.add(EventName.resumeRequired)
-    if ret.vEgo < self.CP.minSteerSpeed:
-      events.add(EventName.belowSteerSpeed)
+    # if below_min_enable_speed and not (ret.standstill and ret.brake >= 20):
+    #   events.add(EventName.belowEngageSpeed)
+    # if self.CS.park_brake:
+    #   events.add(EventName.parkBrake)
+    # if ret.cruiseState.standstill:
+    #   events.add(EventName.resumeRequired)
+    # if ret.vEgo < self.CP.minSteerSpeed:
+    #   events.add(EventName.belowSteerSpeed)
 
     ret.events = events.to_msg()
     return ret
