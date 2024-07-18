@@ -101,9 +101,9 @@ if __name__ == '__main__':
   parser.add_argument('--gamepad', action='store_true', help='Use gamepad configuration instead of joystick')
   args = parser.parse_args()
 
-  if not Params().get_bool("IsOffroad") and "ZMQ" not in os.environ and "WEB" not in os.environ:
-    print("The car must be off before running joystickd.")
-    exit()
+  # if not Params().get_bool("IsOffroad") and "ZMQ" not in os.environ and "WEB" not in os.environ:
+  #   print("The car must be off before running joystickd.")
+  #   exit()
 
   print()
   if args.keyboard:
