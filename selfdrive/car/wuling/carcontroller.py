@@ -88,6 +88,13 @@ class CarController:
 #       if CS.loopback_lka_steering_cmd_ts_nanos == 0:
 #         self.lka_steering_cmd_counter = CS.pt_lka_steering_cmd_counter + 1
     print('car controller: enter update')
+    print('car controller: actuators.steer:', actuators.steer)
+    print('car controller: STEER_MAX:', self.params.STEER_MAX)
+    
+    print('car controller: apply_steer_last:', self.apply_steer_last,)
+    print('car controller: steeringTorque:',  CS.out.steeringTorque)
+    
+
     # if CC.latActive:
     new_steer = int(round(actuators.steer * self.params.STEER_MAX))
     apply_steer = apply_driver_steer_torque_limits(-new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
