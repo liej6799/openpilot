@@ -52,7 +52,7 @@ static int wuling_rx_hook(CANPacket_t *to_push) {
         pcm_cruise_check(cruise_engaged);
       }
 
-      generic_rx_checks((addr == STEERING_LKAS));
+      generic_rx_checks((addr == LKAS_HUD));
    }
 
   controls_allowed = 1;
