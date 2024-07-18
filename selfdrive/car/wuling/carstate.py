@@ -45,7 +45,7 @@ class CarState(CarStateBase):
     ret = car.CarState.new_message()
 
     self.prev_cruise_buttons = self.cruise_buttons
-    self.cruise_buttons = pt_cp.vl["STEER_BTN"]["ACC_BTN_1"]
+    self.cruise_buttons = pt_cp.vl["STEER_BTN"]["ACC_BTN_2"]
     self.buttons_counter = pt_cp.vl["STEER_BTN"]["COUNTER_1"]
 
     self.engineRPM = pt_cp.vl["ECMEngineStatus"]['EngineRPM']
@@ -164,7 +164,7 @@ class CarState(CarStateBase):
       ]
       checks += [
         ("STEERING_LKA", 50),
-        ("AccStatus", 20),
+        ("AccStatus", 50),
         ("LkasHud", 20),
         ("ASCMActiveCruiseControlStatus", 20),
       ]
@@ -215,7 +215,7 @@ class CarState(CarStateBase):
       ("GAS_POS", "GAS_PEDAL"),
       ("BRAKE_POS", "BRAKE_PEDAL"),
       
-      ("ACC_BTN_1", "STEER_BTN"),
+      ("ACC_BTN_2", "STEER_BTN"),
       ("COUNTER_1", "STEER_BTN"),
     ]
 
@@ -229,7 +229,7 @@ class CarState(CarStateBase):
       ("EBCMWheelSpdRear", 20),
       ("PSCMSteeringAngle", 100),
       ("LkasHud", 20),
-      ("AccStatus", 20),
+      ("AccStatus", 50),
       ("GAS_PEDAL", 10),
       ("BRAKE_PEDAL", 50),
       ("BCMTurnSignals", 30),
