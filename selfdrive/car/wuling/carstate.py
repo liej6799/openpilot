@@ -154,12 +154,18 @@ class CarState(CarStateBase):
         ("COUNTER", "STEERING_LKA"),
         ("ACCBUTTON", "ASCMActiveCruiseControlStatus"),
         ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
+        ("CruiseMainOn", "AccStatus"),
+        ("CruiseState", "AccStatus"),
         ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
         ("ACCResumeAlert", "ASCMActiveCruiseControlStatus"),
         ("COUNTER_1", "ASCMActiveCruiseControlStatus"),
+        ("LKAS_STATE", "LkasHud"),
+        ("LKA_ACTIVE", "LkasHud"),
       ]
       checks += [
         ("STEERING_LKA", 50),
+        ("AccStatus", 20),
+        ("LkasHud", 20),
         ("ASCMActiveCruiseControlStatus", 20),
       ]
 
