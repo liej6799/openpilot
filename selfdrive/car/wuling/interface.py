@@ -31,7 +31,7 @@ class CarInterface(CarInterfaceBase):
     return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX
 
   @staticmethod
-  def _get_params(ret, candidate, fingerprint, car_fw, experimental_long):
+  def _get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs):
     ret.carName = "wuling"
     ret.radarUnavailable = True
     ret.dashcamOnly = candidate in PREGLOBAL_CARS
@@ -46,16 +46,17 @@ class CarInterface(CarInterfaceBase):
 
     ret.mass = 1950. + STD_CARGO_KG
     ret.wheelbase = 2.75
-    ret.steerRatio = 15.0
+    ret.steerRatio = op_params.get('steer_ratio', force_update=True)
     tire_stiffness_factor = 1  # Stock Michelin Energy Saver A/S, LiveParameters
     ret.centerToFront = ret.wheelbase * 0.4
-    ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 500], [0, 500]]
+    # ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 500], [0, 500]]
     ret.openpilotLongitudinalControl = False
 
     ret.steerLimitTimer = 0.4
     ret.steerActuatorDelay = 0.1
 
     ret.transmissionType = TransmissionType.automatic
+    # CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
     # CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
     # CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
@@ -73,8 +74,11 @@ class CarInterface(CarInterfaceBase):
     ret.lateralTuning.pid.kiBP = bp
     ret.lateralTuning.pid.kf = op_params.get('TUNE_LAT_PID_kf', force_update=True)
         
-    ret.minEnableSpeed = 18 * CV.MPH_TO_MS
-    ret.minSteerSpeed = 7 * CV.MPH_TO_MS
+    CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
+    CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
+
+    ret.minEnableSpeed = 5 * CV.MPH_TO_MS
+    ret.minSteerSpeed = 0 * CV.MPH_TO_MS
     
     params = Params()
     if int(params.get("dp_atl").decode('utf-8')) == 1:
@@ -112,8 +116,8 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.parkBrake)
     if ret.cruiseState.standstill:
       events.add(EventName.resumeRequired)
-    # if ret.vEgo < self.CP.minSteerSpeed:
-    #   events.add(EventName.belowSteerSpeed)
+    if ret.vEgo < self.CP.minSteerSpeed:
+      events.add(EventName.belowSteerSpeed)
 
     ret.events = events.to_msg()
     return ret
