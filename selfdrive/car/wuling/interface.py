@@ -46,7 +46,7 @@ class CarInterface(CarInterfaceBase):
 
     ret.mass = 1950. + STD_CARGO_KG
     ret.wheelbase = 2.75
-    ret.steerRatio = op_params.get('steer_ratio', force_update=True)
+    ret.steerRatio = 15
     tire_stiffness_factor = 1  # Stock Michelin Energy Saver A/S, LiveParameters
     ret.centerToFront = ret.wheelbase * 0.4
     # ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 500], [0, 500]]
