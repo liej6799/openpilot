@@ -31,7 +31,7 @@ class CarInterface(CarInterfaceBase):
     return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX
 
   @staticmethod
-  def _get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs):
+  def _get_params(ret, candidate, fingerprint, car_fw, experimental_long):
     ret.carName = "wuling"
     ret.radarUnavailable = True
     ret.dashcamOnly = candidate in PREGLOBAL_CARS
