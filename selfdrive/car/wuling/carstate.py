@@ -103,7 +103,7 @@ class CarState(CarStateBase):
     self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
     
     print('Cruise State Available: ', pt_cp.vl["AccStatus"]["CruiseMainOn"])
-    print('Cruise State Enabled: ', pt_cp.vl["AccStatus"]["CruiseMainOn"])
+    print('Cruise State Enabled: ', pt_cp.vl["AccStatus"]["CruiseState"])
     
     ret.cruiseState.available = True
     ret.cruiseState.enabled = True

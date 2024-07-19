@@ -3,7 +3,7 @@ from common.conversions import Conversions as CV
 from common.numpy_fast import interp
 from common.realtime import DT_CTRL
 from opendbc.can.packer import CANPacker
-from selfdrive.car import apply_driver_steer_torque_limits
+from selfdrive.car import apply_driver_steer_torque_limits, apply_std_steer_angle_limits
 from selfdrive.car.wuling import wulingcan
 from selfdrive.car.wuling.values import DBC, CanBus, PREGLOBAL_CARS, CarControllerParams
 
@@ -87,44 +87,36 @@ class CarController:
 #       # Initialize ASCMLKASteeringCmd counter using the camera until we get a msg on the bus
 #       if CS.loopback_lka_steering_cmd_ts_nanos == 0:
 #         self.lka_steering_cmd_counter = CS.pt_lka_steering_cmd_counter + 1
-    print('car controller: enter update')
-    print('car controller: actuators.steer:', actuators.steer)
-    print('car controller: STEER_MAX:', self.params.STEER_MAX)
-    
-    print('car controller: apply_steer_last:', self.apply_steer_last,)
-    print('car controller: steeringTorque:',  CS.out.steeringTorque)
-    
+
 
     # if CC.latActive:
-    new_steer = int(round(actuators.steer * self.params.STEER_MAX))
-    apply_steer = apply_driver_steer_torque_limits(-new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
+    # new_steer = int(round(actuators.steer * self.params.STEER_MAX))
+    # apply_steer = apply_driver_steer_torque_limits(-new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
     # else:
     #   apply_steer = 0
 
-    self.last_steer_frame = self.frame
-    self.apply_steer_last = apply_steer
+    # self.last_steer_frame = self.frame
+    # self.apply_steer_last = apply_steer
     # idx = self.lka_steering_cmd_counter % 4
-    can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_steer, self.frame))
 
-    # Show green icon when LKA torque is applied, and
-    # alarming orange icon when approaching torque limit.
-    # If not sent again, LKA icon disappears in about 5 seconds.
-    # Conveniently, sending camera message periodically also works as a keepalive.
-    lka_active = CS.lkas_status == 1
-    lka_critical = lka_active and abs(actuators.steer) > 0.9
-    lka_icon_status = (lka_active, lka_critical)
+    if CC.latActive:
+      apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
+    else:
+      apply_angle = CS.out.steeringAngleDeg
 
-    # # SW_GMLAN not yet on cam harness, no HUD alerts
-    # if self.CP.networkLocation != NetworkLocation.fwdCamera and (self.frame % self.params.CAMERA_KEEPALIVE_STEP == 0 or lka_icon_status != self.lka_icon_status_last):
-    #   steer_alert = hud_alert in (VisualAlert.steerRequired, VisualAlert.ldw)
-    #   can_sends.append(wulingcan.create_lka_icon_command(CanBus.SW_GMLAN, lka_active, lka_critical, steer_alert))
-    #   self.lka_icon_status_last = lka_icon_status
+    self.apply_angle_last = apply_angle
+
+    print('car controller: steeringAngleDeg:', actuators.steeringAngleDeg)
+    print('car controller: apply_angle_last:',  self.apply_angle_last)
+    print('car controller: vEgo:',  CS.out.vEgo)
+    print('car controller: apply_angle:',  apply_angle)
+
+    can_sends.append(wulingcan.create_steering_control(
+      self.packer_pt, apply_angle, self.frame, CC.enabled))
+
 
     new_actuators = actuators.copy()
-    new_actuators.steer = self.apply_steer_last / self.params.STEER_MAX
-    new_actuators.steerOutputCan = self.apply_steer_last
-    new_actuators.gas = self.apply_gas
-    new_actuators.brake = self.apply_brake
+    new_actuators.steeringAngleDeg = apply_angle
 
     self.frame += 1
     return new_actuators, can_sends
