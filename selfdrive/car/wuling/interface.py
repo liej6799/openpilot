@@ -107,12 +107,12 @@ class CarInterface(CarInterfaceBase):
         
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons and self.CS.prev_cruise_buttons != CruiseButtons.INIT:
       buttonEvents = [create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS)]
+     
       # Handle ACCButtons changing buttons mid-press
       if self.CS.cruise_buttons != CruiseButtons.UNPRESS and self.CS.prev_cruise_buttons != CruiseButtons.UNPRESS:
         buttonEvents.append(create_button_event(CruiseButtons.UNPRESS, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS))
 
       ret.buttonEvents = buttonEvents
-      print(buttonEvents)
 
     
     # if self.CS.cruise_buttons != CruiseButtons.UNPRESS or self.CS.prev_cruise_buttons != CruiseButtons.INIT:
@@ -129,22 +129,26 @@ class CarInterface(CarInterfaceBase):
     # print("Print cruise_button: ", self.CS.cruise_buttons)
     # print("Print prev_cruise_button: ", self.CS.prev_cruise_buttons)
   
-    events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.low, GearShifter.eco, GearShifter.manumatic], pcm_enable=False, enable_buttons=(ButtonType.decelCruise,))
+    events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.low, GearShifter.eco, GearShifter.manumatic], pcm_enable=self.CP.pcmCruise, enable_buttons=(ButtonType.decelCruise,))
+
+    if not self.CP.pcmCruise:
+      if any(b.type == ButtonType.accelCruise and b.pressed for b in ret.buttonEvents):
+        events.add(EventName.buttonEnable)
 
     # Enabling at a standstill with brake is allowed
     # TODO: verify 17 Volt can enable for the first time at a stop and allow for all GMs
     # print('last event', events)
     
     below_min_enable_speed = ret.vEgo < self.CP.minEnableSpeed
-    # if below_min_enable_speed and not (ret.standstill and ret.brake >= 20):
-    #   events.add(EventName.belowEngageSpeed)
-    # if self.CS.park_brake:
-    #   events.add(EventName.parkBrake)
-    # if ret.cruiseState.standstill:
-    #   events.add(EventName.resumeRequired)
-    # if ret.vEgo < self.CP.minSteerSpeed:
-    #   events.add(EventName.belowSteerSpeed)
-    print(events.to_msg())
+    if below_min_enable_speed and not (ret.standstill and ret.brake >= 20):
+      events.add(EventName.belowEngageSpeed)
+    if self.CS.park_brake:
+      events.add(EventName.parkBrake)
+    if ret.cruiseState.standstill:
+      events.add(EventName.resumeRequired)
+    if ret.vEgo < self.CP.minSteerSpeed:
+      events.add(EventName.belowSteerSpeed)
+  
     ret.events = events.to_msg()
     return ret
 
