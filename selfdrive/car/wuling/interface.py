@@ -107,7 +107,7 @@ class CarInterface(CarInterfaceBase):
     # Don't add event if transitioning from INIT, unless it's to an actual button
     if self.CS.cruise_buttons != CruiseButtons.UNPRESS or self.CS.prev_cruise_buttons != CruiseButtons.INIT:
       ret.buttonEvents = create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT,
-                                              unpressed_btn=CruiseButtons.UNPRESS)
+                                              unpressed=CruiseButtons.UNPRESS)
 
     print("Print cruise_button: ", self.CS.cruise_buttons)
     print("Print prev_cruise_button: ", self.CS.prev_cruise_buttons)
