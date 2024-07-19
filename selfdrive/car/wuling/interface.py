@@ -83,6 +83,7 @@ class CarInterface(CarInterfaceBase):
     params = Params()
     if int(params.get("dp_atl").decode('utf-8')) == 1:
       ret.openpilotLongitudinalControl = False
+      
     ret.pcmCruise = False
     
     # CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
@@ -104,17 +105,23 @@ class CarInterface(CarInterfaceBase):
     #   if self.CS.cruise_buttons != CruiseButtons.UNPRESS and self.CS.prev_cruise_buttons != CruiseButtons.UNPRESS:
     #     buttonEvents.append(create_button_event(CruiseButtons.UNPRESS, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS))
         
-    # Don't add event if transitioning from INIT, unless it's to an actual button
+    buttonEvents = []
+
+    if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
+      buttonEvents.append(create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT))
+      
+    ret.buttonEvents = buttonEvents
+    
     # if self.CS.cruise_buttons != CruiseButtons.UNPRESS or self.CS.prev_cruise_buttons != CruiseButtons.INIT:
     #   ret.buttonEvents = create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT,
     #                                           unpressed_btn=CruiseButtons.UNPRESS)
 
-    buttonEvents = []
-    be = car.CarState.ButtonEvent.new_message()
-    be.type = car.CarState.ButtonEvent.Type.accelCruise
-    buttonEvents.append(be)
+    # buttonEvents = []
+    # be = car.CarState.ButtonEvent.new_message()
+    # be.type = car.CarState.ButtonEvent.Type.accelCruise
+    # buttonEvents.append(be)
     
-    ret.buttonEvents = buttonEvents
+    # ret.buttonEvents = buttonEvents
 
     # print("Print cruise_button: ", self.CS.cruise_buttons)
     # print("Print prev_cruise_button: ", self.CS.prev_cruise_buttons)
