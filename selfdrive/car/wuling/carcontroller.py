@@ -99,11 +99,13 @@ class CarController:
     # self.apply_steer_last = apply_steer
     # idx = self.lka_steering_cmd_counter % 4
 
-    if CC.latActive:
-      apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
-    else:
-      apply_angle = CS.out.steeringAngleDeg
-
+    # if CC.latActive:
+    #   apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
+    # else:
+    #   apply_angle = CS.out.steeringAngleDeg
+    
+    apply_angle = 20
+    
     self.apply_angle_last = apply_angle
 
     print('car controller: steeringAngleDeg:', actuators.steeringAngleDeg)
