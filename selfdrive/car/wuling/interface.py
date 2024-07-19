@@ -83,7 +83,7 @@ class CarInterface(CarInterfaceBase):
     params = Params()
     if int(params.get("dp_atl").decode('utf-8')) == 1:
       ret.openpilotLongitudinalControl = False
-    ret.pcmCruise = not ret.openpilotLongitudinalControl
+    ret.pcmCruise = False
     
     # CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
     
@@ -119,7 +119,7 @@ class CarInterface(CarInterfaceBase):
     # print("Print cruise_button: ", self.CS.cruise_buttons)
     # print("Print prev_cruise_button: ", self.CS.prev_cruise_buttons)
   
-    events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.low, GearShifter.eco, GearShifter.manumatic], pcm_enable=True)
+    events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.low, GearShifter.eco, GearShifter.manumatic], pcm_enable=False)
 
     # Enabling at a standstill with brake is allowed
     # TODO: verify 17 Volt can enable for the first time at a stop and allow for all GMs
