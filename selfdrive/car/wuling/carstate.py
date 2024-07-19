@@ -44,7 +44,7 @@ class CarState(CarStateBase):
   def update(self, pt_cp, cam_cp, loopback_cp):
     ret = car.CarState.new_message()
     
-    print("Print STEER: ", pt_cp.vl["STEER_BTN"]["ACC_BTN_2"])
+
     
     self.prev_cruise_buttons = self.cruise_buttons
     self.cruise_buttons = pt_cp.vl["STEER_BTN"]["ACC_BTN_2"]
