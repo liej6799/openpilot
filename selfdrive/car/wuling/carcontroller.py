@@ -46,7 +46,7 @@ class CarController:
     
     # Send CAN commands.
     can_sends = []
-
+    steer_step = self.params.STEER_STEP
     # if CC.cruiseControl.cancel:
     #   # If brake is pressed, let us wait >70ms before trying to disable crz to avoid
     #   # a race condition with the stock system, where the second cancel from openpilot
@@ -98,14 +98,15 @@ class CarController:
     # self.last_steer_frame = self.frame
     # self.apply_steer_last = apply_steer
     # idx = self.lka_steering_cmd_counter % 4
+    
+    if (self.frame  % self.params.STEER_STEP) == 0:
+      if CC.latActive:
+        new_steer = int(round(actuators.steer * self.params.STEER_MAX))
+        apply_steer = apply_driver_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
 
-    if CC.latActive:
-      new_steer = int(round(actuators.steer * self.params.STEER_MAX))
-      apply_steer = apply_driver_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
-
-      #apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
-    else:
-      apply_steer = 0
+        #apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
+      else:
+        apply_steer = 0
       
     apply_angle = CS.out.steeringAngleDeg
 
