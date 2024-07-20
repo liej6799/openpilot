@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Dict, List, Union
 
 from cereal import car
-from selfdrive.car import dbc_dict
+from selfdrive.car import AngleRateLimit, dbc_dict
 from selfdrive.car.docs_definitions import CarFootnote, CarInfo, Column, Harness
 Ecu = car.CarParams.Ecu
 
@@ -31,6 +31,9 @@ class CarControllerParams:
   CAMERA_KEEPALIVE_STEP = 100
   STEER_THRESHOLD = 60
   HUD_MULTIPLIER = 0.685
+  
+  ANGLE_RATE_LIMIT_UP = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[5., .8, .15])
+  ANGLE_RATE_LIMIT_DOWN = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[5., 3.5, 0.4])
   
   # Allow small margin below -3.5 m/s^2 from ISO 15622:2018 since we
   # perform the closed loop control, and might need some
