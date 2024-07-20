@@ -110,8 +110,8 @@ class CarInterface(CarInterfaceBase):
     #     buttonEvents.append(create_button_event(CruiseButtons.UNPRESS, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS))
         
     # buttonEvents = [create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS)]
-    ret.buttonEvents = buttonEvents
-    print(ret.buttonEvents)
+      ret.buttonEvents = buttonEvents
+      print(ret.buttonEvents)
 
     
     # if self.CS.cruise_buttons != CruiseButtons.UNPRESS or self.CS.prev_cruise_buttons != CruiseButtons.INIT:
