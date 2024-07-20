@@ -47,7 +47,7 @@ class CarState(CarStateBase):
 
     
     self.prev_cruise_buttons = self.cruise_buttons
-    self.cruise_buttons = pt_cp.vl["STEER_BTN"]["ACC_BTN_2"]
+    self.cruise_buttons = pt_cp.vl["STEER_BTN"]["RESUME_BTN_2"]
     self.buttons_counter = pt_cp.vl["STEER_BTN"]["COUNTER_1"]
 
     self.engineRPM = pt_cp.vl["ECMEngineStatus"]['EngineRPM']
@@ -218,6 +218,7 @@ class CarState(CarStateBase):
       ("BRAKE_POS", "BRAKE_PEDAL"),
       
       ("ACC_BTN_2", "STEER_BTN"),
+      {"RESUME_BTN_2", "STEER_BTN"},
       ("COUNTER_1", "STEER_BTN"),
     ]
 
