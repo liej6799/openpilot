@@ -102,18 +102,18 @@ class CarInterface(CarInterfaceBase):
     print('enter first check prev_cruise_buttons', self.CS.prev_cruise_buttons)
     print('enter first check cruise_buttons', self.CS.cruise_buttons)
     
-    if self.CS.cruise_buttons != self.CS.prev_cruise_buttons and self.CS.prev_cruise_buttons != CruiseButtons.INIT:
-      print('enter first check')
-      buttonEvents = [create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS)]
-    #   # Handle ACCButtons changing buttons mid-press
-    #   if self.CS.cruise_buttons != CruiseButtons.UNPRESS and self.CS.prev_cruise_buttons != CruiseButtons.UNPRESS:
-    #     buttonEvents.append(create_button_event(CruiseButtons.UNPRESS, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS))
-    be = car.CarState.ButtonEvent(pressed=True)
-    be.type = buttons_dict.get(but, ButtonType.unknown)
+    # if self.CS.cruise_buttons != self.CS.prev_cruise_buttons and self.CS.prev_cruise_buttons != CruiseButtons.INIT:
+    #   print('enter first check')
+    #   buttonEvents = [create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS)]
+    # #   # Handle ACCButtons changing buttons mid-press
+    # #   if self.CS.cruise_buttons != CruiseButtons.UNPRESS and self.CS.prev_cruise_buttons != CruiseButtons.UNPRESS:
+    # #     buttonEvents.append(create_button_event(CruiseButtons.UNPRESS, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS))
+    # be = car.CarState.ButtonEvent(pressed=True)
+    # be.type = buttons_dict.get(but, ButtonType.unknown)
     
-    buttonEvents = car.CarState.ButtonEvent(pressed=True)
-    ret.buttonEvents = buttonEvents
-    print(ret.buttonEvents)
+    # buttonEvents = car.CarState.ButtonEvent(pressed=True)
+    # ret.buttonEvents = buttonEvents
+    # print(ret.buttonEvents)
 
     
     # if self.CS.cruise_buttons != CruiseButtons.UNPRESS or self.CS.prev_cruise_buttons != CruiseButtons.INIT:
