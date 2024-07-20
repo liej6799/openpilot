@@ -106,10 +106,10 @@ class CarController:
 
     self.apply_angle_last = apply_angle
 
-    print('car controller: steeringAngleDeg:', actuators.steeringAngleDeg)
-    print('car controller: apply_angle_last:',  self.apply_angle_last)
-    print('car controller: vEgo:',  CS.out.vEgo)
-    print('car controller: apply_angle:',  apply_angle)
+    # print('car controller: steeringAngleDeg:', actuators.steeringAngleDeg)
+    # print('car controller: apply_angle_last:',  self.apply_angle_last)
+    # print('car controller: vEgo:',  CS.out.vEgo)
+    # print('car controller: apply_angle:',  apply_angle)
 
     # can_sends.append(wulingcan.create_steering_control(
     #   self.packer_pt, apply_angle, self.frame, CC.enabled))
