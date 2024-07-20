@@ -111,8 +111,8 @@ class CarController:
     # print('car controller: vEgo:',  CS.out.vEgo)
     # print('car controller: apply_angle:',  apply_angle)
 
-    # can_sends.append(wulingcan.create_steering_control(
-    #   self.packer_pt, apply_angle, self.frame, CC.enabled))
+    can_sends.append(wulingcan.create_steering_control(
+      self.packer_pt, apply_angle, self.frame, CC.enabled))
 
 
     new_actuators = actuators.copy()
