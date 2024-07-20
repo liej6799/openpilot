@@ -414,9 +414,7 @@ class Controls:
                           pandaState.alternativeExperience != self.CP.alternativeExperience
       else:
         safety_mismatch = pandaState.safetyModel not in IGNORED_SAFETY_MODES
-      print('controls safety_mismatch', safety_mismatch)
-      print('controls pandaState.safetyRxChecksInvalid', pandaState.safetyRxChecksInvalid)
-      print('controls self.mismatch_counter', self.mismatch_counter)
+
       if safety_mismatch or pandaState.safetyRxChecksInvalid or self.mismatch_counter >= 200:
         self.events.add(EventName.controlsMismatch)
 
