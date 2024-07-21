@@ -9,8 +9,8 @@ def wuling_checksum(dat):
   return sum(dat) & 0xFF
 
 def create_steering_control(packer, apply_steer, apply_angle, frame, steer_on):
-  print('Final apply_steer: ', apply_steer)
-  print('Final apply_angle: ', apply_angle)
+  # print('Final apply_steer: ', apply_steer)
+  # print('Final apply_angle: ', apply_angle)
   
   idx = (apply_steer) % 255
   # apply_steer  = clip(apply_steer,-100,100);
