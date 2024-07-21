@@ -122,8 +122,8 @@ class CarController:
         self.packer_pt, apply_steer, self.apply_angle, self.frame, CC.enabled))
       
     new_actuators = actuators.copy()
-    new_actuators.steer = self.x / self.params.STEER_MAX
-    new_actuators.steerOutputCan = self.apply_steer_last
+    # new_actuators.steer = self.x / self.params.STEER_MAX
+    # new_actuators.steerOutputCan = self.apply_steer_last
     new_actuators.steeringAngleDeg = self.apply_angle
 
     self.frame += 1
