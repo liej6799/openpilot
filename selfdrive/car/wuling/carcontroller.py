@@ -101,13 +101,13 @@ class CarController:
     # idx = self.lka_steering_cmd_counter % 4
     
     if (self.frame  % self.params.STEER_STEP) == 0:
-      if CC.latActive:
-        new_steer = int(round(actuators.steer * self.params.STEER_MAX))
-        apply_steer = apply_driver_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
-        self.apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
-      else:
-        apply_steer = 0
-        self.apply_angle = CS.out.steeringAngleDeg
+      # if CC.latActive:
+      new_steer = int(round(actuators.steer * self.params.STEER_MAX))
+      apply_steer = apply_driver_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
+      self.apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
+      # else:
+      #   apply_steer = 0
+      #   self.apply_angle = CS.out.steeringAngleDeg
 
       self.apply_angle_last = self.apply_angle
       self.apply_steer_last = apply_steer
