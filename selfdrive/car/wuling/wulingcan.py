@@ -15,12 +15,12 @@ def create_steering_control(packer, apply_steer, apply_angle, frame, steer_on):
   idx = (apply_steer) % 255
   # apply_steer  = clip(apply_steer,-100,100);
   values = {
-      "SET_ME_X0": 0x00,
-      "STEER_TORQUE_CMD": -apply_steer,
+      # "SET_ME_X0": 0x00,
+      # "STEER_TORQUE_CMD": -apply_steer,
       "COUNTER": (frame/2) % 4,
       "STEER_LOCK": steer_on,
       "STEER_LOCK_2": 0x64,
-      "STEER_REQUEST": steer_on,
+      # "STEER_REQUEST": steer_on,
       "STEER_ANGLE_CMD": apply_angle
   }
   values["COUNTER"] = (values["COUNTER"] + 1) % 0x11
