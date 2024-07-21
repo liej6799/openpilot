@@ -119,12 +119,11 @@ class CarController:
 
       can_sends.append(wulingcan.create_steering_control(
         self.packer_pt, apply_steer, apply_angle, self.frame, CC.enabled))
-
-
-      new_actuators = actuators.copy()
-      new_actuators.steer = self.x / self.params.STEER_MAX
-      new_actuators.steerOutputCan = self.apply_steer_last
-      new_actuators.steeringAngleDeg = apply_angle
+      
+    new_actuators = actuators.copy()
+    new_actuators.steer = self.x / self.params.STEER_MAX
+    new_actuators.steerOutputCan = self.apply_steer_last
+    new_actuators.steeringAngleDeg = self.apply_angle_last
 
     self.frame += 1
     return new_actuators, can_sends
