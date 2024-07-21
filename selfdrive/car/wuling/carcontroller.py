@@ -114,17 +114,17 @@ class CarController:
 
     # print('car controller: steeringAngleDeg:', actuators.steeringAngleDeg)
     # print('car controller: apply_angle_last:',  self.apply_angle_last)
-    # print('car controller: vEgo:',  CS.out.vEgo)
+    # print('car controller: vEgo:',  CS.out.vEgo)x
     # print('car controller: apply_angle:',  apply_angle)
 
-    can_sends.append(wulingcan.create_steering_control(
-      self.packer_pt, apply_steer, apply_angle, self.frame, CC.enabled))
+      can_sends.append(wulingcan.create_steering_control(
+        self.packer_pt, apply_steer, apply_angle, self.frame, CC.enabled))
 
 
-    new_actuators = actuators.copy()
-    new_actuators.steer = self.apply_steer_last / self.params.STEER_MAX
-    new_actuators.steerOutputCan = self.apply_steer_last
-    new_actuators.steeringAngleDeg = apply_angle
+      new_actuators = actuators.copy()
+      new_actuators.steer = self.x / self.params.STEER_MAX
+      new_actuators.steerOutputCan = self.apply_steer_last
+      new_actuators.steeringAngleDeg = apply_angle
 
     self.frame += 1
     return new_actuators, can_sends
