@@ -26,7 +26,8 @@ class CarController:
     self.frame = 0
     self.last_steer_frame = 0
     self.last_button_frame = 0
-    self.brake_counter = 0
+    self.brake_counter = 0 
+    self.apply_angle = 0
 
     self.cancel_counter = 0
 
@@ -103,12 +104,12 @@ class CarController:
       if CC.latActive:
         new_steer = int(round(actuators.steer * self.params.STEER_MAX))
         apply_steer = apply_driver_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
-        apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
+        self.apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
       else:
         apply_steer = 0
-        apply_angle = CS.out.steeringAngleDeg
+        self.apply_angle = CS.out.steeringAngleDeg
 
-      self.apply_angle_last = apply_angle
+      self.apply_angle_last = self.apply_angle
       self.apply_steer_last = apply_steer
       self.last_steer_frame = self.frame
 
@@ -118,12 +119,12 @@ class CarController:
     # print('car controller: apply_angle:',  apply_angle)
 
       can_sends.append(wulingcan.create_steering_control(
-        self.packer_pt, apply_steer, apply_angle, self.frame, CC.enabled))
+        self.packer_pt, apply_steer, self.apply_angle, self.frame, CC.enabled))
       
     new_actuators = actuators.copy()
     new_actuators.steer = self.x / self.params.STEER_MAX
     new_actuators.steerOutputCan = self.apply_steer_last
-    new_actuators.steeringAngleDeg = self.apply_angle_last
+    new_actuators.steeringAngleDeg = self.apply_angle
 
     self.frame += 1
     return new_actuators, can_sends
