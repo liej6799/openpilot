@@ -26,6 +26,7 @@ class CarController:
     self.lka_steering_cmd_counter_last = -1
     self.lka_icon_status_last = (False, False)
     self.steer_rate_limited = False
+    self.frame = 0
     
     self.params = CarControllerParams(self.CP)
     
@@ -47,7 +48,7 @@ class CarController:
     # next Panda loopback confirmation in the current CS frame.
     if CS.lka_steering_cmd_counter != self.lka_steering_cmd_counter_last:
       self.lka_steering_cmd_counter_last = CS.lka_steering_cmd_counter
-    elif (frame % P.STEER_STEP) == 0:
+    elif (self.frame % P.STEER_STEP) == 0:
       lkas_enabled = True
       # if !lkas_enabled:
       # else:
@@ -61,5 +62,5 @@ class CarController:
     new_actuators.steeringAngleDeg = apply_angle
     
     print('Steer :  %s' % apply_angle)
-
+    self.frame += 1
     return new_actuators, can_sends
