@@ -21,14 +21,16 @@ def apply_wuling_steer_angle_limits(apply_angle, actual_angle, v_ego):
 class CarController:
   def __init__(self, dbc_name, CP, VM):
     self.apply_steer_last = 0
+    self.CP = CP
     
     self.lka_steering_cmd_counter_last = -1
     self.lka_icon_status_last = (False, False)
     self.steer_rate_limited = False
     
-    self.params = CarControllerParams()
+    self.params = CarControllerParams(self.CP)
     
-    self.packer_pt = CANPacker(DBC[CP.carFingerprint]['pt'])
+    self.packer_pt = CANPacker(DBC[self.CP.carFingerprint]['pt'])
+    
 
 
   def update(self, CC, CS, now_nanos):
