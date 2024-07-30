@@ -51,8 +51,9 @@ class CarState(CarStateBase):
     self.buttons_counter = pt_cp.vl["STEER_BTN"]["COUNTER_1"]
 
     self.engineRPM = pt_cp.vl["ECMEngineStatus"]['EngineRPM']
+    self.lka_steering_cmd_counter = loopback_cp.vl["STEERING_LKA"]["COUNTER"]
 
-   # Variables used for avoiding LKAS faults
+    # Variables used for avoiding LKAS faults
     self.loopback_lka_steering_cmd_updated = len(loopback_cp.vl_all["STEERING_LKA"]["COUNTER"]) > 0
     if self.loopback_lka_steering_cmd_updated:
       self.loopback_lka_steering_cmd_ts_nanos = loopback_cp.ts_nanos["STEERING_LKA"]["COUNTER"]
