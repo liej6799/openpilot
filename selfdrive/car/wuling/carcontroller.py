@@ -27,7 +27,7 @@ class CarController:
     self.lka_icon_status_last = (False, False)
     self.steer_rate_limited = False
     self.frame = 0
-    
+    self.apply_angle_last = 0
     self.params = CarControllerParams(self.CP)
     
     self.packer_pt = CANPacker(DBC[self.CP.carFingerprint]['pt'])
@@ -41,8 +41,9 @@ class CarController:
     can_sends = []
     actuators = CC.actuators
     
-    apply_angle = apply_wuling_steer_angle_limits(actuators.steeringAngleDeg, CS.out.steeringAngleDeg, CS.out.vEgo)
+    apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
 
+    self.apply_angle_last = apply_angle
     # Steering (50Hz)
     # Avoid GM EPS faults when transmitting messages too close together: skip this transmit if we just received the
     # next Panda loopback confirmation in the current CS frame.
