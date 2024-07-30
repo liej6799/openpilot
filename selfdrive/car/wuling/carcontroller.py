@@ -38,6 +38,7 @@ class CarController:
     
     # Send CAN commands.
     can_sends = []
+    actuators = CC.actuators
     
     apply_angle = apply_wuling_steer_angle_limits(actuators.steeringAngleDeg, CS.out.steeringAngleDeg, CS.out.vEgo)
 
