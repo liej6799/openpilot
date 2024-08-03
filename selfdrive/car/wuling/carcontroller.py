@@ -58,7 +58,7 @@ class CarController:
       # else:
       #   apply_angle = CS.out.steeringAngleDeg
         
-      idx = (frame/2) % 4
+      idx = (self.frame/2) % 4
       
       can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, idx, lkas_enabled))
     
