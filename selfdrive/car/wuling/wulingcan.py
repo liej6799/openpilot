@@ -15,7 +15,8 @@ def create_steering_control(packer, apply_steer, idx, steer_req):
         # "SET_ME_X0": 0x00,
         # "STEER_REQUEST": steer_req,
         "ACTIVE": 0x64, # Always active 
-        "STEER_LOCK": steer_req,
+        "ACTIVE_2": 0x64, 
+        "STEER_LOCK": 1,
         "COUNTER": idx,
         "STEER_ANGLE_CMD": apply_steer
   }

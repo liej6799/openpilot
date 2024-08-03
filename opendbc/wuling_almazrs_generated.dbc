@@ -129,7 +129,7 @@ BO_ 549 STEERING_LKA: 8 XXX
  SG_ STEER_LOCK : 39|1@0+ (1,0) [0|1] "" XXX
  SG_ ACTIVE : 55|8@0+ (1,0) [0|255] "" XXX
  SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
- SG_ STEER_LOCK_2 : 23|8@0+ (1,0) [0|127] "" XXX
+ SG_ ACTIVE_2 : 23|8@0+ (1,0) [0|255] "" XXX
  
 BO_ 883 LkasHud: 8 K20_ECM
  SG_ LKAS_STATE : 10|1@0+ (1,0) [0|1] "" NEO

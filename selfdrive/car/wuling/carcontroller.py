@@ -41,8 +41,11 @@ class CarController:
     can_sends = []
     actuators = CC.actuators
     
-    apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
-
+    if CC.latActive:
+      apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
+    else:
+      apply_angle = CS.out.steeringAngleDeg
+      
     self.apply_angle_last = apply_angle
     # Steering (50Hz)
     # Avoid GM EPS faults when transmitting messages too close together: skip this transmit if we just received the
@@ -55,8 +58,8 @@ class CarController:
       # else:
       #   apply_angle = CS.out.steeringAngleDeg
         
-      idx = (CS.lka_steering_cmd_counter + 1) % 4
-    
+      idx = (frame/2) % 4
+      
       can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, idx, lkas_enabled))
     
     new_actuators = actuators.copy()
