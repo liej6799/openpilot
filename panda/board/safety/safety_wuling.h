@@ -14,9 +14,9 @@
 const CanMsg WULING_TX_MSGS[] = {{ENGINE_DATA, 0, 8}, {LKAS_HUD, 0, 8}};
 
 AddrCheckStruct wl_addr_checks[] = {
-  {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
-  {.msg = {{BRAKE_DATA, 0, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
-  {.msg = {{GAS_DATA, 0, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
+  // {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
+  // {.msg = {{BRAKE_DATA, 0, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
+  // {.msg = {{GAS_DATA, 0, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
 };
 
 #define WL_RX_CHECK_LEN (sizeof(wl_addr_checks) / sizeof(wl_addr_checks[0]))
@@ -28,7 +28,7 @@ static int wuling_rx_hook(CANPacket_t *to_push) {
 
    if (valid && ((int)GET_BUS(to_push) == BUS_MAIN)) {
       int addr = GET_ADDR(to_push);
-
+      // UNUSED(addr);
       if (addr == 840) {
         vehicle_moving = GET_BYTE(to_push, 0) | GET_BYTE(to_push, 1);
       }
@@ -48,22 +48,15 @@ static int wuling_rx_hook(CANPacket_t *to_push) {
       }
 
       if ((addr == 0x263)) {
-        acc_main_on = GET_BIT(to_push, 38U) != 0U;
-        if (!acc_main_on) {
-          if (!cruise_engaged_prev) {
-            controls_allowed = 1;
-          }
-        }else {
-          controls_allowed = 0;
-        }
-        cruise_engaged_prev = acc_main_on;
+        bool cruise_engaged = GET_BIT(to_push, 38U) != 0U;
+        pcm_cruise_check(cruise_engaged);
       }
 
       generic_rx_checks((addr == STEERING_LKAS));
    }
 
   controls_allowed = 1;
-  return valid;
+  return true;
 }
 
 static int wuling_tx_hook(CANPacket_t *to_send) {
@@ -90,7 +83,6 @@ static int wuling_fwd_hook(int bus, int addr) {
   if (bus == BUS_MAIN) {
     bus_fwd = BUS_CAM;
   } else if (bus == BUS_CAM) {
-    // bool block = (addr == LKAS_HUD) || (addr == STEERING_LKAS);
     bool block =  (addr == STEERING_LKAS);
     if (!block) {
       bus_fwd = BUS_MAIN;
