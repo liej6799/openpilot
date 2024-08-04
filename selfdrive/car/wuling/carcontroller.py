@@ -3,6 +3,7 @@ from common.conversions import Conversions as CV
 from common.numpy_fast import interp
 from common.realtime import DT_CTRL
 from opendbc.can.packer import CANPacker
+from selfdrive.car import apply_std_steer_angle_limits
 from selfdrive.car import apply_driver_steer_torque_limits
 from selfdrive.car.wuling import wulingcan
 from selfdrive.car.wuling.values import DBC, CanBus, PREGLOBAL_CARS, CarControllerParams
@@ -22,6 +23,7 @@ class CarController:
     self.CP = CP
     self.start_time = 0.
     self.apply_steer_last = 0
+    self.apply_angle_last = 0
     self.apply_gas = 0
     self.apply_brake = 0
     self.frame = 0
@@ -61,7 +63,9 @@ class CarController:
       if CC.cruiseControl.resume and self.frame % 5 == 0:
         # Mazda Stop and Go requires a RES button (or gas) press if the car stops more than 3 seconds
         # Send Resume button when planner wants car to move
-        can_sends.append(wulingcan.create_resume_cmd(self.packer, CS.crz_btns_counter, 1))
+        # can_sends.append(wulingcan.create_resume_cmd(self.packer, CS.crz_btns_counter, 1))
+        # can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.buttons_counter, CruiseButtons.RES_ACCEL)]*25)
+        #   self.last_button_frame = self.frame
 
     # Steering (Active: 50Hz
     steer_step = self.params.STEER_STEP
@@ -79,13 +83,17 @@ class CarController:
       if CC.latActive:
         new_steer = int(round(actuators.steer * self.params.STEER_MAX))
         apply_steer = apply_driver_steer_torque_limits(-new_steer, self.apply_steer_last, CS.out.steeringTorque, self.params)
+        apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
+
       else:
         apply_steer = 0
+        apply_angle = CS.out.steeringAngleDeg
 
       self.last_steer_frame = self.frame
       self.apply_steer_last = apply_steer
+      self.apply_angle_last = apply_angle
       # idx = self.lka_steering_cmd_counter % 4
-      can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_steer, self.frame))
+      can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, self.frame, CC.latActive))
 
     # Show green icon when LKA torque is applied, and
     # alarming orange icon when approaching torque limit.
@@ -104,6 +112,7 @@ class CarController:
     new_actuators = actuators.copy()
     new_actuators.steer = self.apply_steer_last / self.params.STEER_MAX
     new_actuators.steerOutputCan = self.apply_steer_last
+    new_actuators.steeringAngleDeg = apply_angle
     new_actuators.gas = self.apply_gas
     new_actuators.brake = self.apply_brake
 

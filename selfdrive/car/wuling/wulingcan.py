@@ -2,21 +2,23 @@ import copy
 from cereal import car
 from common.numpy_fast import clip
 from selfdrive.car import make_can_msg
+from selfdrive.car.wuling.values import CruiseButtons
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
 def wuling_checksum(dat):
   return sum(dat) & 0xFF
 
-def create_steering_control(packer, apply_steer, frame):
+def create_steering_control(packer, apply_steer, frame, latActive):
 
   idx = (apply_steer) % 255
   # apply_steer  = clip(apply_steer,-100,100);
-  values = {
-      "STEER_TORQUE_CMD": apply_steer,
-      "SET_ME_X0": 0x00,
+  values = {      
+      "ACTIVE": 0x64, # Always active
+      "STEER_LOCK_2": 0x64 if latActive != 0 else 0x00, 
+      "STEER_LOCK": 1 if latActive != 0 else 0,
       "COUNTER": (frame/2) % 4,
-      "STEER_REQUEST": 1 if apply_steer != 0 else 0,
+      "STEER_ANGLE_CMD": apply_steer
   }
   values["COUNTER"] = (values["COUNTER"] + 1) % 0x11
   
@@ -83,12 +85,34 @@ def create_acc_dashboard_command(packer, acc_engaged, idx, target_speed_kph, res
   return packer.make_can_msg("ASCMActiveCruiseControlStatus", 0, values)
 
 
+
+def create_buttons(packer, idx, button):
+  resume = 0
+  acc_btn_2 = button
+  if (button == CruiseButtons.RES_ACCEL): 
+    resume = 1
+    acc_btn_2 = CruiseButtons.MAIN
+  
+  values = {
+    "RESUME_BTN_2" : resume,
+    "ACC_BTN_1" : button,
+    "ACC_BTN_2" : acc_btn_2,
+    "LKA_BTN" : 0,
+    "COUNTER_1" : (idx+1) % 0x4,
+    "COUNTER_2" : (idx+1) % 0x4,
+  }
+
+  return packer.make_can_msg("STEER_BTN",  2, values)
+
+
 def create_resume_cmd(packer, idx, resume):
   values = {
     "CRZ_BTN_1" : 1,
     "CRZ_BTN_2" : 1,
     "RESUME_BTN_1" : 1,
     "RESUME_BTN_2" : 1,
+    "CRZ_BTN_3" : 1,
+    "CRZ_BTN_4" : 1,
     "COUNTER_1" : idx,
     "COUNTER_2" : idx,
   }

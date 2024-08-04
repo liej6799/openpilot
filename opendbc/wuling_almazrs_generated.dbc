@@ -126,6 +126,10 @@ BO_ 549 STEERING_LKA: 8 XXX
  SG_ STEER_REQUEST : 5|1@0+ (1,0) [0|1] "" XXX
  SG_ COUNTER : 7|2@0+ (1,0) [0|7] "" XXX
  SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
+ SG_ STEER_ANGLE_CMD : 38|15@0- (0.0625,0) [0|32767] "" XXX
+ SG_ STEER_LOCK : 39|1@0+ (1,0) [0|1] "" XXX
+ SG_ ACTIVE : 55|8@0+ (1,0) [0|255] "" XXX
+ SG_ STEER_LOCK_2 : 23|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 883 LkasHud: 8 K20_ECM
  SG_ LKAS_STATE : 10|1@0+ (1,0) [0|1] "" NEO
@@ -167,15 +171,15 @@ BO_ 225 BCMDoorBelt: 8 XXX
  SG_ RIGHTSEATBEALT : 11|1@0+ (1,0) [0|1] "" XXX
  SG_ LEFTSEATBEALT : 23|1@0+ (1,0) [0|1] "" XXX
 
-BO_ 481 STEER_BTN: 8 XXX
- SG_ CRZ_BTN_2 : 58|1@0+ (1,0) [0|1] "" XXX
- SG_ CRZ_BTN_1 : 2|1@0+ (1,0) [0|1] "" XXX
- SG_ RESUME_BTN_1 : 3|1@0+ (1,0) [0|1] "" XXX
- SG_ RESUME_BTN_2 : 11|1@0+ (1,0) [0|1] "" XXX
- SG_ ACC_BTN_1 : 4|1@0+ (1,0) [0|1] "" XXX
- SG_ ACC_BTN_2 : 60|1@0+ (1,0) [0|1] "" XXX
+BO_ 481 STEER_BTN: 8 XXX 
+ SG_ ACC_BTN_1 : 0|6@1+ (1,0) [0|15] "" XXX
  SG_ COUNTER_1 : 7|2@0+ (1,0) [0|3] "" XXX
+ SG_ RESUME_BTN_2 : 11|1@0+ (1,0) [0|1] "" XXX
+ SG_ LKA_BTN : 13|1@0+ (1,0) [0|1] "" XXX
+ SG_ ACC_BTN_2 : 61|6@0+ (1,0) [0|15] "" XXX
  SG_ COUNTER_2 : 63|2@0+ (1,0) [0|3] "" XXX
+
+
 
 BO_ 296 BRAKE_PEDAL: 8 XXX
  SG_ NEW_SIGNAL_1 : 15|8@0+ (1,0) [0|255] "" XXX
