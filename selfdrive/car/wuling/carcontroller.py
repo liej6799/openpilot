@@ -47,7 +47,10 @@ class CarController:
     
     # Send CAN commands.
     can_sends = []
-
+    
+    # Steering (Active: 50Hz
+    steer_step = self.params.STEER_STEP
+    
     if CC.cruiseControl.cancel:
       # If brake is pressed, let us wait >70ms before trying to disable crz to avoid
       # a race condition with the stock system, where the second cancel from openpilot
@@ -66,9 +69,6 @@ class CarController:
         # can_sends.append(wulingcan.create_resume_cmd(self.packer, CS.crz_btns_counter, 1))
         # can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.buttons_counter, CruiseButtons.RES_ACCEL)]*25)
         #   self.last_button_frame = self.frame
-
-    # Steering (Active: 50Hz
-    steer_step = self.params.STEER_STEP
 
     self.lka_steering_cmd_counter += 1 if CS.loopback_lka_steering_cmd_updated else 0
 
