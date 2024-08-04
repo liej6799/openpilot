@@ -116,9 +116,9 @@ class CarInterface(CarInterfaceBase):
     # print(ret.buttonEvents)
 
     
-    # if self.CS.cruise_buttons != CruiseButtons.UNPRESS or self.CS.prev_cruise_buttons != CruiseButtons.INIT:
-    #   ret.buttonEvents = create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT,
-    #                                           unpressed_btn=CruiseButtons.UNPRESS)
+    if self.CS.cruise_buttons != CruiseButtons.UNPRESS or self.CS.prev_cruise_buttons != CruiseButtons.INIT:
+      ret.buttonEvents = create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT,
+                                              unpressed_btn=CruiseButtons.UNPRESS)
 
     # buttonEvents = []
     # be = car.CarState.ButtonEvent.new_message()
@@ -132,8 +132,8 @@ class CarInterface(CarInterfaceBase):
   
     events = self.create_common_events(ret, extra_gears=[GearShifter.sport, GearShifter.low, GearShifter.eco, GearShifter.manumatic], pcm_enable=self.CP.pcmCruise, enable_buttons=(ButtonType.decelCruise,))
 
-    if not self.CP.pcmCruise:
-      events.add(EventName.buttonEnable)
+    # if not self.CP.pcmCruise:
+    #   events.add(EventName.buttonEnable)
 
     # Enabling at a standstill with brake is allowed
     # TODO: verify 17 Volt can enable for the first time at a stop and allow for all GMs

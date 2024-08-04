@@ -172,15 +172,13 @@ BO_ 225 BCMDoorBelt: 8 XXX
  SG_ LEFTSEATBEALT : 23|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 481 STEER_BTN: 8 XXX
- SG_ CRZ_BTN_2 : 58|1@0+ (1,0) [0|1] "" XXX
- SG_ CRZ_BTN_1 : 2|1@0+ (1,0) [0|1] "" XXX
- SG_ RESUME_BTN_1 : 3|1@0+ (1,0) [0|1] "" XXX
- SG_ RESUME_BTN_2 : 11|1@0+ (1,0) [0|1] "" XXX
- SG_ ACC_BTN_1 : 4|1@0+ (1,0) [0|1] "" XXX
- SG_ ACC_BTN_2 : 60|1@0+ (1,0) [0|1] "" XXX
+ SG_ ACC_BTN_1 : 0|6@1+ (1,0) [0|15] "" XXX
  SG_ COUNTER_1 : 7|2@0+ (1,0) [0|3] "" XXX
+ SG_ RESUME_BTN_2 : 11|1@0+ (1,0) [0|1] "" XXX
+ SG_ LKA_BTN : 13|1@0+ (1,0) [0|1] "" XXX
+ SG_ ACC_BTN_2 : 61|6@0+ (1,0) [0|15] "" XXX
  SG_ COUNTER_2 : 63|2@0+ (1,0) [0|3] "" XXX
-
+ 
 BO_ 296 BRAKE_PEDAL: 8 XXX
  SG_ NEW_SIGNAL_1 : 15|8@0+ (1,0) [0|255] "" XXX
  SG_ NEW_SIGNAL_2 : 0|6@1+ (1,0) [0|255] "" XXX
