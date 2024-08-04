@@ -41,10 +41,10 @@ class CarController:
     can_sends = []
     actuators = CC.actuators
     
-    if CC.latActive:
-      apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
-    else:
-      apply_angle = CS.out.steeringAngleDeg
+    # if CC.latActive:
+    apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
+    # else:
+    #   apply_angle = CS.out.steeringAngleDeg
       
     self.apply_angle_last = apply_angle
     # Steering (50Hz)
