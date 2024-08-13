@@ -77,11 +77,10 @@ static int wuling_tx_hook(CANPacket_t *to_send) {
 
 
 
-static int wuling_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
+static int wuling_fwd_hook(int bus_num, int addr) {
 
   int bus_fwd = -1; // fallback to do not forward
-  int addr = GET_ADDR(to_fwd);
-
+ 
   if (bus == BUS_MAIN) {
     bus_fwd = BUS_CAM;
   } else if (bus == BUS_CAM) {
