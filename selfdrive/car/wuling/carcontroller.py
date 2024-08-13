@@ -41,19 +41,20 @@ class CarController:
     can_sends = []
     actuators = CC.actuators
     
-    # if CC.latActive:
-    apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
-    # else:
-    #   apply_angle = CS.out.steeringAngleDeg
+    if CC.latActive:
+      apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
+    else:
+      apply_angle = CS.out.steeringAngleDeg
       
     self.apply_angle_last = apply_angle
+    
     # Steering (50Hz)
     # Avoid GM EPS faults when transmitting messages too close together: skip this transmit if we just received the
     # next Panda loopback confirmation in the current CS frame.
     if CS.lka_steering_cmd_counter != self.lka_steering_cmd_counter_last:
       self.lka_steering_cmd_counter_last = CS.lka_steering_cmd_counter
     elif (self.frame % P.STEER_STEP) == 0:
-      lkas_enabled = True
+      lkas_enabled = CC.latActive
       # if !lkas_enabled:
       # else:
       #   apply_angle = CS.out.steeringAngleDeg
