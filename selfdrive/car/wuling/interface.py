@@ -117,7 +117,9 @@ class CarInterface(CarInterfaceBase):
 
     
     if self.CS.cruise_buttons != CruiseButtons.UNPRESS or self.CS.prev_cruise_buttons != CruiseButtons.INIT:
-      ret.buttonEvents = create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS)
+      buttonEvents = [create_button_event(self.CS.cruise_buttons, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS)]
+     
+      ret.buttonEvents = buttonEvents
 
     # buttonEvents = []
     # be = car.CarState.ButtonEvent.new_message()
