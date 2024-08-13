@@ -148,15 +148,6 @@ void uno_set_can_mode(uint8_t mode){
   }
 }
 
-void uno_usb_power_mode_tick(uint32_t uptime){
-  UNUSED(uptime);
-  if(bootkick_timer != 0U){
-    bootkick_timer--;
-  } else {
-    uno_set_bootkick(false);
-  }
-}
-
 void uno_board_tick(bool ignition, bool usb_enum, bool heartbeat_seen) {
   UNUSED(ignition);
   UNUSED(usb_enum);
@@ -292,7 +283,6 @@ const board board_uno = {
   .set_usb_power_mode = uno_set_usb_power_mode,
   .set_gps_mode = uno_set_gps_mode,
   .set_can_mode = uno_set_can_mode,
-  .usb_power_mode_tick = uno_usb_power_mode_tick,
   .check_ignition = uno_check_ignition,
   .read_current = unused_read_current,
   .set_fan_enabled = uno_set_fan_enabled,
