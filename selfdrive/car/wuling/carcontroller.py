@@ -63,12 +63,17 @@ class CarController:
       #   can_sends.append(mazdacan.create_button_cmd(self.packer, self.CP.carFingerprint, CS.crz_btns_counter, Buttons.CANCEL))
     else:
       self.brake_counter = 0
-      if CC.cruiseControl.resume and self.frame % 5 == 0:
-        # Mazda Stop and Go requires a RES button (or gas) press if the car stops more than 3 seconds
-        # Send Resume button when planner wants car to move
-        # can_sends.append(wulingcan.create_resume_cmd(self.packer, CS.crz_btns_counter, 1))
-        # can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.buttons_counter, CruiseButtons.RES_ACCEL)]*25)
-        #   self.last_button_frame = self.frame
+      # if CC.cruiseControl.resume and self.frame % 5 == 0:
+      #   # Mazda Stop and Go requires a RES button (or gas) press if the car stops more than 3 seconds
+      #   # Send Resume button when planner wants car to move
+      #   # can_sends.append(wulingcan.create_resume_cmd(self.packer, CS.crz_btns_counter, 1))
+      #   # can_sends.extend([wulingcan.create_buttons(self.packer_pt, CS.buttons_counter, CruiseButtons.RES_ACCEL)]*25)
+      #   #   self.last_button_frame = self.frame
+
+    if CS.loopback_lka_steering_cmd_updated:
+      self.lka_steering_cmd_counter += 1
+    else: 
+      self.lka_steering_cmd_counter = 0
 
     # Avoid GM EPS faults when transmitting messages too close together: skip this transmit if we
     # received the ASCMLKASteeringCmd loopback confirmation too recently
