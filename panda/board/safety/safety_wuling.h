@@ -75,10 +75,12 @@ static int wuling_tx_hook(CANPacket_t *to_send) {
   return tx;
 }
 
-static int wuling_fwd_hook(int bus, int addr) {
-  // fwd from car to camera. also fwd certain msgs from camera to car
 
-  int bus_fwd = -1;
+
+static int wuling_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
+
+  int bus_fwd = -1; // fallback to do not forward
+  int addr = GET_ADDR(to_fwd);
 
   if (bus == BUS_MAIN) {
     bus_fwd = BUS_CAM;
