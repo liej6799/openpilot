@@ -40,43 +40,30 @@ class CarInterface(CarInterfaceBase):
     ret.lateralTuning.init('pid')
     
     op_params = opParams("wuling car_interface.py for lateral override")
-    tire_stiffness_factor = 0.444
 
     ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.wuling)]
 
     ret.mass = 1950. + STD_CARGO_KG
     ret.wheelbase = 2.75
-    ret.steerRatio = 15
+    ret.steerRatio = 17.7
     tire_stiffness_factor = 1  # Stock Michelin Energy Saver A/S, LiveParameters
     ret.centerToFront = ret.wheelbase * 0.4
-    # ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 500], [0, 500]]
+    ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 500], [0, 500]]
     ret.openpilotLongitudinalControl = False
 
     ret.steerLimitTimer = 0.4
-    ret.steerActuatorDelay = 0.1
+    ret.steerActuatorDelay = 0.2
 
     ret.transmissionType = TransmissionType.automatic
-    # CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
-
-    # CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
-    # CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
     
-    # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 41.0], [0., 41.0]]
-    # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0002, 0.004], [0.1, 0.7]]
-    # ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
-
-    bp = [i * CV.MPH_TO_MS for i in op_params.get("TUNE_LAT_PID_bp_mph", force_update=True)]
-    kpV = [i for i in op_params.get("TUNE_LAT_PID_kp", force_update=True)]
-    kiV = [i for i in op_params.get("TUNE_LAT_PID_ki", force_update=True)]
-    ret.lateralTuning.pid.kpV = kpV
-    ret.lateralTuning.pid.kiV = kiV
-    ret.lateralTuning.pid.kpBP = bp
-    ret.lateralTuning.pid.kiBP = bp
-    ret.lateralTuning.pid.kf = op_params.get('TUNE_LAT_PID_kf', force_update=True)
-        
     CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
     CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
-
+    
+    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 41.0], [0., 41.0]]
+    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0002, 0.004], [0.1, 0.7]]
+    ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
+    ret.steerActuatorDelay = 0.1  # Default delay, not measured yet
+    
     ret.minEnableSpeed = 5 * CV.MPH_TO_MS
     ret.minSteerSpeed = 0 * CV.MPH_TO_MS
     
@@ -86,7 +73,7 @@ class CarInterface(CarInterfaceBase):
       
     ret.pcmCruise = False
     
-    # CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
+    CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
     
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
                                                                          tire_stiffness_factor=tire_stiffness_factor)
