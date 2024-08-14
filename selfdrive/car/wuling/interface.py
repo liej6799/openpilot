@@ -51,8 +51,8 @@ class CarInterface(CarInterfaceBase):
     
     ret.openpilotLongitudinalControl = False
 
-    ret.steerLimitTimer = 0.4
-    ret.steerActuatorDelay = 0.2
+    ret.steerLimitTimer = 1.0
+    ret.steerActuatorDelay = 0.1
     
     ret.steerControlType = car.CarParams.SteerControlType.angle
 
