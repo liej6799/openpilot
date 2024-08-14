@@ -180,16 +180,16 @@ class Controls:
     self.VM = VehicleModel(self.CP)
 
     self.LaC: LatControl
-    if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
-      self.LaC = LatControlAngle(self.CP, self.CI)
-    elif self.CP.lateralTuning.which() == 'pid':
-      self.LaC = LatControlPID(self.CP, self.CI)
-    elif self.CP.lateralTuning.which() == 'indi':
-      self.LaC = LatControlINDI(self.CP, self.CI)
-    elif self.CP.lateralTuning.which() == 'torque':
-      self.LaC = LatControlTorque(self.CP, self.CI)
-    elif self.CP.lateralTuning.which() == 'lqr':
-      self.LaC = LatControlLQR(self.CP, self.CI)
+    # if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
+    self.LaC = LatControlAngle(self.CP, self.CI)
+    # elif self.CP.lateralTuning.which() == 'pid':
+    #   self.LaC = LatControlPID(self.CP, self.CI)
+    # elif self.CP.lateralTuning.which() == 'indi':
+    #   self.LaC = LatControlINDI(self.CP, self.CI)
+    # elif self.CP.lateralTuning.which() == 'torque':
+    #   self.LaC = LatControlTorque(self.CP, self.CI)
+    # elif self.CP.lateralTuning.which() == 'lqr':
+    #   self.LaC = LatControlLQR(self.CP, self.CI)
 
     print("Lateral Type : %s" % self.CP.lateralTuning.which())
     # dp, keep the original LaC for alt lac ctrl
@@ -272,16 +272,7 @@ class Controls:
           if type(self.LaC) == type(self.LaC_default):
             self.LaC_default =  self.LaC
           self.dp_lateral_alt_active = True
-          if getattr(self.CP.latTuneCollection.pid, 'kpV') and self.sm['dragonConf'].dpLateralAltCtrl == 1 and not isinstance(self.LaC, LatControlPID):
-            self.CP.lateralTuning.pid = self.CP.latTuneCollection.pid
-            self.LaC = LatControlPID(self.CP, self.CI)
-          elif self.sm['dragonConf'].dpLateralAltCtrl == 2 and not isinstance(self.LaC, LatControlLQR):
-            self.CP.lateralTuning.lqr = self.CP.latTuneCollection.lqr
-            self.LaC = LatControlLQR(self.CP, self.CI)
-          elif self.sm['dragonConf'].dpLateralAltCtrl == 3 and not isinstance(self.LaC, LatControlTorque):
-            self.CP.lateralTuning.torque = self.CP.latTuneCollection.torque
-            self.LaC = LatControlTorque(self.CP, self.CI)
-            print("Dp Set lateral torque")
+          self.LaC = LatControlAngle(self.CP, self.CI)
           self.LaC.reset()
       self.dp_lateral_alt_v_cruise_kph_prev = self.dp_lateral_alt_v_cruise_kph
 
