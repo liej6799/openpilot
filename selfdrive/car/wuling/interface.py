@@ -36,7 +36,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerActuatorDelay = 0.1
     
     ret.steerControlType = car.CarParams.SteerControlType.angle
-    # ret.lateralTuning.init('pid')
+    ret.lateralTuning.init('angle')
     
     ret.radarUnavailable = True
     
