@@ -48,7 +48,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerRatio = 17.7
     tire_stiffness_factor = 1  # Stock Michelin Energy Saver A/S, LiveParameters
     ret.centerToFront = ret.wheelbase * 0.4
-    ret.lateralParams.torqueBP, ret.lateralParams.torqueV = [[0, 500], [0, 500]]
+    
     ret.openpilotLongitudinalControl = False
 
     ret.steerLimitTimer = 0.4
@@ -72,9 +72,7 @@ class CarInterface(CarInterfaceBase):
       ret.openpilotLongitudinalControl = False
       
     ret.pcmCruise = False
-    
-    CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
-    
+  
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
                                                                          tire_stiffness_factor=tire_stiffness_factor)
 
