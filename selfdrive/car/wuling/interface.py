@@ -34,15 +34,14 @@ class CarInterface(CarInterfaceBase):
     
     ret.steerLimitTimer = 1.0
     ret.steerActuatorDelay = 0.1
+    ret.steerRatio = 17.7
     
     ret.steerControlType = car.CarParams.SteerControlType.angle
-    ret.lateralTuning.init('angle')
     
     ret.radarUnavailable = True
     
     ret.mass = 1950. + STD_CARGO_KG
     ret.wheelbase = 2.75
-    ret.steerRatio = 17.7
     ret.centerToFront = ret.wheelbase * 0.4
 
     # CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
