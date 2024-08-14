@@ -339,12 +339,12 @@ class Controls:
     if CS.canValid:
       self.events.add_from_msg(CS.events)
 
-    if self.CP.lateralTuning.which() == 'pid':
-      t = sec_since_boot()
-      if t - self.params_check_last_t > self.params_check_freq:
-        if self.op_params_override_lateral:
-          self.LaC.update_op_params()
-        self.params_check_last_t = t
+    # if self.CP.lateralTuning.which() == 'pid':
+    #   t = sec_since_boot()
+    #   if t - self.params_check_last_t > self.params_check_freq:
+    #     if self.op_params_override_lateral:
+    #       self.LaC.update_op_params()
+    #     self.params_check_last_t = t
       
     # Create events for temperature, disk space, and memory
     if self.dp_temp_check and self.sm['deviceState'].thermalStatus >= ThermalStatus.red:
