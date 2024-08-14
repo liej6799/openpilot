@@ -27,54 +27,25 @@ class CarInterface(CarInterfaceBase):
     self.dp_override_speed = 0. # m/s
 
   @staticmethod
-  def get_pid_accel_limits(CP, current_speed, cruise_speed):
-    return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX
-
-  @staticmethod
   def _get_params(ret, candidate, fingerprint, car_fw, experimental_long):
     ret.carName = "wuling"
-    ret.radarUnavailable = True
-    ret.dashcamOnly = candidate in PREGLOBAL_CARS
-    ret.autoResumeSng = False
-    ret.notCar = False
-    ret.lateralTuning.init('pid')
-    
-    op_params = opParams("wuling car_interface.py for lateral override")
-
     ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.wuling)]
-
+    ret.autoResumeSng = False
+    
+    ret.steerLimitTimer = 1.0
+    ret.steerActuatorDelay = 0.1
+    ret.steerRatio = 17.7
+    
+    ret.steerControlType = car.CarParams.SteerControlType.angle
+    
+    ret.radarUnavailable = True
+    
     ret.mass = 1950. + STD_CARGO_KG
     ret.wheelbase = 2.75
-    ret.steerRatio = 17.7
-    tire_stiffness_factor = 1  # Stock Michelin Energy Saver A/S, LiveParameters
     ret.centerToFront = ret.wheelbase * 0.4
-    
-    ret.openpilotLongitudinalControl = False
 
-    ret.steerLimitTimer = 0.4
-    ret.steerActuatorDelay = 0.2
-
-    ret.transmissionType = TransmissionType.automatic
-    
     CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
     CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
-    
-    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 41.0], [0., 41.0]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0002, 0.004], [0.1, 0.7]]
-    ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
-    ret.steerActuatorDelay = 0.1  # Default delay, not measured yet
-    
-    ret.minEnableSpeed = 5 * CV.MPH_TO_MS
-    ret.minSteerSpeed = 0 * CV.MPH_TO_MS
-    
-    params = Params()
-    if int(params.get("dp_atl").decode('utf-8')) == 1:
-      ret.openpilotLongitudinalControl = False
-      
-    ret.pcmCruise = False
-  
-    ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
-                                                                         tire_stiffness_factor=tire_stiffness_factor)
 
     return ret
 
