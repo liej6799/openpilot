@@ -34,10 +34,10 @@ class CarInterface(CarInterfaceBase):
     
     ret.steerLimitTimer = 1.0
     ret.steerActuatorDelay = 0.1
-
-    ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.wuling)]
     
     ret.steerControlType = car.CarParams.SteerControlType.angle
+    # ret.lateralTuning.init('pid')
+    
     ret.radarUnavailable = True
     
     ret.mass = 1950. + STD_CARGO_KG
@@ -45,8 +45,8 @@ class CarInterface(CarInterfaceBase):
     ret.steerRatio = 17.7
     ret.centerToFront = ret.wheelbase * 0.4
 
-    CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
-    CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
+    # CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
+    # CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
 
     return ret
 
