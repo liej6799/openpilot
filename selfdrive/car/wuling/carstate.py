@@ -76,7 +76,7 @@ class CarState(CarStateBase):
     ret.standstill = ret.vEgoRaw < 0.1
 
     ret.steeringAngleDeg = -pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
-    ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]
+    ret.steeringRateDeg = -pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]
     ret.steeringTorque = -pt_cp.vl["PSCMSteeringAngle"]["SteeringTorque"]
     ret.steeringTorqueEps = -pt_cp.vl["STEER_RELATED"]["STEER_TORQUE"]
     
