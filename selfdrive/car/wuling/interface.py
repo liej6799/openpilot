@@ -37,7 +37,7 @@ class CarInterface(CarInterfaceBase):
     ret.dashcamOnly = candidate in PREGLOBAL_CARS
     ret.autoResumeSng = False
     ret.notCar = False
-    ret.lateralTuning.init('pid')
+    # ret.lateralTuning.init('pid')
     
     op_params = opParams("wuling car_interface.py for lateral override")
 
@@ -56,9 +56,9 @@ class CarInterface(CarInterfaceBase):
 
     ret.transmissionType = TransmissionType.automatic
 
-    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 41.0], [0., 41.0]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0002, 0.004], [0.1, 0.7]]
-    ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
+    # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 41.0], [0., 41.0]]
+    # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0002, 0.004], [0.1, 0.7]]
+    # ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
     ret.steerActuatorDelay = 0.1  # Default delay, not measured yet
         
     CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
@@ -77,6 +77,7 @@ class CarInterface(CarInterfaceBase):
                                                                          tire_stiffness_factor=tire_stiffness_factor)
 
     return ret
+  
 
   # returns a car.CarState
   def _update(self, c):
