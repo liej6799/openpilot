@@ -70,8 +70,8 @@ class CarInterface(CarInterfaceBase):
     ret.minSteerSpeed = 0 * CV.MPH_TO_MS
     
     params = Params()
-    if int(params.get("dp_atl").decode('utf-8')) == 1:
-      ret.openpilotLongitudinalControl = False
+
+    ret.openpilotLongitudinalControl = True
       
     ret.pcmCruise = False
   

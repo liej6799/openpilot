@@ -8,6 +8,8 @@ from selfdrive.car.wuling import wulingcan
 from selfdrive.car.wuling.values import DBC, CanBus, PREGLOBAL_CARS, CarControllerParams
 from common.numpy_fast import clip
 
+LongCtrlState = car.CarControl.Actuators.LongControlState
+
 def apply_wuling_steer_angle_limits(apply_angle, actual_angle, v_ego):
   # pick angle rate limits based on wind up/down
   ANGLE_RATE_LIMIT_UP = 3       # maximum allow 150 degree per second, 100Hz loop means 1.5
@@ -47,6 +49,7 @@ class CarController:
       apply_angle = CS.out.steeringAngleDeg
       
     self.apply_angle_last = apply_angle
+
     
     # Steering (50Hz)
     # Avoid GM EPS faults when transmitting messages too close together: skip this transmit if we just received the
@@ -62,7 +65,14 @@ class CarController:
       idx = (self.frame/2) % 4
       
       can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, idx, lkas_enabled))
-      can_sends.append(wulingcan.create_acc_command(self.packer_pt, idx, False))
+      accel = int(round(interp(actuators.accel, CarControllerParams.ACCEL_LOOKUP_BP, CarControllerParams.ACCEL_LOOKUP_V)))
+      
+      # accel = clip(actuators.accel, self.CarControllerParams.ACCEL_MIN, self.CarControllerParams.ACCEL_MAX) if CC.longActive else 0
+      stopping = actuators.longControlState == LongCtrlState.stopping
+      starting = actuators.longControlState == LongCtrlState.starting
+      
+      
+      can_sends.append(wulingcan.create_acc_command(self.packer_pt, idx, True))
     
     new_actuators = actuators.copy()
     new_actuators.steeringAngleDeg = apply_angle
