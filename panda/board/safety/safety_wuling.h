@@ -7,7 +7,7 @@
 #define GAS_DATA      0x260 // USELESS STILL CAN BRAKE + GAS AFTER BLOCK
 #define TEST_DATE      0x263 // BLOCK DASHBOARD SHOW CAMERA ERROR. CANT ENABLE ACC
 #define TEST_DATA_1   0x370 // BLOCK DASHBOARD SHOW CAMERA ERROR. CANT ENABLE ACC
-#define TEST_DATA_2   0x373
+#define TEST_DATA_2   0x373 // DASHBAORD SHOW LKAS ERROR. STILL CAN ENABLE ACC
 
 // CAN bus numbers
 #define BUS_MAIN 0
@@ -86,7 +86,7 @@ static int wuling_fwd_hook(int bus, int addr) {
   if (bus == BUS_MAIN) {
     bus_fwd = BUS_CAM;
   } else if (bus == BUS_CAM) {
-    bool block =  (addr == STEERING_LKAS || addr == TEST_DATA_2);
+    bool block =  (addr == STEERING_LKAS);
     if (!block) {
       bus_fwd = BUS_MAIN;
     }
