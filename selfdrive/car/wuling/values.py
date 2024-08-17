@@ -42,6 +42,9 @@ class CarControllerParams:
   # -3.5 m/s^2 as per planner limits
   ACCEL_MAX = 2.  # m/s^2
   ACCEL_MIN = -4.  # m/s^2
+  
+  ACCEL_LOOKUP_BP = [0, 2]
+  ACCEL_LOOKUP_V = [1696, 1900]
 
   def __init__(self, CP):
     # Gas/brake lookups
@@ -58,9 +61,6 @@ class CarControllerParams:
     self.GAS_LOOKUP_BP = [max_regen_acceleration, 0., self.ACCEL_MAX]
     self.GAS_LOOKUP_V = [self.MAX_ACC_REGEN, self.ZERO_GAS, self.MAX_GAS]
     
-    self.ACCEL_LOOKUP_BP = [0, 2]
-    self.ACCEL_LOOKUP_V = [1696, 1900]
-
     self.BRAKE_LOOKUP_BP = [self.ACCEL_MIN, max_regen_acceleration]
     self.BRAKE_LOOKUP_V = [self.MAX_BRAKE, 0.]
     

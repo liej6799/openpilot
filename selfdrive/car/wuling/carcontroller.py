@@ -65,7 +65,7 @@ class CarController:
       idx = (self.frame/2) % 4
       
       can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, idx, lkas_enabled))
-      accel = int(round(interp(actuators.accel, CarControllerParams.ACCEL_LOOKUP_BP, CarControllerParams.ACCEL_LOOKUP_V)))
+      accel = int(round(interp(actuators.accel, P.ACCEL_LOOKUP_BP, P.ACCEL_LOOKUP_V)))
       
       # accel = clip(actuators.accel, self.CarControllerParams.ACCEL_MIN, self.CarControllerParams.ACCEL_MAX) if CC.longActive else 0
       stopping = actuators.longControlState == LongCtrlState.stopping
