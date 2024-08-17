@@ -49,7 +49,7 @@ class CarInterface(CarInterfaceBase):
     tire_stiffness_factor = 1  # Stock Michelin Energy Saver A/S, LiveParameters
     ret.centerToFront = ret.wheelbase * 0.4
     
-    ret.openpilotLongitudinalControl = False
+    ret.openpilotLongitudinalControl = True
 
     ret.steerLimitTimer = 1.0
     ret.steerActuatorDelay = 0.1

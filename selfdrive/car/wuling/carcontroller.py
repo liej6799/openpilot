@@ -58,6 +58,7 @@ class CarController:
       self.lka_steering_cmd_counter_last = CS.lka_steering_cmd_counter
     elif (self.frame % P.STEER_STEP) == 0:
       lkas_enabled = CC.latActive
+      long_enabled = CC.longActive
 
       # if !lkas_enabled:
       # else:
@@ -72,8 +73,12 @@ class CarController:
       stopping = actuators.longControlState == LongCtrlState.stopping
       starting = actuators.longControlState == LongCtrlState.starting
       
+      print('Accel', accel)
+      print('stopping', stopping)
+      print('starting', starting)
       
-      can_sends.append(wulingcan.create_acc_command(self.packer_pt, idx, True, starting, stopping, accel))
+      
+      can_sends.append(wulingcan.create_acc_command(self.packer_pt, idx, long_enabled, starting, stopping, accel))
     
     new_actuators = actuators.copy()
     new_actuators.steeringAngleDeg = apply_angle
