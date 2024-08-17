@@ -71,7 +71,7 @@ class CarInterface(CarInterfaceBase):
     
     params = Params()
 
-    ret.openpilotLongitudinalControl = True
+    ret.openpilotLongitudinalControl = False
       
     ret.pcmCruise = False
   
