@@ -136,9 +136,16 @@ BO_ 883 LkasHud: 8 K20_ECM
  SG_ LKA_ACTIVE : 1|1@0+ (1,0) [0|1] "" NEO
 
 BO_ 611 AccStatus: 8 XXX
- SG_ NEW_SIGNAL_2 : 8|8@1+ (1,0) [0|255] "" XXX
- SG_ CruiseMainOn : 38|1@0+ (1,0) [0|1] "" XXX
- SG_ CruiseState : 21|1@0+ (1,0) [0|1] "" XXX
+ SG_ ALWAYS_ON_1 : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ COUNTER : 7|2@0+ (1,0) [0|3] "" XXX
+ SG_ ALWAYS_ON_2 : 15|8@0+ (1,0) [0|255] "" XXX
+ SG_ ACC_ACTIVE_1 : 21|6@0+ (1,0) [0|63] "" XXX
+ SG_ GAS : 22|1@0+ (1,0) [0|1] "" XXX
+ SG_ BRAKE : 23|1@0+ (1,0) [0|1] "" XXX
+ SG_ GAS_BRAKE_CMD : 34|3@0+ (1,0) [0|7] "" XXX
+ SG_ ACC_ACTIVE_2 : 35|5@1+ (1,0) [0|255] "" XXX
+ SG_ GAS_BRAKE_THROTTLE : 43|12@0+ (1,0) [0|2047] "" XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|3] "" XXX
 
 BO_ 401 GAS_PEDAL: 8 XXX
  SG_ NEW_SIGNAL_3 : 2|11@0+ (1,0) [0|2047] "" XXX
