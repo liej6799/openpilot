@@ -5,6 +5,7 @@
 #define STEERING_LKAS      0x225
 #define BRAKE_DATA      0x269
 #define GAS_DATA      0x260
+#define TEST_DATE      0x263
 
 // CAN bus numbers
 #define BUS_MAIN 0
@@ -83,7 +84,7 @@ static int wuling_fwd_hook(int bus, int addr) {
   if (bus == BUS_MAIN) {
     bus_fwd = BUS_CAM;
   } else if (bus == BUS_CAM) {
-    bool block =  (addr == STEERING_LKAS);
+    bool block =  (addr == STEERING_LKAS || addr == TEST_DATE);
     if (!block) {
       bus_fwd = BUS_MAIN;
     }
