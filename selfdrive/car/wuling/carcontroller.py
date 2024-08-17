@@ -51,14 +51,13 @@ class CarController:
     if CC.longActive:
       long_enabled = True
       accel = int(round(interp(actuators.accel, P.ACCEL_LOOKUP_BP, P.ACCEL_LOOKUP_V)))
-      
+      stopping = 0
+      starting = 0
       # accel = clip(actuators.accel, self.CarControllerParams.ACCEL_MIN, self.CarControllerParams.ACCEL_MAX) if CC.longActive else 0
       if (actuators.longControlState == LongCtrlState.stopping):
         stopping = 1
-        starting = 0
       elif (actuators.longControlState == LongCtrlState.starting):
         starting = 1
-        stopping = 0
         
     else:
       long_enabled = False
@@ -92,7 +91,7 @@ class CarController:
       print('starting', starting)
       
       
-      can_sends.append(wulingcan.create_acc_command(self.packer_pt, idx, long_enabled, starting, stopping, accel))
+      can_sends.append(wulingcan.create_acc_command(self.packer_pt, idx, long_enabled, accel, starting, stopping))
     
     new_actuators = actuators.copy()
     new_actuators.steeringAngleDeg = apply_angle
