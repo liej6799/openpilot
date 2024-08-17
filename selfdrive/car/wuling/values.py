@@ -43,9 +43,6 @@ class CarControllerParams:
   ACCEL_MAX = 2.  # m/s^2
   ACCEL_MIN = -4.  # m/s^2
 
-  ACCEL_INACTIVE = 1696   # corresponds to zero acceleration
-  ACCEL_MAX = 1900    # while braking, eyesight sets throttle to this, probably for engine braking
-
   def __init__(self, CP):
     # Gas/brake lookups
     self.ZERO_GAS = 2048  # Coasting
@@ -62,7 +59,7 @@ class CarControllerParams:
     self.GAS_LOOKUP_V = [self.MAX_ACC_REGEN, self.ZERO_GAS, self.MAX_GAS]
     
     self.ACCEL_LOOKUP_BP = [0, 2]
-    self.ACCEL_LOOKUP_V = [ACCEL_INACTIVE, ACCEL_MAX]
+    self.ACCEL_LOOKUP_V = [1696, 1900]
 
     self.BRAKE_LOOKUP_BP = [self.ACCEL_MIN, max_regen_acceleration]
     self.BRAKE_LOOKUP_V = [self.MAX_BRAKE, 0.]
