@@ -112,12 +112,12 @@ class CarState(CarStateBase):
     ret.cruiseState.available = True
     ret.cruiseState.enabled = True
     
-    self.is_cruise_latch = pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 or pt_cp.vl["AccStatus"]["CruiseState"] != 0
+    self.is_cruise_latch = pt_cp.vl["LkasHud"]["LKA_ACTIVE"] != 0 or pt_cp.vl["LkasHud"]["LKAS_STATE"] != 0
 
-    if pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 and ret.brakePressed:
+    if pt_cp.vl["LkasHud"]["LKA_ACTIVE"] != 0 and ret.brakePressed:
       self.is_cruise_latch = False
     else:
-      pt_cp.vl["AccStatus"]["CruiseMainOn"] != 0 and not ret.brakePressed
+      pt_cp.vl["LkasHud"]["LKA_ACTIVE"] != 0 and not ret.brakePressed
       self.is_cruise_latch = True
       
     if not ret.cruiseState.available:
