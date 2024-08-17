@@ -50,10 +50,10 @@ static int wuling_rx_hook(CANPacket_t *to_push) {
         gas_pressed = GET_BYTE(to_push, 6) != 0U;
       }
 
-      if ((addr == 0x263)) {
-        bool cruise_engaged = GET_BIT(to_push, 38U) != 0U;
-        pcm_cruise_check(cruise_engaged);
-      }
+      // if ((addr == 0x263)) {
+      //   bool cruise_engaged = GET_BIT(to_push, 38U) != 0U;
+      //   pcm_cruise_check(cruise_engaged);
+      // }
 
       generic_rx_checks((addr == STEERING_LKAS));
    }
