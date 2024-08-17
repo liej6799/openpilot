@@ -91,7 +91,7 @@ class CarController:
       print('starting', starting)
       
       
-      can_sends.append(wulingcan.create_acc_command(self.packer_pt, idx, long_enabled, accel, starting, stopping))
+      can_sends.append(wulingcan.create_acc_command(self.packer_pt, idx, True, accel, starting, stopping))
     
     new_actuators = actuators.copy()
     new_actuators.steeringAngleDeg = apply_angle
