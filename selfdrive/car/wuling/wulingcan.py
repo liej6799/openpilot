@@ -44,7 +44,7 @@ def create_acc_command(packer, idx, acc_req, throttle, gas, brake):
     "ACC_ACTIVE_2": 8 if acc_req else 0,
     "COUNTER": idx,
     "GAS_BRAKE_CMD": 4 if acc_req else 0, # need to check is it based on throttle.
-    "GAS_BRAKE_THROTTLE": 0 # need to change later
+    "GAS_BRAKE_THROTTLE": 500 # need to change later
   }
   
   values["COUNTER"] = (values["COUNTER"] + 1) % 0x11
