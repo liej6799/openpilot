@@ -46,7 +46,7 @@ class CarControllerParams:
   # ACCEL_LOOKUP_BP = [0, 2]
   # ACCEL_LOOKUP_V = [1696, 1900]
   
-  ACCEL_LOOKUP_BP = [max_regen_acceleration, 0., 2]
+  ACCEL_LOOKUP_BP = [0., 0., 2]
   ACCEL_LOOKUP_V = [0, 0, 100]
 
   def __init__(self, CP):
