@@ -81,15 +81,12 @@ BO_ 560 EPBStatus: 8 EPB
  SG_ AVH_STATUS : 35|1@0+ (1,0) [0|1] "" XXX
  SG_ EPBClosed : 12|1@0+ (1,0) [0|1] "" NEO
 
-BO_ 608 GasCmd: 8 XXX
- SG_ NEW_SIGNAL_4 : 16|1@0+ (1,0) [0|1] "" XXX
- SG_ NEW_SIGNAL_3 : 48|14@1+ (1,0) [0|4095] "" XXX
- SG_ NEW_SIGNAL_1 : 47|8@0+ (1,0) [0|65535] "" XXX
- SG_ COUNTER_2 : 63|2@0+ (1,0) [0|3] "" XXX
- SG_ NEW_SIGNAL_2 : 32|3@1+ (1,0) [0|7] "" XXX
+BO_ 608 BrakeCMD: 8 XXX
+ SG_ BRAKE_CMD : 5|6@0+ (1,0) [0|63] "" XXX
  SG_ COUNTER : 7|2@0+ (1,0) [0|3] "" XXX
- SG_ ENABLE : 31|1@0+ (1,0) [0|1] "" XXX
- SG_ GAS_CMD : 8|8@1- (1,0) [0|255] "" XXX
+ SG_ BRAKE_VAL : 15|8@0+ (1,0) [0|255] "" XXX
+ SG_ BRAKE_CMD_2 : 31|8@0+ (1,0) [0|255] "" XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 880 ASCMActiveCruiseControlStatus: 8 K124_ASCM
  SG_ FCWAlert : 41|2@0+ (1,0) [0|3] "" XXX
