@@ -52,7 +52,7 @@ class CarControllerParams:
   def __init__(self, CP):
     # Gas/brake lookups
     self.ZERO_GAS = 2048  # Coasting
-    self.MAX_BRAKE = 400  # ~ -4.0 m/s^2 with regen
+    self.MAX_BRAKE = 255  # ~ -4.0 m/s^2 with regen
 
     self.MAX_GAS = 3072  # Safety limit, not ACC max. Stock ACC >4096 from standstill.
     self.MAX_ACC_REGEN = 1404  # Max ACC regen is slightly less than max paddle regen
