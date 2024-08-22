@@ -19,7 +19,7 @@ def create_steering_control(packer, apply_steer, idx, steer_req):
         "ACTIVE_2": 0x64 if steer_req else 0,
         "STEER_LOCK": 1 if steer_req else 0,
         "COUNTER": idx,
-        "STEER_ANGLE_CMD": apply_steer
+        "STEER_ANGLE_CMD": -apply_steer
   }
   
   values["COUNTER"] = (values["COUNTER"] + 1) % 0x11
