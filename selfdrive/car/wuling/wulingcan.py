@@ -59,8 +59,8 @@ def create_acc_command(packer, idx, acc_req, throttle, gas, brake):
 
 def create_brake_command(packer, apply_brake, idx, brake_value):
   values = {
-    "BRAKE_CMD": 15 if apply_brake else 0,
-    "BRAKE_CMD_2": 16 if apply_brake else 0,
+    "BRAKE_CMD": 15 if brake_value > 0 else 0,
+    "BRAKE_CMD_2": 16 if brake_value > 0 else 0,
     "COUNTER": idx, # 0 - 255
     "BRAKE_VAL": brake_value,
   }
