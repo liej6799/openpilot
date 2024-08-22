@@ -44,6 +44,9 @@ class CarController:
       idx = (self.frame/2) % 4
       
       can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, idx, lkas_enabled))
+      can_sends.append(wulingcan.create_brake_command(self.packer_pt, True, idx, 100))
+   
+      
     
     new_actuators = actuators.copy()
     new_actuators.steeringAngleDeg = apply_angle

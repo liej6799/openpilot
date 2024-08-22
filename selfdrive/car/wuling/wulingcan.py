@@ -56,35 +56,32 @@ def create_acc_command(packer, idx, acc_req, throttle, gas, brake):
 
   return packer.make_can_msg("AccStatus", 0, values)
 
-def create_gas_command(packer,throttle, idx, acc_engaged, at_full_stop):
+
+def create_brake_command(packer, apply_brake, idx, brake_value):
   values = {
-    "ENABLE": acc_engaged,
-    "COUNTER": idx,
-    "COUNTER_2": idx,
-    "GAS_CMD": throttle,
-    "NEW_SIGNAL_2": 0x04,
-    "NEW_SIGNAL_1": 0x0b,
+    "BRAKE_CMD": 15 if apply_brake else 0,
+    "BRAKE_CMD_2": 16 if apply_brake else 0,
+    "COUNTER": idx, # 0 - 255
+    "BRAKE_VAL": brake_value,
   }
+  
+  values["COUNTER"] = (values["COUNTER"] + 1) % 0x11
+  
+  dat = packer.make_can_msg("BrakeCMD", 0, values)[2]
 
-  return packer.make_can_msg("GasCmd", 0, values)
+  crc = wuling_checksum(dat[:-1])
+  values["CHECKSUM"] = crc
 
-def create_brake_command(packer, apply_brake, idx, acc_engaged, at_full_stop):
-  values = {
-    "ENABLE": acc_engaged,
-    "COUNTER": idx,
-    "COUNTER_2": idx,
-    "BRAKE_CMD": apply_brake,
-    "BRAKE_CMD_2": 27,
-    "NEW_SIGNAL_8": 0x50,
-    "NEW_SIGNAL_5": 0x15,
-    "NEW_SIGNAL_4": 0x01,
-    "NEW_SIGNAL_2": 0x06,
-    "NEW_SIGNAL_6": 0x01,
-    "NEW_SIGNAL_3": 0x35,
-  }
+  return packer.make_can_msg("BrakeCMD", 0, values)
 
-  return packer.make_can_msg("BRAKE_MODULE", 0, values)
 
+
+#  SG_ BRAKE_CMD : 5|6@0+ (1,0) [0|63] "" XXX
+#  SG_ COUNTER : 7|2@0+ (1,0) [0|3] "" XXX
+#  SG_ BRAKE_VAL : 15|8@0+ (1,0) [0|255] "" XXX
+#  SG_ BRAKE_CMD_2 : 31|8@0+ (1,0) [0|255] "" XXX
+#  SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
+ 
 
 def create_acc_dashboard_command(packer, acc_engaged, idx, target_speed_kph, resume_button, lead_car_in_sight, fcw):
   # Not a bit shift, dash can round up based on low 4 bits.
