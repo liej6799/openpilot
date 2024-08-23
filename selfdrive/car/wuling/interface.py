@@ -133,6 +133,8 @@ class CarInterface(CarInterfaceBase):
     #   events.add(EventName.resumeRequired)
     # if ret.vEgo < self.CP.minSteerSpeed:
     #   events.add(EventName.belowSteerSpeed)
+    if ret.cruiseState.standstill and not ret.brakePressed:
+      events.add(EventName.resumeRequired)
   
     ret.events = events.to_msg()
     return ret
