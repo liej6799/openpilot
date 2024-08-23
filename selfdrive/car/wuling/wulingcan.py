@@ -34,18 +34,18 @@ def create_steering_control(packer, apply_steer, idx, steer_req):
 def create_steering_status(packer, apply_steer, frame, steer_step):
   return packer.make_can_msg("ES_LKAS_State", 0, {})
 
-def create_gas_command(packer, idx, acc_req, throttle, gas_enabled):
+def create_gas_command(packer, idx, acc_req, throttle):
   values = {
     "ALWAYS_ON_1": 5,
     "ALWAYS_ON_2": 0x78,
     "ACC_ACTIVE_1": 32 if acc_req else 0,
     "ACC_ACTIVE_2": 1 if acc_req else 0,
     
-    "GAS_ACTIVE_2": 1 if gas_enabled  else 0, # change this later
-    "INV_GAS_ACTIVE_2": 1 if not gas_enabled else 0, #change this later
+    "GAS_ACTIVE_2": 1 if throttle != 1696 else 0, # change this later
+    "INV_GAS_ACTIVE_2": 1 if throttle == 1696 else 0, #change this later
 
     "COUNTER": idx,
-    "GAS_ACTIVE": 4 if gas_enabled else 0, # need to check is it based on throttle.
+    "GAS_ACTIVE": 4 if throttle != 1696 else 0, # need to check is it based on throttle.
     "GAS_THROTTLE": throttle # need to change later
   }
   
