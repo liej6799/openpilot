@@ -51,14 +51,14 @@ class CarController:
       lkas_enabled = CC.latActive
       acc_enabled = CC.longActive
       apply_stop = actuators.longControlState == LongCtrlState.stopping
-      
+      apply_start = actuators.longControlState == LongCtrlState.starting
       
       idx = (self.frame/2) % 4
 
       
       can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, idx, lkas_enabled))
       can_sends.append(wulingcan.create_brake_command(self.packer_pt, apply_stop, idx, apply_brake))
-      can_sends.append(wulingcan.create_gas_command(self.packer_pt, idx, acc_enabled, apply_gas))
+      can_sends.append(wulingcan.create_gas_command(self.packer_pt, idx, acc_enabled, apply_start, apply_gas))
 
        
     new_actuators = actuators.copy()
