@@ -53,16 +53,12 @@ class CarInterface(CarInterfaceBase):
 
     ret.steerLimitTimer = 1.0
     ret.steerActuatorDelay = 0.1
+    ret.longitudinalActuatorDelayUpperBound = 0.5  # large delay to initially start braking
     
     ret.steerControlType = car.CarParams.SteerControlType.angle
 
     ret.transmissionType = TransmissionType.automatic
 
-    # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 41.0], [0., 41.0]]
-    # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0002, 0.004], [0.1, 0.7]]
-    # ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
-    ret.steerActuatorDelay = 0.1  # Default delay, not measured yet
-        
     CarInterfaceBase.dp_lat_tune_collection(candidate, ret.latTuneCollection)
     CarInterfaceBase.configure_dp_tune(ret.lateralTuning, ret.latTuneCollection)
     
