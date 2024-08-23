@@ -41,7 +41,7 @@ class CarControllerParams:
   # Our controller should still keep the 2 second average above
   # -3.5 m/s^2 as per planner limits
   ACCEL_MAX = 2.  # m/s^2
-  ACCEL_MIN = -3.5  # m/s^2
+  ACCEL_MIN = -4.  # m/s^2
   
   # ACCEL_LOOKUP_BP = [0, 2]
   # ACCEL_LOOKUP_V = [1696, 1900]
@@ -51,12 +51,12 @@ class CarControllerParams:
 
   def __init__(self, CP):
     # Gas/brake lookups
-    self.ZERO_GAS = 1730  # Coasting
+    self.ZERO_GAS = 1696  # Coasting
     self.MAX_BRAKE = 255  # ~ -4.0 m/s^2 with regen
 
-    self.MAX_GAS = 1854  # Safety limit, not ACC max. Stock ACC >4096 from standstill.
+    self.MAX_GAS = 1954  # Safety limit, not ACC max. Stock ACC >4096 from standstill.
     self.MAX_ACC_REGEN = 1696  # Max ACC regen is slightly less than max paddle regen
-    self.INACTIVE_REGEN = 1696
+    self.INACTIVE_REGEN = 1404
     # ICE has much less engine braking force compared to regen in EVs,
     # lower threshold removes some braking deadzone
     max_regen_acceleration = 0.
