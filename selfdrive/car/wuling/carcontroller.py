@@ -40,7 +40,7 @@ class CarController:
       apply_gas = int(round(interp(actuators.accel, P.GAS_LOOKUP_BP, P.GAS_LOOKUP_V)))
       apply_brake = int(round(interp(actuators.accel, P.BRAKE_LOOKUP_BP, P.BRAKE_LOOKUP_V)))
     else:
-      apply_gas = 1696
+      apply_gas = P.INACTIVE_REGEN
       apply_brake = 0
     
     self.apply_angle_last = apply_angle
@@ -52,19 +52,21 @@ class CarController:
       acc_enabled = CC.longActive
       apply_stop = actuators.longControlState == LongCtrlState.stopping
       
-      
-      idx = (self.frame/2) % 4
+      gas_enabled = False
+      if apply_gas != P.INACTIVE_REGEN:
+        gas_enabled = True
 
+      idx = (self.frame/2) % 4
       
       can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, idx, lkas_enabled))
       can_sends.append(wulingcan.create_brake_command(self.packer_pt, apply_stop, idx, apply_brake))
-      can_sends.append(wulingcan.create_gas_command(self.packer_pt, idx, acc_enabled, apply_gas))
+      can_sends.append(wulingcan.create_gas_command(self.packer_pt, idx, acc_enabled, apply_gas, gas_enabled))
 
        
     new_actuators = actuators.copy()
     new_actuators.steeringAngleDeg = apply_angle
     new_actuators.brake = apply_brake
-    new_actuators.brake = apply_gas
+    new_actuators.gas = apply_gas
     
     self.frame += 1
     return new_actuators, can_sends
