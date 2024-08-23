@@ -57,6 +57,16 @@ class CarInterface(CarInterfaceBase):
     ret.steerControlType = car.CarParams.SteerControlType.angle
 
     ret.transmissionType = TransmissionType.automatic
+    
+        # long tuning
+    ret.longitudinalTuning.deadzoneBP = [0.]
+    ret.longitudinalTuning.deadzoneV = [0.15]
+
+    ret.longitudinalTuning.kpBP = [5., 35.]
+    ret.longitudinalTuning.kiBP = [0.]
+    
+    ret.longitudinalActuatorDelayUpperBound = 0.5  # large delay to initially start braking
+    
 
     # ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0., 41.0], [0., 41.0]]
     # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.0002, 0.004], [0.1, 0.7]]
@@ -69,9 +79,9 @@ class CarInterface(CarInterfaceBase):
     ret.minEnableSpeed = 5 * CV.MPH_TO_MS
     ret.minSteerSpeed = 0 * CV.MPH_TO_MS
     
-    # params = Params()
-    # if int(params.get("dp_atl").decode('utf-8')) == 1:
-    #   ret.openpilotLongitudinalControl = False
+    params = Params()
+    if int(params.get("dp_atl").decode('utf-8')) == 1:
+      ret.openpilotLongitudinalControl = False
       
     ret.pcmCruise = False
   
