@@ -41,11 +41,11 @@ def create_gas_command(packer, idx, acc_req, apply_start, throttle):
     "ACC_ACTIVE_1": 32 if acc_req else 0,
     "ACC_ACTIVE_2": 1 if acc_req else 0,
     
-    "GAS_ACTIVE_2": 1 if acc_req and apply_start else 0, # change this later
-    "INV_GAS_ACTIVE_2": 1 if acc_req and not apply_start else 0, #change this later
+    "GAS_ACTIVE_2": 1 if acc_req and throttle != 1696 else 0, # change this later
+    "INV_GAS_ACTIVE_2": 1 if acc_req and throttle == 1696 else 0, #change this later
 
     "COUNTER": idx,
-    "GAS_ACTIVE": 4 if acc_req and apply_start else 0, # need to check is it based on throttle.
+    "GAS_ACTIVE": 4 if acc_req and throttle != 1696 else 0, # need to check is it based on throttle.
     "GAS_THROTTLE": throttle # need to change later
   }
   
