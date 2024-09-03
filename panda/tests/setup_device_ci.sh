@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 
 set -e
 
@@ -19,7 +19,7 @@ fi
 
 CONTINUE_PATH="/data/continue.sh"
 tee $CONTINUE_PATH << EOF
-#!/usr/bin/env bash
+#!/usr/bin/bash
 
 sudo abctl --set_success
 

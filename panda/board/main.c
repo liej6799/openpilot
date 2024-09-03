@@ -67,8 +67,12 @@ void set_safety_mode(uint16_t mode, uint16_t param) {
     print("Error: safety set mode failed. Falling back to SILENT\n");
     mode_copy = SAFETY_SILENT;
     err = set_safety_hooks(mode_copy, 0U);
-    // TERMINAL ERROR: we can't continue if SILENT safety mode isn't succesfully set
-    assert_fatal(err == 0, "Error: Failed setting SILENT mode. Hanging\n");
+    if (err == -1) {
+      print("Error: Failed setting SILENT mode. Hanging\n");
+      while (true) {
+        // TERMINAL ERROR: we can't continue if SILENT safety mode isn't succesfully set
+      }
+    }
   }
   safety_tx_blocked = 0;
   safety_rx_invalid = 0;
@@ -93,9 +97,6 @@ void set_safety_mode(uint16_t mode, uint16_t param) {
       heartbeat_counter = 0U;
       heartbeat_lost = false;
       if (current_board->has_obd) {
-        // Clear any pending messages in the can core (i.e. sending while comma power is unplugged)
-        // TODO: rewrite using hardware queues rather than fifo to cancel specific messages
-        can_clear_send(CANIF_FROM_CAN_NUM(1), 1);
         if (param == 0U) {
           current_board->set_can_mode(CAN_MODE_OBD_CAN2);
         } else {
@@ -310,7 +311,10 @@ int main(void) {
   print("\n\n\n************************ MAIN START ************************\n");
 
   // check for non-supported board types
-  assert_fatal(hw_type != HW_TYPE_UNKNOWN, "Unsupported board type");
+  if(hw_type == HW_TYPE_UNKNOWN){
+    print("Unsupported board type\n");
+    while (1) { /* hang */ }
+  }
 
   print("Config:\n");
   print("  Board type: 0x"); puth(hw_type); print("\n");

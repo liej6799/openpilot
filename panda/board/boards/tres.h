@@ -42,9 +42,8 @@ void tres_init(void) {
   set_gpio_pullup(GPIOC, 2, PULL_DOWN);
 
   // SOM bootkick + reset lines
-  // WARNING: make sure output state is set before configuring as output
-  tres_set_bootkick(BOOT_BOOTKICK);
   set_gpio_mode(GPIOC, 12, MODE_OUTPUT);
+  tres_set_bootkick(BOOT_BOOTKICK);
 
   // SOM debugging UART
   gpio_uart7_init();
@@ -77,7 +76,6 @@ board board_tres = {
   .has_spi = true,
   .has_canfd = true,
   .fan_max_rpm = 6600U,
-  .fan_max_pwm = 100U,
   .avdd_mV = 1800U,
   .fan_stall_recovery = false,
   .fan_enable_cooldown_time = 3U,

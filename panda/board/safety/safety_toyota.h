@@ -39,7 +39,7 @@ const LongitudinalLimits TOYOTA_LONG_LIMITS = {
 
 // Stock longitudinal
 #define TOYOTA_COMMON_TX_MSGS                                                                                     \
-  {0x2E4, 0, 5}, {0x191, 0, 8}, {0x412, 0, 8}, {0x343, 0, 8}, {0x1D2, 0, 8},  /* LKAS + LTA + ACC & PCM cancel cmds */  \
+  {0x2E4, 0, 5}, {0x191, 0, 8}, {0x412, 0, 8}, {0x343, 0, 8}, {0x1D2, 0, 8}, {0x750, 0, 8}, /* dp - white list 0x750 for Enhanced Diagnostic Request */ /* LKAS + LTA + ACC & PCM cancel cmds */  \
 
 #define TOYOTA_COMMON_LONG_TX_MSGS                                                                                                          \
   TOYOTA_COMMON_TX_MSGS                                                                                                                     \
@@ -60,6 +60,7 @@ const CanMsg TOYOTA_LONG_TX_MSGS[] = {
   {.msg = {{ 0xaa, 0, 8, .check_checksum = false, .frequency = 83U}, { 0 }, { 0 }}},                        \
   {.msg = {{0x260, 0, 8, .check_checksum = true, .quality_flag = (lta), .frequency = 50U}, { 0 }, { 0 }}},  \
   {.msg = {{0x1D2, 0, 8, .check_checksum = true, .frequency = 33U}, { 0 }, { 0 }}},                         \
+  {.msg = {{0x1D3, 0, 8, .check_checksum = true, .frequency = 33U}, { 0 }, { 0 }}},                         \
   {.msg = {{0x224, 0, 8, .check_checksum = false, .frequency = 40U},                                        \
            {0x226, 0, 8, .check_checksum = false, .frequency = 40U}, { 0 }}},                               \
 
@@ -153,6 +154,13 @@ static void toyota_rx_hook(const CANPacket_t *to_push) {
 
       // sample gas pedal
       gas_pressed = !GET_BIT(to_push, 4U);
+    }
+
+    //DP: abh wrap lateral controls on main
+    if (addr == 0x1D3) {
+      // ACC main switch on is a prerequisite to enter controls, exit controls immediately on main switch off
+      // Signal: PCM_CRUISE_2/MAIN_ON at 15th bit
+      acc_main_on = GET_BIT(to_push, 15U);
     }
 
     // sample speed
@@ -287,14 +295,26 @@ static bool toyota_tx_hook(const CANPacket_t *to_send) {
         }
       }
     }
+    // DP: auto break hold https://github.com/AlexandreSato
+    if ((addr == 0x344) && (alternative_experience & ALT_EXP_ALLOW_AEB)) {
+      if (vehicle_moving || gas_pressed || !acc_main_on) {
+        tx = false;
+      }
+    }
   }
 
   // UDS: Only tester present ("\x0F\x02\x3E\x00\x00\x00\x00\x00") allowed on diagnostics address
   if (addr == 0x750) {
     // this address is sub-addressed. only allow tester present to radar (0xF)
     bool invalid_uds_msg = (GET_BYTES(to_send, 0, 4) != 0x003E020FU) || (GET_BYTES(to_send, 4, 4) != 0x0U);
-    if (invalid_uds_msg) {
-      tx = 0;
+
+    // DP: Secret sauce.
+    bool dp_valid_uds_msgs = (GET_BYTES(to_send, 0, 4) == 0x10002141) || (GET_BYTES(to_send, 0, 4) == 0x60100241) || (GET_BYTES(to_send, 0, 4) == 0x69210241);
+    dp_valid_uds_msgs |= (GET_BYTES(to_send, 0, 4) == 0x10002142) || (GET_BYTES(to_send, 0, 4) == 0x60100242) || (GET_BYTES(to_send, 0, 4) == 0x10002142) || (GET_BYTES(to_send, 0, 4) == 0x69210242);
+    dp_valid_uds_msgs |= (GET_BYTES(to_send, 0, 4) == 0x11300540);
+
+    if (invalid_uds_msg && !dp_valid_uds_msgs) {
+      tx = false;
     }
   }
 
@@ -333,7 +353,9 @@ static int toyota_fwd_hook(int bus_num, int addr) {
     bool is_lkas_msg = ((addr == 0x2E4) || (addr == 0x412) || (addr == 0x191));
     // in TSS2 the camera does ACC as well, so filter 0x343
     bool is_acc_msg = (addr == 0x343);
-    bool block_msg = is_lkas_msg || (is_acc_msg && !toyota_stock_longitudinal);
+    // DP: Block AEB when stoped to use as a automatic brakehold
+    bool is_aeb_msg = ((addr == 0x344) && (alternative_experience & ALT_EXP_ALLOW_AEB));
+    bool block_msg = is_lkas_msg || (is_acc_msg && !toyota_stock_longitudinal) || (is_aeb_msg && !vehicle_moving && acc_main_on && !gas_pressed);
     if (!block_msg) {
       bus_fwd = 0;
     }

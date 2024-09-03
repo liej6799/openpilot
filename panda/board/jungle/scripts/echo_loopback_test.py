@@ -37,7 +37,7 @@ def test_loopback():
     incoming = jungle.can_recv()
     found = False
     for message in incoming:
-      incomingAddress, incomingData, incomingBus = message
+      incomingAddress, _, incomingData, incomingBus = message
       if incomingAddress == address and incomingData == data[::-1] and incomingBus == bus:
         found = True
         break

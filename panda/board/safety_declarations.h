@@ -2,7 +2,7 @@
 
 #define GET_BIT(msg, b) ((bool)!!(((msg)->data[((b) / 8U)] >> ((b) % 8U)) & 0x1U))
 #define GET_BYTE(msg, b) ((msg)->data[(b)])
-#define GET_FLAG(value, mask) (((__typeof__(mask))(value) & (mask)) == (mask)) // cppcheck-suppress misra-c2012-1.2; allow __typeof__
+#define GET_FLAG(value, mask) (((__typeof__(mask))(value) & (mask)) == (mask))
 
 #define BUILD_SAFETY_CFG(rx, tx) ((safety_config){(rx), (sizeof((rx)) / sizeof((rx)[0])), \
                                                   (tx), (sizeof((tx)) / sizeof((tx)[0]))})
@@ -259,6 +259,9 @@ struct sample_t angle_meas;         // last 6 steer angles/curvatures
 
 // This flag allows AEB to be commanded from openpilot.
 #define ALT_EXP_ALLOW_AEB 16
+
+// DP: Always Lane Keep Assist (always on lat)
+#define ALT_EXP_ALKA 32
 
 int alternative_experience = 0;
 
