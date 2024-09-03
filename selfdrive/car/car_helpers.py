@@ -1,28 +1,26 @@
 import os
-from typing import Dict, List
+import time
+from typing import Callable, Dict, List, Optional, Tuple
 
 from cereal import car
-from common.params import Params
-from common.basedir import BASEDIR
-# from system.version import is_comma_remote, is_tested_branch
-from selfdrive.car.interfaces import get_interface_attr
-from selfdrive.car.fingerprints import eliminate_incompatible_cars, all_legacy_fingerprint_cars
-from selfdrive.car.vin import get_vin, is_valid_vin, VIN_UNKNOWN
-from selfdrive.car.fw_versions import get_fw_versions_ordered, get_present_ecus, match_fw_to_car, set_obd_multiplexing
-from system.swaglog import cloudlog
+from openpilot.common.params import Params
+from openpilot.common.basedir import BASEDIR
+from openpilot.system.version import is_comma_remote, is_tested_branch
+from openpilot.selfdrive.car.interfaces import get_interface_attr
+from openpilot.selfdrive.car.fingerprints import eliminate_incompatible_cars, all_legacy_fingerprint_cars
+from openpilot.selfdrive.car.vin import get_vin, is_valid_vin, VIN_UNKNOWN
+from openpilot.selfdrive.car.fw_versions import get_fw_versions_ordered, get_present_ecus, match_fw_to_car, set_obd_multiplexing
+from openpilot.system.swaglog import cloudlog
 import cereal.messaging as messaging
-from selfdrive.car import gen_empty_fingerprint
+from openpilot.selfdrive.car import gen_empty_fingerprint
 
-import threading
-import requests
-import time
-import selfdrive.sentry as sentry
+FRAME_FINGERPRINT = 100  # 1s
 
 EventName = car.CarEvent.EventName
 
 
 def get_startup_event(car_recognized, controller_available, fw_seen):
-  if True: #is_comma_remote() and is_tested_branch():  # pylint: disable=abstract-class-instantiated
+  if True: #is_comma_remote() and is_tested_branch():
     event = EventName.startup
   else:
     event = EventName.startupMaster
@@ -47,7 +45,7 @@ def get_one_can(logcan):
 def load_interfaces(brand_names):
   ret = {}
   for brand_name in brand_names:
-    path = f'selfdrive.car.{brand_name}'
+    path = f'openpilot.selfdrive.car.{brand_name}'
     CarInterface = __import__(path + '.interface', fromlist=['CarInterface']).CarInterface
 
     if os.path.exists(BASEDIR + '/' + path.replace('.', '/') + '/carstate.py'):
@@ -68,9 +66,8 @@ def load_interfaces(brand_names):
 def _get_interface_names() -> Dict[str, List[str]]:
   # returns a dict of brand name and its respective models
   brand_names = {}
-  for brand_name, model_names in get_interface_attr("CAR").items():
-    model_names = [getattr(model_names, c) for c in model_names.__dict__.keys() if not c.startswith("__")]
-    brand_names[brand_name] = model_names
+  for brand_name, brand_models in get_interface_attr("CAR").items():
+    brand_names[brand_name] = [model.value for model in brand_models]
 
   return brand_names
 
@@ -80,69 +77,15 @@ interface_names = _get_interface_names()
 interfaces = load_interfaces(interface_names)
 
 
-# **** for use live only ****
-def fingerprint(logcan, sendcan, num_pandas):
-  fixed_fingerprint = os.environ.get('FINGERPRINT', "")
-  skip_fw_query = os.environ.get('SKIP_FW_QUERY', False)
-  ecu_rx_addrs = set()
-  params = Params()
-
-  dp_car_assigned = Params().get('dp_car_assigned', encoding='utf8')
-  if not fixed_fingerprint and dp_car_assigned is not None:
-    car_selected = dp_car_assigned.strip()
-    fixed_fingerprint = car_selected
-
-  if not fixed_fingerprint and not skip_fw_query:
-    # Vin query only reliably works through OBDII
-    bus = 1
-
-    cached_params = params.get("CarParamsCache")
-    if cached_params is not None:
-      cached_params = car.CarParams.from_bytes(cached_params)
-      if cached_params.carName == "mock":
-        cached_params = None
-
-    if cached_params is not None and len(cached_params.carFw) > 0 and cached_params.carVin is not VIN_UNKNOWN:
-      cloudlog.warning("Using cached CarParams")
-      vin, vin_rx_addr = cached_params.carVin, 0
-      car_fw = list(cached_params.carFw)
-      cached = True
-    else:
-      cloudlog.warning("Getting VIN & FW versions")
-      set_obd_multiplexing(params, True)
-      vin_rx_addr, vin = get_vin(logcan, sendcan, bus)
-      ecu_rx_addrs = get_present_ecus(logcan, sendcan, num_pandas=num_pandas)
-      car_fw = get_fw_versions_ordered(logcan, sendcan, ecu_rx_addrs, num_pandas=num_pandas)
-      cached = False
-
-    exact_fw_match, fw_candidates = match_fw_to_car(car_fw)
-  else:
-    vin, vin_rx_addr = VIN_UNKNOWN, 0
-    exact_fw_match, fw_candidates, car_fw = True, set(), []
-    cached = False
-
-  if not is_valid_vin(vin):
-    cloudlog.event("Malformed VIN", vin=vin, error=True)
-    vin = VIN_UNKNOWN
-  cloudlog.warning("VIN %s", vin)
-  params.put("CarVin", vin)
-
-  # disable OBD multiplexing for potential ECU knockouts
-  set_obd_multiplexing(params, False)
-  params.put_bool("FirmwareQueryDone", True)
-
+def can_fingerprint(next_can: Callable) -> Tuple[Optional[str], Dict[int, dict]]:
   finger = gen_empty_fingerprint()
   candidate_cars = {i: all_legacy_fingerprint_cars() for i in [0, 1]}  # attempt fingerprint on both bus 0 and 1
   frame = 0
-  frame_fingerprint = 100  # 1s
   car_fingerprint = None
   done = False
 
-  # drain CAN socket so we always get the latest messages
-  messaging.drain_sock_raw(logcan)
-
   while not done:
-    a = get_one_can(logcan)
+    a = next_can()
 
     for can in a.can:
       # The fingerprint dict is generated for all buses, this way the car interface
@@ -160,16 +103,80 @@ def fingerprint(logcan, sendcan, num_pandas):
     # if we only have one car choice and the time since we got our first
     # message has elapsed, exit
     for b in candidate_cars:
-      if len(candidate_cars[b]) == 1 and frame > frame_fingerprint:
+      if len(candidate_cars[b]) == 1 and frame > FRAME_FINGERPRINT:
         # fingerprint done
         car_fingerprint = candidate_cars[b][0]
 
     # bail if no cars left or we've been waiting for more than 2s
-    failed = (all(len(cc) == 0 for cc in candidate_cars.values()) and frame > frame_fingerprint) or frame > 200
+    failed = (all(len(cc) == 0 for cc in candidate_cars.values()) and frame > FRAME_FINGERPRINT) or frame > 200
     succeeded = car_fingerprint is not None
     done = failed or succeeded
 
     frame += 1
+
+  return car_fingerprint, finger
+
+
+# **** for use live only ****
+def fingerprint(logcan, sendcan, num_pandas):
+  fixed_fingerprint = os.environ.get('FINGERPRINT', "")
+  skip_fw_query = os.environ.get('SKIP_FW_QUERY', False)
+  disable_fw_cache = os.environ.get('DISABLE_FW_CACHE', False)
+  ecu_rx_addrs = set()
+  params = Params()
+
+  dp_car_assigned = Params().get('dp_car_assigned', encoding='utf8')
+  if not fixed_fingerprint and dp_car_assigned is not None:
+    fixed_fingerprint = dp_car_assigned.strip()
+    skip_fw_query = True
+
+  start_time = time.monotonic()
+  if not skip_fw_query:
+    cached_params = params.get("CarParamsCache")
+    if cached_params is not None:
+      # with car.CarParams.from_bytes(cached_params) as cached_params:
+      cached_params = car.CarParams.from_bytes(cached_params)
+      if cached_params.carName == "mock":
+        cached_params = None
+
+    if cached_params is not None and len(cached_params.carFw) > 0 and \
+       cached_params.carVin is not VIN_UNKNOWN and not disable_fw_cache:
+      cloudlog.warning("Using cached CarParams")
+      vin_rx_addr, vin_rx_bus, vin = -1, -1, cached_params.carVin
+      car_fw = list(cached_params.carFw)
+      cached = True
+    else:
+      cloudlog.warning("Getting VIN & FW versions")
+      # enable OBD multiplexing for Vin query, also allows time for sendcan subscriber to connect
+      set_obd_multiplexing(params, True)
+      # Vin query only reliably works through OBDII
+      vin_rx_addr, vin_rx_bus, vin = get_vin(logcan, sendcan, (0, 1))
+      ecu_rx_addrs = get_present_ecus(logcan, sendcan, num_pandas=num_pandas)
+      car_fw = get_fw_versions_ordered(logcan, sendcan, ecu_rx_addrs, num_pandas=num_pandas)
+      cached = False
+
+    exact_fw_match, fw_candidates = match_fw_to_car(car_fw)
+  else:
+    vin_rx_addr, vin_rx_bus, vin = -1, -1, VIN_UNKNOWN
+    exact_fw_match, fw_candidates, car_fw = True, set(), []
+    cached = False
+
+  if not is_valid_vin(vin):
+    cloudlog.event("Malformed VIN", vin=vin, error=True)
+    vin = VIN_UNKNOWN
+  cloudlog.warning("VIN %s", vin)
+  params.put("CarVin", vin)
+
+  # disable OBD multiplexing for potential ECU knockouts
+  set_obd_multiplexing(params, False)
+  params.put_bool("FirmwareQueryDone", True)
+
+  fw_query_time = time.monotonic() - start_time
+
+  # CAN fingerprint
+  # drain CAN socket so we get the latest messages
+  messaging.drain_sock_raw(logcan)
+  car_fingerprint, finger = can_fingerprint(lambda: get_one_can(logcan))
 
   exact_match = True
   source = car.CarParams.FingerprintSource.can
@@ -185,43 +192,9 @@ def fingerprint(logcan, sendcan, num_pandas):
     source = car.CarParams.FingerprintSource.fixed
 
   cloudlog.event("fingerprinted", car_fingerprint=car_fingerprint, source=source, fuzzy=not exact_match, cached=cached,
-                 fw_count=len(car_fw), ecu_responses=list(ecu_rx_addrs), vin_rx_addr=vin_rx_addr, error=True)
+                 fw_count=len(car_fw), ecu_responses=list(ecu_rx_addrs), vin_rx_addr=vin_rx_addr, vin_rx_bus=vin_rx_bus,
+                 fingerprints=finger, fw_query_time=fw_query_time, error=True)
   return car_fingerprint, finger, vin, car_fw, source, exact_match
-
-#dp
-def is_connected_to_internet(timeout=5):
-  try:
-    requests.get("https://sentry.io", timeout=timeout)
-    return True
-  except Exception:
-    return False
-
-
-def crash_log(candidate):
-  no_internet = 0
-  while True:
-    if is_connected_to_internet():
-      sentry.capture_warning("fingerprinted %s" % candidate)
-      break
-    else:
-      no_internet += 1
-      if no_internet >= 2:
-        break
-      time.sleep(600)
-
-
-def crash_log2(fingerprints, fw):
-  no_internet = 0
-  while True:
-    if is_connected_to_internet():
-      sentry.capture_warning("car doesn't match any fingerprints: %s" % fingerprints)
-      sentry.capture_warning("car doesn't match any fw: %s" % fw)
-      break
-    else:
-      no_internet += 1
-      if no_internet >= 2:
-        break
-      time.sleep(600)
 
 
 def get_car(logcan, sendcan, experimental_long_allowed, num_pandas=1):
@@ -231,22 +204,23 @@ def get_car(logcan, sendcan, experimental_long_allowed, num_pandas=1):
     cloudlog.event("car doesn't match any fingerprints", fingerprints=fingerprints, error=True)
     candidate = "mock"
 
-    y = threading.Thread(target=crash_log2, args=(fingerprints,car_fw,))
-    y.start()
+  CarInterface, CarController, CarState = interfaces[candidate]
+  CP = CarInterface.get_params(candidate, fingerprints, car_fw, experimental_long_allowed, docs=False)
+  CP.carVin = vin
+  CP.carFw = car_fw
+  CP.fingerprintSource = source
+  CP.fuzzyFingerprint = not exact_match
 
-  x = threading.Thread(target=crash_log, args=(candidate,))
-  x.start()
+  return CarInterface(CP, CarController, CarState), CP
 
-  try:
-    CarInterface, CarController, CarState = interfaces[candidate]
-    CP = CarInterface.get_params(candidate, fingerprints, car_fw, experimental_long_allowed)
-    CP.carVin = vin
-    CP.carFw = car_fw
-    CP.fingerprintSource = source
-    CP.fuzzyFingerprint = not exact_match
-    
-    return CarInterface(CP, CarController, CarState), CP
-  except KeyError as err:
-    print("Error get car param %s" % err)
+def write_car_param(fingerprint="mock"):
+  params = Params()
+  CarInterface, _, _ = interfaces[fingerprint]
+  CP = CarInterface.get_non_essential_params(fingerprint)
+  params.put("CarParams", CP.to_bytes())
 
-    return None, None
+def get_demo_car_params():
+  fingerprint="mock"
+  CarInterface, _, _ = interfaces[fingerprint]
+  CP = CarInterface.get_non_essential_params(fingerprint)
+  return CP

@@ -1,13 +1,13 @@
-from selfdrive.car.interfaces import get_interface_attr
-
+from openpilot.selfdrive.car.interfaces import get_interface_attr
 
 FW_VERSIONS = get_interface_attr('FW_VERSIONS', combine_brands=True, ignore_none=True)
 _FINGERPRINTS = get_interface_attr('FINGERPRINTS', combine_brands=True, ignore_none=True)
 
 _DEBUG_ADDRESS = {1880: 8}   # reserved for debug purposes
 
-
-def is_valid_for_fingerprint(msg, car_fingerprint):
+# rick - use Dict instead of dict (unsupported python 3.8 syntax)
+from typing import Dict
+def is_valid_for_fingerprint(msg, car_fingerprint: Dict[int, int]):
   adr = msg.address
   # ignore addresses that are more than 11 bits
   return (adr in car_fingerprint and car_fingerprint[adr] == len(msg.dat)) or adr >= 0x800
@@ -28,9 +28,15 @@ def eliminate_incompatible_cars(msg, candidate_cars):
   for car_name in candidate_cars:
     car_fingerprints = _FINGERPRINTS[car_name]
 
+    # for fingerprint in car_fingerprints:
+    #   # add alien debug address
+    #   if is_valid_for_fingerprint(msg, fingerprint | _DEBUG_ADDRESS):
+    #     compatible_cars.append(car_name)
+    #     break
+
+    # rick - new syntax doesn't work on old python
     for fingerprint in car_fingerprints:
       fingerprint.update(_DEBUG_ADDRESS)  # add alien debug address
-
       if is_valid_for_fingerprint(msg, fingerprint):
         compatible_cars.append(car_name)
         break

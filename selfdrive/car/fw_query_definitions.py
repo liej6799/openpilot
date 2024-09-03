@@ -3,10 +3,16 @@ import capnp
 import copy
 from dataclasses import dataclass, field
 import struct
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
 import panda.python.uds as uds
 
+AddrType = Tuple[int, Optional[int]]
+EcuAddrBusType = Tuple[int, Optional[int], int]
+EcuAddrSubAddr = Tuple[int, int, Optional[int]]
+
+LiveFwVersions = Dict[AddrType, Set[bytes]]
+OfflineFwVersions = Dict[str, Dict[EcuAddrSubAddr, List[bytes]]]
 
 def p16(val):
   return struct.pack("!H", val)
@@ -74,6 +80,9 @@ class FwQueryConfig:
   non_essential_ecus: Dict[capnp.lib.capnp._EnumModule, List[str]] = field(default_factory=dict)
   # Ecus added for data collection, not to be fingerprinted on
   extra_ecus: List[Tuple[capnp.lib.capnp._EnumModule, int, Optional[int]]] = field(default_factory=list)
+  # Function a brand can implement to provide better fuzzy matching. Takes in FW versions,
+  # returns set of candidates. Only will match if one candidate is returned
+  match_fw_to_car_fuzzy: Optional[Callable[[LiveFwVersions, OfflineFwVersions], Set[str]]] = None
 
   def __post_init__(self):
     for i in range(len(self.requests)):

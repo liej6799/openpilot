@@ -1,8 +1,8 @@
 import unittest
-from selfdrive.mapd.lib.geo import vectors, ref_vectors, bearing_to_points, distance_to_points
+from openpilot.selfdrive.mapd.lib.geo import vectors, ref_vectors, bearing_to_points, distance_to_points
 import numpy as np
 from numpy.testing import assert_array_almost_equal
-from selfdrive.mapd.test.mock_data import mockNodesData01
+from openpilot.selfdrive.mapd.test.mock_data import mockNodesData01
 
 
 class TestMapsdGeoLibrary(unittest.TestCase):

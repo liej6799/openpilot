@@ -1,13 +1,13 @@
 import unittest
 import numpy as np
-from selfdrive.mapd.lib.geo import DIRECTION
-from common.conversions import Conversions as CV
-from selfdrive.mapd.lib.WayRelation import WayRelation
-from selfdrive.mapd.lib.NodesData import nodes_raw_data_array_for_wr, node_calculations, \
+from openpilot.selfdrive.mapd.lib.geo import DIRECTION
+from openpilot.common.conversions import Conversions as CV
+from openpilot.selfdrive.mapd.lib.WayRelation import WayRelation
+from openpilot.selfdrive.mapd.lib.NodesData import nodes_raw_data_array_for_wr, node_calculations, \
   spline_curvature_calculations, split_speed_section_by_sign, split_speed_section_by_curv_degree, speed_section, \
   speed_limits_for_curvatures_data, is_wr_a_valid_divertion_from_node, SpeedLimitSection, TurnSpeedLimitSection, \
   NodesData, NodeDataIdx
-from selfdrive.mapd.test.mock_data import mockOSMWay_01_01_LongCurvy, mockNodesData01, mockCurveSectionSin, \
+from openpilot.selfdrive.mapd.test.mock_data import mockOSMWay_01_01_LongCurvy, mockNodesData01, mockCurveSectionSin, \
   mockCurveSteepCurvChange, mockCurveSteepCurvChangeShort, mockCurveSmoothCurveChange, \
   mockOSMWay_02_01_CurvyTownWithIntersections, mockOSMWay_02_02_Divertion_34785115, mockOSMWay_02_03_Short_3_node_way, \
   mockRouteData_02_01, mockRouteData_02_02_single_wr, mockRouteData_02_03
@@ -200,7 +200,7 @@ class TestNodesData(unittest.TestCase):
     nd = NodesData(way_relations, wr_index)
 
     assert_array_almost_equal(nd._nodes_data, mockRouteData_02_02_single_wr._nodes_data)
-    assert_array_almost_equal(nd._curvature_speed_sections_data, 
+    assert_array_almost_equal(nd._curvature_speed_sections_data,
                               mockRouteData_02_02_single_wr._curvature_speed_sections_data)
     self.assertListEqual(nd._divertions, mockRouteData_02_02_single_wr._divertions)
     self.assertEqual(len(nd._nodes_data), len(way_relations[0].way.nodes))

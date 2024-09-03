@@ -4,12 +4,12 @@ import numpy as np
 from unittest import mock
 from numpy.testing import assert_array_almost_equal
 from datetime import datetime as dt, timezone, timedelta
-from common.conversions import Conversions as CV
-from selfdrive.mapd.lib.WayRelation import WayRelation, is_osm_time_condition_active, \
+from openpilot.common.conversions import Conversions as CV
+from openpilot.selfdrive.mapd.lib.WayRelation import WayRelation, is_osm_time_condition_active, \
   conditional_speed_limit_for_osm_tag_limit_string, speed_limit_for_osm_tag_limit_string
-from selfdrive.mapd.config import LANE_WIDTH
-from selfdrive.mapd.lib.geo import DIRECTION, R, vectors
-from selfdrive.mapd.test.mock_data import mockOSMWay_01_01_LongCurvy, mockOSMWay_01_02_Loop, \
+from openpilot.selfdrive.mapd.config import LANE_WIDTH
+from openpilot.selfdrive.mapd.lib.geo import DIRECTION, R, vectors
+from openpilot.selfdrive.mapd.test.mock_data import mockOSMWay_01_01_LongCurvy, mockOSMWay_01_02_Loop, \
   mockOSMWay_02_01_CurvyTownWithIntersections
 
 

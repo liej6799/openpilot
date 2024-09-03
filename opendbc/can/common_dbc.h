@@ -5,21 +5,9 @@
 #include <string>
 #include <vector>
 
-#define ARRAYSIZE(x) (sizeof(x)/sizeof(x[0]))
-
 struct SignalPackValue {
   std::string name;
   double value;
-};
-
-struct SignalParseOptions {
-  uint32_t address;
-  std::string name;
-};
-
-struct MessageParseOptions {
-  uint32_t address;
-  int check_frequency;
 };
 
 struct SignalValue {
@@ -82,19 +70,8 @@ typedef struct ChecksumState {
   SignalType checksum_type;
   unsigned int (*calc_checksum)(uint32_t address, const Signal &sig, const std::vector<uint8_t> &d);
 } ChecksumState;
-#ifndef QCOM
+
 DBC* dbc_parse(const std::string& dbc_path);
-DBC* dbc_parse_from_stream(const std::string &dbc_name, std::istream &stream, ChecksumState *checksum = nullptr);
+DBC* dbc_parse_from_stream(const std::string &dbc_name, std::istream &stream, ChecksumState *checksum = nullptr, bool allow_duplicate_msg_name=false);
 const DBC* dbc_lookup(const std::string& dbc_name);
 std::vector<std::string> get_dbc_names();
-#else
-std::vector<const DBC*>& get_dbcs();
-const DBC* dbc_lookup(const std::string& dbc_name);
-
-void dbc_register(const DBC* dbc);
-
-#define dbc_init(dbc) \
-static void __attribute__((constructor)) do_dbc_init_ ## dbc(void) { \
-  dbc_register(&dbc); \
-}
-#endif

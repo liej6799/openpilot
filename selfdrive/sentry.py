@@ -3,11 +3,11 @@ import sentry_sdk
 from enum import Enum
 from sentry_sdk.integrations.threading import ThreadingIntegration
 
-from common.params import Params
-# from selfdrive.athena.registration import is_registered_device
-from system.hardware import HARDWARE, PC
-from system.swaglog import cloudlog
-from system.version import get_branch, get_commit, get_origin, get_version, \
+from openpilot.common.params import Params
+from openpilot.selfdrive.athena.registration import is_registered_device
+from openpilot.system.hardware import HARDWARE, PC
+from openpilot.system.swaglog import cloudlog
+from openpilot.system.version import get_branch, get_commit, get_origin, get_version, \
                               is_comma_remote, is_dirty, is_tested_branch
 
 import os
@@ -83,7 +83,7 @@ def save_exception(exc_text):
   print('Logged current crash to {}'.format(log_file))
 
 def bind_user(**kwargs) -> None:
-    sentry_sdk.set_user(kwargs)
+  sentry_sdk.set_user(kwargs)
 
 def capture_warning(warning_string):
   bind_user(id=dongle_id, ip_address=ip, name=gitname)
@@ -101,7 +101,7 @@ def init(project: SentryProject) -> None:
   # forks like to mess with this, so double check
   #comma_remote = is_comma_remote() and "commaai" in get_origin(default="")
   #if not comma_remote or not is_registered_device() or PC:
-    #return
+  #return
 
   env = "release" if is_tested_branch() else "master"
   dongle_id = Params().get("DongleId", encoding='utf-8')

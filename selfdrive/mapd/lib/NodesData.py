@@ -1,16 +1,13 @@
 import numpy as np
 from enum import Enum
-from selfdrive.mapd.lib.geo import DIRECTION, R, vectors
+from openpilot.selfdrive.mapd.lib.geo import DIRECTION, R, vectors
 
-from system.hardware import EON
+# from scipy.interpolate import splev, splprep
+from opspline import splev, splprep  # pylint: disable=E0401
 
-if EON:
-  from opspline import splev, splprep  # pylint: disable=E0401
-else:
-  from scipy.interpolate import splev, splprep
 
 _TURN_CURVATURE_THRESHOLD = 0.002  # 1/mts. A curvature over this value will generate a speed limit section.
-_MAX_LAT_ACC = 2.6  # Maximum lateral acceleration in turns.
+_MAX_LAT_ACC = 2.3  # Maximum lateral acceleration in turns.
 _SPLINE_EVAL_STEP = 5  # mts for spline evaluation for curvature calculation
 _MIN_SPEED_SECTION_LENGTH = 100.  # mts. Sections below this value will not be split in smaller sections.
 _MAX_CURV_DEVIATION_FOR_SPLIT = 2.  # Split a speed section if the max curvature deviates from mean by this factor.
@@ -25,24 +22,6 @@ def nodes_raw_data_array_for_wr(wr, drop_last=False):
   """
   sl = wr.speed_limit
   data = np.array([(n.id, n.lat, n.lon, sl) for n in wr.way.nodes], dtype=float)
-
-  for count, node in enumerate(wr.way.nodes):
-    if 'highway' in node.tags:
-      if node.tags['highway'] == 'mini_roundabout':
-        data[count][3] = 4.1667
-      if 'direction' in node.tags and (node.tags['highway'] == 'stop' or node.tags['highway'] == 'give_way'):
-        if (wr.direction == DIRECTION.BACKWARD and node.tags['direction'] == 'backward') or (wr.direction == DIRECTION.FORWARD and node.tags['direction'] == 'forward'):
-          if node.tags['highway'] == 'give_way':
-            data[count][3] = 2.7777
-          if node.tags['highway'] == 'stop':
-            data[count][3] = 0.1
-    if 'traffic_calming' in node.tags:
-      if node.tags['traffic_calming'] == 'yes':
-        data[count][3] = 40/3.6
-      if node.tags['traffic_calming'] == 'chicane' or node.tags['traffic_calming'] == 'choker':
-        data[count][3] = 20/3.6
-      if node.tags['traffic_calming'] == 'bump' or node.tags['traffic_calming'] == 'hump':
-        data[count][3] = 2.24
 
   # reverse the order if way direction is backwards
   if wr.direction == DIRECTION.BACKWARD:

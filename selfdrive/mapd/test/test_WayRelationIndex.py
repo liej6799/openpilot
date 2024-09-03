@@ -1,6 +1,6 @@
 import unittest
-from selfdrive.mapd.lib.WayRelationIndex import WayRelationIndex
-from selfdrive.mapd.test.mock_data import mockWayCollection01
+from openpilot.selfdrive.mapd.lib.WayRelationIndex import WayRelationIndex
+from openpilot.selfdrive.mapd.test.mock_data import mockWayCollection01
 
 
 class TestWayRelationIndex(unittest.TestCase):

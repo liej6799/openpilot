@@ -6,12 +6,12 @@ export NUMEXPR_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export VECLIB_MAXIMUM_THREADS=1
 
-if [ -z "$NEOS_VERSION" ]; then
-  export NEOS_VERSION="20"
+if [ -z "$AGNOS_VERSION" ]; then
+  export AGNOS_VERSION="7.1"
 fi
 
-if [ -z "$AGNOS_VERSION" ]; then
-  export AGNOS_VERSION="6.2"
+if [ -z "$REQUIRED_NEOS_VERSION" ]; then
+  export REQUIRED_NEOS_VERSION="20"
 fi
 
 if [ -z "$PASSIVE" ]; then
@@ -19,5 +19,3 @@ if [ -z "$PASSIVE" ]; then
 fi
 
 export STAGING_ROOT="/data/safe_staging"
-export SKIP_FW_QUERY=1
-export FINGERPRINT="WULING ALVEZ"

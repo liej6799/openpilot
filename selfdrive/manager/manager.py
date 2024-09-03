@@ -7,24 +7,24 @@ import sys
 import traceback
 from typing import List, Tuple, Union
 
+from cereal import log
 import cereal.messaging as messaging
-import selfdrive.sentry as sentry
-from common.basedir import BASEDIR
-from common.params import Params, ParamKeyType
-from common.text_window import TextWindow
-from selfdrive.boardd.set_time import set_time
-from system.hardware import HARDWARE, PC, TICI
-from selfdrive.manager.helpers import unblock_stdout
-from selfdrive.manager.process import ensure_running
-from selfdrive.manager.process_config import managed_processes
-from selfdrive.athena.registration import register, UNREGISTERED_DONGLE_ID
-from system.swaglog import cloudlog, add_file_handler
-from system.version import is_dirty, get_commit, get_version, get_origin, get_short_branch, \
-                              terms_version, training_version, is_tested_branch, is_release_branch
-from common.dp_conf import init_params_vals
-
-
-sys.path.append(os.path.join(BASEDIR, "pyextra"))
+import openpilot.selfdrive.sentry as sentry
+from openpilot.common.basedir import BASEDIR
+from openpilot.common.params import Params, ParamKeyType
+from openpilot.common.text_window import TextWindow
+from openpilot.selfdrive.boardd.set_time import set_time
+from openpilot.system.hardware import HARDWARE, PC
+from openpilot.selfdrive.manager.helpers import unblock_stdout, write_onroad_params
+from openpilot.selfdrive.manager.process import ensure_running
+from openpilot.selfdrive.manager.process_config import managed_processes
+from openpilot.selfdrive.athena.registration import register, UNREGISTERED_DONGLE_ID
+from openpilot.system.swaglog import cloudlog, add_file_handler
+from openpilot.system.version import is_dirty, get_commit, get_version, get_origin, get_short_branch, \
+                           get_normalized_origin, terms_version, training_version, \
+                           is_tested_branch, is_release_branch
+import json
+from openpilot.selfdrive.car.fingerprints import all_known_cars, all_legacy_fingerprint_cars
 
 
 def manager_init() -> None:
@@ -32,11 +32,12 @@ def manager_init() -> None:
   set_time(cloudlog)
 
   # save boot log
-  # if not Params().get_bool('dp_jetson'):
-    # subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "system/loggerd"))
+  subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
 
   params = Params()
   params.clear_all(ParamKeyType.CLEAR_ON_MANAGER_START)
+  params.clear_all(ParamKeyType.CLEAR_ON_ONROAD_TRANSITION)
+  params.clear_all(ParamKeyType.CLEAR_ON_OFFROAD_TRANSITION)
 
   default_params: List[Tuple[str, Union[str, bytes]]] = [
     ("CompletedTrainingVersion", "0"),
@@ -45,14 +46,50 @@ def manager_init() -> None:
     ("HasAcceptedTerms", "0"),
     ("LanguageSetting", "main_en"),
     ("OpenpilotEnabledToggle", "1"),
-    # ("ShowDebugUI", "0"),
-    ("SpeedLimitControl", "0"),
-    ("SpeedLimitPercOffset", "0"),
-    ("TurnSpeedControl", "0"),
-    ("TurnVisionControl", "0"),
+    ("LongitudinalPersonality", str(log.LongitudinalPersonality.standard)),
+    ("DisableUpdates", "1"),
+    ("dp_no_gps_ctrl", "0"),
+    ("dp_no_fan_ctrl", "0"),
+    ("dp_logging", "1"),
+    ("dp_0813", "1"),
+    ("dp_lat_controller", "0"),
+
+    # dp addition
+    ("dp_alka", "0"),
+    ("dp_mapd", "0"),
+    ("dp_lat_lane_priority_mode", "0"),
+    ("dp_device_auto_shutdown", "0"),
+    ("dp_device_auto_shutdown_in", "30"),
+    ("dp_toyota_sng", "0"),
+    ("dp_toyota_enhanced_bsm", "0"),
+    ("dp_toyota_auto_lock", "0"),
+    ("dp_toyota_auto_unlock", "0"),
+    ("dp_device_display_off_mode", "0"),
+    ("dp_device_audible_alert_mode", "0"),
+    ("dp_device_disable_temp_check", "0"),
+    ("dp_fileserv", "0"),
+    ("dp_otisserv", "0"),
+    ("dp_car_dashcam_mode_removal", "0"),
+    ("dp_device_enable_comma_registration", "0"),
+    ("dp_long_accel_profile", "0"),
+    ("dp_long_use_df_tune", "0"),
+    ("dp_long_de2e", "0"),
+    ("dp_mapd_vision_turn_control", "0"),
+    ("dp_hkg_min_steer_speed_bypass", "0"),
+    ("dp_lat_lane_priority_mode_speed_based", "0"),
+    ("dp_long_use_krkeegen_tune", "0"),
+    ("dp_toyota_zss", "0"),
+    ("dp_long_accel_btn", "0"),
+    ("dp_long_personality_btn", "0"),
+    ("dp_lat_lane_change_assist_speed", "20"),
+    ("dp_toyota_tss2_radar_disabled", "0"),
+    ("dp_device_display_flight_panel", "0"),
+    ("dp_ui_rainbow", "0"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))
+
+  params.put("dp_car_list", get_support_car_list())
 
   if params.get_bool("RecordFrontLock"):
     params.put_bool("RecordFront", True)
@@ -61,9 +98,6 @@ def manager_init() -> None:
   for k, v in default_params:
     if params.get(k) is None:
       params.put(k, v)
-
-  # dp init params
-  init_params_vals(params)
 
   # is this dashcam?
   if os.getenv("PASSIVE") is not None:
@@ -104,7 +138,12 @@ def manager_init() -> None:
 
   # init logging
   sentry.init(sentry.SentryProject.SELFDRIVE)
-  cloudlog.bind_global(dongle_id=dongle_id, version=get_version(), dirty=is_dirty(),
+  cloudlog.bind_global(dongle_id=dongle_id,
+                       version=get_version(),
+                       origin=get_normalized_origin(),
+                       branch=get_short_branch(),
+                       commit=get_commit(),
+                       dirty=is_dirty(),
                        device=HARDWARE.get_device_type())
 
 
@@ -133,38 +172,51 @@ def manager_thread() -> None:
   params = Params()
 
   ignore: List[str] = []
-
-  # dp
-  if TICI:
-    params.put_bool('dp_dm', True)
-    params.put_bool('dp_jetson', False)
-  dp_nav = params.get_bool('dp_nav')
-  dp_otisserv = dp_nav and params.get_bool('dp_otisserv')
-  dp_jetson = params.get_bool('dp_jetson')
-  ignore += ['dmonitoringmodeld', 'dmonitoringd', 'dpmonitoringd'] if dp_jetson else []
-  ignore += ['navd', 'mapsd'] if not dp_nav else []
-  ignore += ['otisserv'] if not dp_nav or not dp_otisserv else []
-  dp_mapd = params.get_bool('dp_mapd')
-  ignore += ['mapd'] if not dp_mapd else []
-  ignore += ['gpxd'] if not dp_otisserv and not dp_mapd and not params.get_bool('dp_gpxd') else []
-  ignore += ['uploader'] if not params.get_bool('dp_api_custom') and dp_jetson else []
-  ignore += ['logcatd', 'proclogd', 'loggerd', 'logmessaged', 'encoderd', '']
-
   if params.get("DongleId", encoding='utf8') in (None, UNREGISTERED_DONGLE_ID):
     ignore += ["manage_athenad", "uploader"]
   if os.getenv("NOBOARD") is not None:
     ignore.append("pandad")
+
+  if not params.get_bool("dp_logging"):
+    ignore += ["logcatd", "proclogd", "loggerd"]
   ignore += [x for x in os.getenv("BLOCK", "").split(",") if len(x) > 0]
+
+  if not params.get_bool("dp_mapd"):
+    ignore += ["mapd", "gpxd"]
+
+  if params.get_bool("dp_no_gps_ctrl"):
+    ignore += ["ubloxd", "gpx_uploader", "gpxd", "mapd"]
+
+  if not params.get_bool("dp_fileserv"):
+    ignore += ["fileserv"]
+
+  if not params.get_bool("dp_otisserv"):
+    ignore += ["otisserv"]
 
   sm = messaging.SubMaster(['deviceState', 'carParams'], poll=['deviceState'])
   pm = messaging.PubMaster(['managerState'])
 
+  write_onroad_params(False, params)
   ensure_running(managed_processes.values(), False, params=params, CP=sm['carParams'], not_run=ignore)
+
+  started_prev = False
 
   while True:
     sm.update()
 
     started = sm['deviceState'].started
+
+    if started and not started_prev:
+      params.clear_all(ParamKeyType.CLEAR_ON_ONROAD_TRANSITION)
+    elif not started and started_prev:
+      params.clear_all(ParamKeyType.CLEAR_ON_OFFROAD_TRANSITION)
+
+    # update onroad params, which drives boardd's safety setter thread
+    if started != started_prev:
+      write_onroad_params(started, params)
+
+    started_prev = started
+
     ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=ignore)
 
     running = ' '.join("%s%s\u001b[0m" % ("\u001b[32m" if p.proc.is_alive() else "\u001b[31m", p.name)
@@ -179,8 +231,10 @@ def manager_thread() -> None:
 
     # Exit main loop when uninstall/shutdown/reboot is needed
     shutdown = False
-    for param in ("DoUninstall", "DoShutdown", "DoReboot"):
+    for param in ("DoUninstall", "DoShutdown", "DoReboot", "dp_reset_conf"):
       if params.get_bool(param):
+        if param == "dp_reset_conf":
+          os.system("rm -fr /data/params/d/dp_*")
         shutdown = True
         params.put("LastManagerExitReason", f"{param} {datetime.datetime.now()}")
         cloudlog.warning(f"Shutting down manager - {param} set")
@@ -226,20 +280,21 @@ def main() -> None:
     HARDWARE.shutdown()
 
 
-if __name__ == "__main__":
-  if os.path.isfile("/EON"):
-    if not os.path.isfile("/system/fonts/NotoSansCJKtc-Regular.otf"):
-      os.system("mount -o remount,rw /system")
-      os.system("rm -fr /system/fonts/NotoSansTC*.otf")
-      os.system("rm -fr /system/fonts/NotoSansSC*.otf")
-      os.system("rm -fr /system/fonts/NotoSansKR*.otf")
-      os.system("rm -fr /system/fonts/NotoSansJP*.otf")
-      os.system("cp -rf /data/openpilot/selfdrive/assets/fonts/NotoSansCJKtc-* /system/fonts/")
-      os.system("cp -rf /data/openpilot/selfdrive/assets/fonts/fonts.xml /system/etc/fonts.xml")
-      os.system("chmod 644 /system/etc/fonts.xml")
-      os.system("chmod 644 /system/fonts/NotoSansCJKtc-*")
-      os.system("mount -o remount,r /system")
+def get_support_car_list():
+  cars = dict({"cars": []})
+  list = []
+  for car in all_known_cars():
+    list.append(str(car))
 
+  for car in all_legacy_fingerprint_cars():
+    name = str(car)
+    if name not in list:
+      list.append(name)
+  cars["cars"] = sorted(list)
+  return json.dumps(cars)
+
+
+if __name__ == "__main__":
   unblock_stdout()
 
   try:

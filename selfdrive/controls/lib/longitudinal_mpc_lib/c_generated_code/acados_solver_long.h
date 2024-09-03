@@ -1,8 +1,5 @@
 /*
- * Copyright 2019 Gianluca Frison, Dimitris Kouzoupis, Robin Verschueren,
- * Andrea Zanelli, Niels van Duijkeren, Jonathan Frey, Tommaso Sartor,
- * Branimir Novoselnik, Rien Quirynen, Rezart Qelibari, Dang Doan,
- * Jonas Koenemann, Yutao Chen, Tobias Schöls, Jonas Schlagenhauf, Moritz Diehl
+ * Copyright (c) The acados authors.
  *
  * This file is part of acados.
  *
@@ -74,6 +71,7 @@
 extern "C" {
 #endif
 
+
 // ** capsule for solver data **
 typedef struct long_solver_capsule
 {
@@ -106,6 +104,7 @@ typedef struct long_solver_capsule
     external_function_param_casadi *cost_y_hess;
 
 
+
     external_function_param_casadi cost_y_0_fun;
     external_function_param_casadi cost_y_0_fun_jac_ut_xt;
     external_function_param_casadi cost_y_0_hess;
@@ -120,7 +119,6 @@ typedef struct long_solver_capsule
     // constraints
     external_function_param_casadi *nl_constr_h_fun_jac;
     external_function_param_casadi *nl_constr_h_fun;
-    external_function_param_casadi *nl_constr_h_fun_jac_hess;
 
 
 
@@ -132,7 +130,7 @@ ACADOS_SYMBOL_EXPORT int long_acados_free_capsule(long_solver_capsule *capsule);
 
 ACADOS_SYMBOL_EXPORT int long_acados_create(long_solver_capsule * capsule);
 
-ACADOS_SYMBOL_EXPORT int long_acados_reset(long_solver_capsule* capsule);
+ACADOS_SYMBOL_EXPORT int long_acados_reset(long_solver_capsule* capsule, int reset_qp_solver_mem);
 
 /**
  * Generic version of long_acados_create which allows to use a different number of shooting intervals than
@@ -150,10 +148,14 @@ ACADOS_SYMBOL_EXPORT int long_acados_update_time_steps(long_solver_capsule * cap
  */
 ACADOS_SYMBOL_EXPORT int long_acados_update_qp_solver_cond_N(long_solver_capsule * capsule, int qp_solver_cond_N);
 ACADOS_SYMBOL_EXPORT int long_acados_update_params(long_solver_capsule * capsule, int stage, double *value, int np);
+ACADOS_SYMBOL_EXPORT int long_acados_update_params_sparse(long_solver_capsule * capsule, int stage, int *idx, double *p, int n_update);
+
 ACADOS_SYMBOL_EXPORT int long_acados_solve(long_solver_capsule * capsule);
 ACADOS_SYMBOL_EXPORT int long_acados_free(long_solver_capsule * capsule);
 ACADOS_SYMBOL_EXPORT void long_acados_print_stats(long_solver_capsule * capsule);
-                     
+ACADOS_SYMBOL_EXPORT int long_acados_custom_update(long_solver_capsule* capsule, double* data, int data_len);
+
+
 ACADOS_SYMBOL_EXPORT ocp_nlp_in *long_acados_get_nlp_in(long_solver_capsule * capsule);
 ACADOS_SYMBOL_EXPORT ocp_nlp_out *long_acados_get_nlp_out(long_solver_capsule * capsule);
 ACADOS_SYMBOL_EXPORT ocp_nlp_out *long_acados_get_sens_out(long_solver_capsule * capsule);

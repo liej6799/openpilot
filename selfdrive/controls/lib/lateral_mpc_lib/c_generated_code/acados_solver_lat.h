@@ -1,8 +1,5 @@
 /*
- * Copyright 2019 Gianluca Frison, Dimitris Kouzoupis, Robin Verschueren,
- * Andrea Zanelli, Niels van Duijkeren, Jonathan Frey, Tommaso Sartor,
- * Branimir Novoselnik, Rien Quirynen, Rezart Qelibari, Dang Doan,
- * Jonas Koenemann, Yutao Chen, Tobias Schöls, Jonas Schlagenhauf, Moritz Diehl
+ * Copyright (c) The acados authors.
  *
  * This file is part of acados.
  *
@@ -74,6 +71,7 @@
 extern "C" {
 #endif
 
+
 // ** capsule for solver data **
 typedef struct lat_solver_capsule
 {
@@ -106,6 +104,7 @@ typedef struct lat_solver_capsule
     external_function_param_casadi *cost_y_hess;
 
 
+
     external_function_param_casadi cost_y_0_fun;
     external_function_param_casadi cost_y_0_fun_jac_ut_xt;
     external_function_param_casadi cost_y_0_hess;
@@ -129,7 +128,7 @@ ACADOS_SYMBOL_EXPORT int lat_acados_free_capsule(lat_solver_capsule *capsule);
 
 ACADOS_SYMBOL_EXPORT int lat_acados_create(lat_solver_capsule * capsule);
 
-ACADOS_SYMBOL_EXPORT int lat_acados_reset(lat_solver_capsule* capsule);
+ACADOS_SYMBOL_EXPORT int lat_acados_reset(lat_solver_capsule* capsule, int reset_qp_solver_mem);
 
 /**
  * Generic version of lat_acados_create which allows to use a different number of shooting intervals than
@@ -147,10 +146,14 @@ ACADOS_SYMBOL_EXPORT int lat_acados_update_time_steps(lat_solver_capsule * capsu
  */
 ACADOS_SYMBOL_EXPORT int lat_acados_update_qp_solver_cond_N(lat_solver_capsule * capsule, int qp_solver_cond_N);
 ACADOS_SYMBOL_EXPORT int lat_acados_update_params(lat_solver_capsule * capsule, int stage, double *value, int np);
+ACADOS_SYMBOL_EXPORT int lat_acados_update_params_sparse(lat_solver_capsule * capsule, int stage, int *idx, double *p, int n_update);
+
 ACADOS_SYMBOL_EXPORT int lat_acados_solve(lat_solver_capsule * capsule);
 ACADOS_SYMBOL_EXPORT int lat_acados_free(lat_solver_capsule * capsule);
 ACADOS_SYMBOL_EXPORT void lat_acados_print_stats(lat_solver_capsule * capsule);
-                     
+ACADOS_SYMBOL_EXPORT int lat_acados_custom_update(lat_solver_capsule* capsule, double* data, int data_len);
+
+
 ACADOS_SYMBOL_EXPORT ocp_nlp_in *lat_acados_get_nlp_in(lat_solver_capsule * capsule);
 ACADOS_SYMBOL_EXPORT ocp_nlp_out *lat_acados_get_nlp_out(lat_solver_capsule * capsule);
 ACADOS_SYMBOL_EXPORT ocp_nlp_out *lat_acados_get_sens_out(lat_solver_capsule * capsule);

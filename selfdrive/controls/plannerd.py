@@ -1,24 +1,27 @@
 #!/usr/bin/env python3
+import os
 import numpy as np
 from cereal import car
-from common.params import Params
-from common.realtime import Priority, config_realtime_process
-from system.swaglog import cloudlog
-from selfdrive.modeld.constants import T_IDXS
-from selfdrive.controls.lib.longitudinal_planner import LongitudinalPlanner
-from selfdrive.controls.lib.lateral_planner import LateralPlanner
+from openpilot.common.params import Params
+from openpilot.common.realtime import Priority, config_realtime_process
+from openpilot.system.swaglog import cloudlog
+from openpilot.selfdrive.hybrid_modeld.constants import ModelConstants
 import cereal.messaging as messaging
-from system.hardware import TICI
+from openpilot.system.hardware import TICI
 
-from selfdrive.dragonpilot.controls_0813.lib.lateral_planner import LateralPlanner as DPLateralPlanner
-from selfdrive.dragonpilot.controls_0816.lib.lateral_planner import LateralPlanner as FPLateralPlanner
+if Params().get_bool("dp_0813"):
+  from openpilot.selfdrive.controls.lib.legacy_longitudinal_planner import LongitudinalPlanner
+  from openpilot.selfdrive.controls.lib.legacy_lateral_planner import LateralPlanner
+else:
+  from openpilot.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlanner
+  from openpilot.selfdrive.controls.lib.lateral_planner import LateralPlanner
 
 def cumtrapz(x, t):
   return np.concatenate([[0], np.cumsum(((x[0:-1] + x[1:])/2) * np.diff(t))])
 
 def publish_ui_plan(sm, pm, lateral_planner, longitudinal_planner):
-  plan_odo = cumtrapz(longitudinal_planner.v_desired_trajectory_full, T_IDXS)
-  model_odo = cumtrapz(lateral_planner.v_plan, T_IDXS)
+  plan_odo = cumtrapz(longitudinal_planner.v_desired_trajectory_full, ModelConstants.T_IDXS)
+  model_odo = cumtrapz(lateral_planner.v_plan, ModelConstants.T_IDXS)
 
   ui_send = messaging.new_message('uiPlan')
   ui_send.valid = sm.all_checks(service_list=['carState', 'controlsState', 'modelV2'])
@@ -36,28 +39,22 @@ def plannerd_thread(sm=None, pm=None):
   cloudlog.info("plannerd is waiting for CarParams")
   params = Params()
   CP = car.CarParams.from_bytes(params.get("CarParams", block=True))
+  # with car.CarParams.from_bytes(params.get("CarParams", block=True)) as msg:
+  #   CP = msg
   cloudlog.info("plannerd got CarParams: %s", CP.carName)
 
+  debug_mode = bool(int(os.getenv("DEBUG", "0")))
+
   longitudinal_planner = LongitudinalPlanner(CP)
-  try:
-    lat_version = int(params.get('dp_lateral_version').decode('utf8'))
-  except:
-    # if we have trouble reading it, reset it to latest lateral planner
-    params.put('dp_lateral_version', "0")
-    lat_version = 0
-  if lat_version == 1: # 0813
-    lateral_planner = DPLateralPlanner(CP)
-  elif lat_version == 2: # 0816
-    lateral_planner = FPLateralPlanner(CP)
-  else:
-    lateral_planner = LateralPlanner(CP)
+  lateral_planner = LateralPlanner(CP, debug=debug_mode)
+  is_old_model = Params().get_bool("dp_0813")
 
   if sm is None:
-    sm = messaging.SubMaster(['carControl', 'carState', 'controlsState', 'radarState', 'modelV2', 'dragonConf', 'lateralPlan', 'navInstruction', 'liveMapData'],
+    sm = messaging.SubMaster(['carControl', 'carState', 'controlsState', 'radarState', 'modelV2'],
                              poll=['radarState', 'modelV2'], ignore_avg_freq=['radarState'])
 
   if pm is None:
-    pm = messaging.PubMaster(['longitudinalPlan', 'lateralPlan', 'uiPlan'])
+    pm = messaging.PubMaster(['longitudinalPlan', 'lateralPlan', 'uiPlan', 'longitudinalPlanExt', 'lateralPlanExt'])
 
   while True:
     sm.update()
@@ -67,7 +64,7 @@ def plannerd_thread(sm=None, pm=None):
       lateral_planner.publish(sm, pm)
       longitudinal_planner.update(sm)
       longitudinal_planner.publish(sm, pm)
-      # if lat_version == 0:
+      # if not is_old_model:
       #   publish_ui_plan(sm, pm, lateral_planner, longitudinal_planner)
 
 def main(sm=None, pm=None):

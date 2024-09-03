@@ -23,14 +23,15 @@
 
 import os
 import time
-from common.params import Params
-from system.version import get_version
+from openpilot.common.params import Params
+from openpilot.system.version import get_version, get_branch
+# from openpilot.common.realtime import set_core_affinity, set_realtime_priority
 
 # for uploader
-from selfdrive.loggerd.xattr_cache import getxattr, setxattr
+from openpilot.selfdrive.loggerd.xattr_cache import getxattr, setxattr
 import glob
 import requests
-import json
+# import json
 
 # customisable values
 GPX_LOG_PATH = '/data/media/0/gpx_logs/'
@@ -55,16 +56,19 @@ def _debug(msg):
 
 class GpxUploader():
   def __init__(self):
-    self._delete_after_upload = not Params().get_bool('dp_gpxd')
-    self._car_model = "Unknown Model"
+    self._delete_after_upload = True #not Params().get_bool('dp_gpxd')
+    # self._car_model = "Unknown Vehicle"
+    self._version = get_version()
+    self._branch = get_branch()
+
+  def _identify_vehicle(self):
     # read model from LiveParameters
-    params = Params().get("LiveParameters")
-    if params is not None:
-      params = json.loads(params)
-      self._car_model = params.get('carFingerprint', self._car_model)
-    self._dp_version = get_version()
+    # params = Params().get("LiveParameters")
+    # if params is not None:
+    #   params = json.loads(params)
+    #   self._car_model = params.get('carFingerprint', self._car_model)
     _debug("GpxUploader init - _delete_after_upload = %s" % self._delete_after_upload)
-    _debug("GpxUploader init - _car_model = %s" % self._car_model)
+    # _debug("GpxUploader init - _car_model = %s" % self._car_model)
 
   def _is_online(self):
     try:
@@ -75,8 +79,9 @@ class GpxUploader():
       return False
 
   def _get_is_uploaded(self, filename):
-    _debug("%s is uploaded: %s" % (filename, getxattr(filename, UPLOAD_ATTR_NAME) is not None))
-    return getxattr(filename, UPLOAD_ATTR_NAME) is not None
+    result = getxattr(filename, UPLOAD_ATTR_NAME) is not None
+    _debug("%s is uploaded: %s" % (filename, result))
+    return result
 
   def _set_is_uploaded(self, filename):
     _debug("%s set to uploaded" % filename)
@@ -96,7 +101,7 @@ class GpxUploader():
   def _do_upload(self, filename):
     fn = os.path.basename(filename)
     data = {
-      'description': "Routes from dragonpilot %s (%s)." % (self._dp_version, self._car_model),
+      'description': f"Routes from dragonpilot {self._branch} / {self._version}.",
       'visibility': 'identifiable'
     }
     files = {
@@ -110,10 +115,18 @@ class GpxUploader():
       return False
 
   def run(self):
+    # give it few seconds before we start running the process
+    # only identify vehicle once
+    time.sleep(10)
+    self._identify_vehicle()
     while True:
+      is_offroad = Params().get_bool("IsOffroad")
       files = self._get_files_to_be_uploaded()
       if len(files) == 0:
-        _debug("run - no files")
+        if is_offroad and self._delete_after_upload:
+          for file in self._get_files():
+            os.remove(file)
+        _debug("run - no files, clean stash")
       elif not self._is_online() and self._delete_after_upload:
         _debug("run - not online & delete_after_upload")
         for file in files:
@@ -127,9 +140,7 @@ class GpxUploader():
             else:
               _debug("run - set_is_uploaded")
               self._set_is_uploaded(file)
-      # sleep for 300 secs if offroad
-      # otherwise sleep 60 secs
-      time.sleep(300 if Params().get_bool("IsOffroad") else 60)
+      time.sleep(60)
 
 def gpx_uploader_thread():
   gpx_uploader = GpxUploader()

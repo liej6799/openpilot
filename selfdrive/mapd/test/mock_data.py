@@ -1,6 +1,6 @@
-from selfdrive.mapd.lib.WayCollection import WayCollection
-from selfdrive.mapd.lib.geo import vectors, R
-from selfdrive.mapd.lib.NodesData import _MIN_NODE_DISTANCE, _ADDED_NODES_DIST, _SPLINE_EVAL_STEP, \
+from openpilot.selfdrive.mapd.lib.WayCollection import WayCollection
+from openpilot.selfdrive.mapd.lib.geo import vectors, R
+from openpilot.selfdrive.mapd.lib.NodesData import _MIN_NODE_DISTANCE, _ADDED_NODES_DIST, _SPLINE_EVAL_STEP, \
   _MIN_SPEED_SECTION_LENGTH, nodes_raw_data_array_for_wr, node_calculations, is_wr_a_valid_divertion_from_node, \
   spline_curvature_calculations, speed_limits_for_curvatures_data
 from scipy.interpolate import splev, splprep

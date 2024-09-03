@@ -10,12 +10,12 @@ from pathlib import Path
 
 from cereal import log
 import cereal.messaging as messaging
-from common.api import Api
-from common.params import Params
-from system.hardware import TICI
-from selfdrive.loggerd.xattr_cache import getxattr, setxattr
-from selfdrive.loggerd.config import ROOT
-from system.swaglog import cloudlog
+from openpilot.common.api import Api
+from openpilot.common.params import Params
+from openpilot.selfdrive.hardware import TICI
+from openpilot.selfdrive.loggerd.xattr_cache import getxattr, setxattr
+from openpilot.selfdrive.loggerd.config import ROOT
+from openpilot.system.swaglog import cloudlog
 
 NetworkType = log.DeviceState.NetworkType
 UPLOAD_ATTR_NAME = 'user.upload'
@@ -70,7 +70,6 @@ class Uploader():
 
     self.immediate_folders = ["crash/", "boot/"]
     self.immediate_priority = {"qlog.bz2": 0, "qcamera.ts": 1}
-    # self.dp_upload_ignored = Params().get_bool('dp_upload_ignored')
 
   def get_upload_sort(self, name):
     if name in self.immediate_priority:
@@ -196,9 +195,6 @@ class Uploader():
         self.last_time = time.monotonic() - start_time
         self.last_speed = (sz / 1e6) / self.last_time
         success = True
-        # if not self.dp_upload_ignored and stat.status_code == 412:
-        #   self.dp_upload_ignored = True
-        #   Params().put_bool('dp_upload_ignored', True)
         cloudlog.event("upload_success" if stat.status_code != 412 else "upload_ignored", key=key, fn=fn, sz=sz, network_type=network_type)
       else:
         success = False
@@ -221,7 +217,8 @@ def uploader_fn(exit_event):
   dongle_id = params.get("DongleId", encoding='utf8')
 
   if dongle_id is None:
-    return
+    cloudlog.info("uploader missing dongle_id")
+    raise Exception("uploader can't start without dongle id")
 
   if TICI and not Path("/data/media").is_mount():
     cloudlog.warning("NVME not mounted")

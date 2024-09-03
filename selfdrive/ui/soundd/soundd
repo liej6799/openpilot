@@ -1,5 +1,5 @@
 #!/bin/sh
 cd "$(dirname "$0")"
-export LD_LIBRARY_PATH="/system/lib64:/data/openpilot/third_party/mapbox-gl-native-qt/aarch64:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/system/lib64:$LD_LIBRARY_PATH"
 export QT_QPA_PLATFORM="offscreen"
 exec ./_soundd

@@ -6,13 +6,13 @@ from pathlib import Path
 from typing import Optional
 
 from datetime import datetime, timedelta
-from common.api import api_get
-from common.params import Params
-from common.spinner import Spinner
-from common.basedir import PERSIST
-from selfdrive.controls.lib.alertmanager import set_offroad_alert
-from system.hardware import HARDWARE, PC
-from system.swaglog import cloudlog
+from openpilot.common.api import api_get
+from openpilot.common.params import Params
+from openpilot.common.spinner import Spinner
+from openpilot.common.basedir import PERSIST
+from openpilot.selfdrive.controls.lib.alertmanager import set_offroad_alert
+from openpilot.system.hardware import HARDWARE, PC
+from openpilot.system.swaglog import cloudlog
 
 
 UNREGISTERED_DONGLE_ID = "UnregisteredDevice"
@@ -31,6 +31,9 @@ def register(show_spinner=False) -> Optional[str]:
   HardwareSerial = params.get("HardwareSerial", encoding='utf8')
   dongle_id: Optional[str] = params.get("DongleId", encoding='utf8')
   needs_registration = None in (IMEI, HardwareSerial, dongle_id)
+
+  if not params.get_bool('dp_device_enable_comma_registration'):
+    return UNREGISTERED_DONGLE_ID if dongle_id is None else dongle_id
 
   pubkey = Path(PERSIST+"/comma/id_rsa.pub")
   if not pubkey.is_file():
@@ -85,15 +88,8 @@ def register(show_spinner=False) -> Optional[str]:
         backoff = min(backoff + 1, 15)
         time.sleep(backoff)
 
-      time_diff = time.monotonic() - start_time
-      if time_diff > 29 and show_spinner:
-        timeout = 30 - time_diff
-        spinner.update(f"registering device ({timeout}) - serial: {serial}, IMEI: ({imei1}, {imei2})")
-
-      # go unregistered device
-      if time.monotonic() - start_time > 30 and show_spinner:
-        dongle_id = UNREGISTERED_DONGLE_ID
-        break
+      if time.monotonic() - start_time > 60 and show_spinner:
+        spinner.update(f"registering device - serial: {serial}, IMEI: ({imei1}, {imei2})")
 
     if show_spinner:
       spinner.close()

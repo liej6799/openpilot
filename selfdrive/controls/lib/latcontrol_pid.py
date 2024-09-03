@@ -1,33 +1,18 @@
 import math
 
 from cereal import log
-from selfdrive.controls.lib.latcontrol import LatControl
-from selfdrive.controls.lib.pid import PIDController
-from common.op_params import opParams
-from common.conversions import Conversions as CV
+from openpilot.selfdrive.controls.lib.latcontrol import LatControl
+from openpilot.selfdrive.controls.lib.pid import PIDController
 
 
 class LatControlPID(LatControl):
   def __init__(self, CP, CI):
     super().__init__(CP, CI)
-    self._op_params = opParams(calling_function="latcontrol_pid.py")
-
     self.pid = PIDController((CP.lateralTuning.pid.kpBP, CP.lateralTuning.pid.kpV),
                              (CP.lateralTuning.pid.kiBP, CP.lateralTuning.pid.kiV),
                              k_f=CP.lateralTuning.pid.kf, pos_limit=self.steer_max, neg_limit=-self.steer_max)
     self.get_steer_feedforward = CI.get_steer_feedforward_function()
-    # self.tune_override = self._op_params.get('TUNE_LAT_do_override', force_update=True)
-    self.tune_override = True
 
-  def update_op_params(self):
-    if not self.tune_override:
-      return
-    bp = [i * CV.MPH_TO_MS for i in self._op_params.get(f"TUNE_LAT_PID_bp_mph")]
-    self.pid._k_p = [bp, self._op_params.get("TUNE_LAT_PID_kp")]
-    self.pid._k_i = [bp, self._op_params.get("TUNE_LAT_PID_ki")]
-    self.pid._k_d = [bp, self._op_params.get("TUNE_LAT_PID_kd")]
-    self.pid.k_f = self._op_params.get('TUNE_LAT_PID_kf')
-    
   def reset(self):
     super().reset()
     self.pid.reset()

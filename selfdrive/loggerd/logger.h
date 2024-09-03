@@ -14,7 +14,7 @@
 #include "cereal/messaging/messaging.h"
 #include "common/util.h"
 #include "common/swaglog.h"
-#include "selfdrive/hardware/hw.h"
+#include "system/hardware/hw.h"
 
 const std::string LOG_ROOT = Path::log_root();
 

@@ -1,9 +1,11 @@
 import overpy
 import subprocess
 import numpy as np
-from common.params import Params
-from selfdrive.mapd.lib.geo import R
-from selfdrive.mapd.lib.helpers import is_local_osm_installed, OSM_QUERY
+from openpilot.selfdrive.mapd.lib.geo import R
+import os
+from openpilot.selfdrive.mapd.config import QUERY_RADIUS
+
+OSM_QUERY = ["/data/media/0/osm/bin/osm3s_query", "--db-dir=/data/media/0/osm/db/"]
 
 def create_way(way_id, node_ids, from_way):
   """
@@ -14,57 +16,65 @@ def create_way(way_id, node_ids, from_way):
 
 
 class OSM():
-  def __init__(self):
+  def __init__(self, last_gps_pos):
     self.api = overpy.Overpass()
-    self.areas = None
-    self.osm_local_db_enabled = is_local_osm_installed()
     # self.api = overpy.Overpass(url='http://3.65.170.21/api/interpreter')
 
+    self.local_osm_query_fail_count = 0
+    self.ways = []
+
+    self.last_gps_pos = last_gps_pos
+
+    if os.path.isdir("/data/media/0/osm/bin/") and os.path.isdir("/data/media/0/osm/db/"):
+      self.local_osm_enabled = True
+      print("Local OSM installed")
+      try:
+        print("Testing local OSM...")
+        if len(last_gps_pos) > 0:
+          ways = self.fetch_road_ways_around_location(last_gps_pos['latitude'], last_gps_pos['longitude'], QUERY_RADIUS)
+          self.local_osm_enabled = len(ways) > 0
+          if self.local_osm_enabled:
+            self.ways = ways
+
+      except Exception as e:
+        self.local_osm_enabled = False
+        print(f"Local OSM test failed:\n{e}")
+    else:
+      self.local_osm_enabled = False
+    print("Local OSM enabled = %s" % self.local_osm_enabled)
+
   def fetch_road_ways_around_location(self, lat, lon, radius):
+    # when lat/lon is same as last_gps_pos lat, lon, we can just use cached way data
+    # this only happened when we are using lastGPSPosition params
+    if len(self.ways) > 0 and len(self.last_gps_pos) > 0 and self.last_gps_pos["latitude"] == lat and self.last_gps_pos["longitude"] == lon:
+      return self.ways
     # Calculate the bounding box coordinates for the bbox containing the circle around location.
     bbox_angle = np.degrees(radius / R)
     # fetch all ways and nodes on this ways in bbox
     bbox_str = f'{str(lat - bbox_angle)},{str(lon - bbox_angle)},{str(lat + bbox_angle)},{str(lon + bbox_angle)}'
-    lat_lon = "(%f,%f)" % (lat, lon)
     q = """
         way(""" + bbox_str + """)
           [highway]
           [highway!~"^(footway|path|corridor|bridleway|steps|cycleway|construction|bus_guideway|escape|service|track)$"];
         (._;>;);
-        out;"""
-    area_q = """is_in""" + lat_lon + """;area._[admin_level~"[24]"];
-        convert area ::id = id(), admin_level = t['admin_level'],
-        name = t['name'], "ISO3166-1:alpha2" = t['ISO3166-1:alpha2'];out;
+        out;
         """
-    try:
-      if self.osm_local_db_enabled:
-        # print("Query OSM from Local Server")
-        # q = """
-        #     way(""" + bbox_str + """)
-        #       [highway]
-        #       [highway!~"^(footway|path|corridor|bridleway|steps|cycleway|construction|bus_guideway|escape|service|track)$"];
-        #     (._;>;);
-        #     out;"""
-        cmd = OSM_QUERY
-        cmd.append(f"--request={q}")
-        completion = subprocess.run(cmd, check=True, capture_output=True)
-        ways = self.api.parse_xml(completion.stdout).ways
-        if self.areas is None:
-          # q =  """is_in""" + lat_lon + """;area._[admin_level~"[24]"];
-          #     convert area ::id = id(), admin_level = t['admin_level'],
-          #     name = t['name'], "ISO3166-1:alpha2" = t['ISO3166-1:alpha2'];out;
-          #     """
-          try:
-            self.areas = self.api.query(area_q).areas
-          except Exception:
-            pass
-        areas = self.areas
-      else:
-        # print("Query OSM from remote Server")
-        query = self.api.query(q + area_q)
-        areas, ways = query.areas, query.ways
-    except Exception as e:
-      # print(f'Exception while querying OSM:\n{e}')
-      areas, ways = [],[]
+    if self.local_osm_enabled:
+      try:
+        completion = subprocess.run(OSM_QUERY + [f"--request={q}"], check=True, capture_output=True)
+        self.ways = self.api.parse_xml(completion.stdout).ways
 
-    return areas, ways
+      except Exception as e:
+        self.local_osm_query_fail_count += 1
+        print(f'Exception while querying local OSM:\n{e}')
+        pass
+
+    # use remote OSM when local osm is not enabled or failed too many times
+    if not self.local_osm_enabled or self.local_osm_query_fail_count >= 5:
+      try:
+        self.ways = self.api.query(q).ways
+        self.local_osm_query_fail_count = 0
+      except Exception as e:
+        print(f'Exception while querying OSM:\n{e}')
+
+    return self.ways

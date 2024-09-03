@@ -1,8 +1,5 @@
 #
-# Copyright 2019 Gianluca Frison, Dimitris Kouzoupis, Robin Verschueren,
-# Andrea Zanelli, Niels van Duijkeren, Jonathan Frey, Tommaso Sartor,
-# Branimir Novoselnik, Rien Quirynen, Rezart Qelibari, Dang Doan,
-# Jonas Koenemann, Yutao Chen, Tobias Schöls, Jonas Schlagenhauf, Moritz Diehl
+# Copyright (c) The acados authors.
 #
 # This file is part of acados.
 #
@@ -41,6 +38,7 @@
 MODEL_SRC=
 MODEL_SRC+= lat_model/lat_expl_ode_fun.c
 MODEL_SRC+= lat_model/lat_expl_vde_forw.c
+MODEL_SRC+= lat_model/lat_expl_vde_adj.c
 MODEL_OBJ := $(MODEL_SRC:.c=.o)
 
 # optimal control problem - mostly CasADi exports
@@ -54,6 +52,7 @@ OCP_SRC+= lat_cost/lat_cost_y_hess.c
 OCP_SRC+= lat_cost/lat_cost_y_e_fun.c
 OCP_SRC+= lat_cost/lat_cost_y_e_fun_jac_ut_xt.c
 OCP_SRC+= lat_cost/lat_cost_y_e_hess.c
+
 OCP_SRC+= acados_solver_lat.c
 OCP_OBJ := $(OCP_SRC:.c=.o)
 
@@ -80,8 +79,8 @@ OBJ+= $(OCP_OBJ)
 EXTERNAL_DIR=
 EXTERNAL_LIB=
 
-INCLUDE_PATH = /data/openpilot/third_party/acados/include/acados/include
-LIB_PATH = /data/openpilot/third_party/acados/include/acados/lib
+INCLUDE_PATH = /data/openpilot/third_party/acados/include
+LIB_PATH = /data/openpilot/third_party/acados/lib
 
 # preprocessor flags for make's implicit rules
 CPPFLAGS+= -I$(INCLUDE_PATH)
@@ -91,7 +90,7 @@ CPPFLAGS+= -I$(INCLUDE_PATH)/hpipm/include
 
 
 # define the c-compiler flags for make's implicit rules
-CFLAGS = -fPIC -std=c99   #-fno-diagnostics-show-line-numbers -g
+CFLAGS = -fPIC -std=c99   -O2#-fno-diagnostics-show-line-numbers -g
 # # Debugging
 # CFLAGS += -g3
 
@@ -148,11 +147,11 @@ ocp_cython_o: ocp_cython_c
 	$(CC) $(ACADOS_FLAGS) -c -O2 \
 	-fPIC \
 	-o acados_ocp_solver_pyx.o \
-	-I /usr/include/python3.8 \
 	-I $(INCLUDE_PATH)/blasfeo/include/ \
 	-I $(INCLUDE_PATH)/hpipm/include/ \
 	-I $(INCLUDE_PATH) \
 	-I /data/data/com.termux/files/usr/lib/python3.8/site-packages/numpy/core/include \
+	-I /data/data/com.termux/files/usr/include/python3.8 \
 	acados_ocp_solver_pyx.c \
 
 ocp_cython: ocp_cython_o
@@ -161,6 +160,33 @@ ocp_cython: ocp_cython_o
 	-Wl,-rpath=$(LIB_PATH) \
 	acados_ocp_solver_pyx.o \
 	$(abspath .)/libacados_ocp_solver_lat.so \
+	$(LDFLAGS) $(LDLIBS)
+
+# Sim Cython targets
+sim_cython_c: sim_shared_lib
+	cython \
+	-o acados_sim_solver_pyx.c \
+	-I $(INCLUDE_PATH)/../interfaces/acados_template/acados_template \
+	$(INCLUDE_PATH)/../interfaces/acados_template/acados_template/acados_sim_solver_pyx.pyx \
+	-I /data/openpilot/selfdrive/controls/lib/lateral_mpc_lib/c_generated_code \
+
+sim_cython_o: sim_cython_c
+	$(CC) $(ACADOS_FLAGS) -c -O2 \
+	-fPIC \
+	-o acados_sim_solver_pyx.o \
+	-I $(INCLUDE_PATH)/blasfeo/include/ \
+	-I $(INCLUDE_PATH)/hpipm/include/ \
+	-I $(INCLUDE_PATH) \
+	-I /data/data/com.termux/files/usr/lib/python3.8/site-packages/numpy/core/include \
+	-I /data/data/com.termux/files/usr/include/python3.8 \
+	acados_sim_solver_pyx.c \
+
+sim_cython: sim_cython_o
+	$(CC) $(ACADOS_FLAGS) -shared \
+	-o acados_sim_solver_pyx.so \
+	-Wl,-rpath=$(LIB_PATH) \
+	acados_sim_solver_pyx.o \
+	$(abspath .)/libacados_sim_solver_lat.so \
 	$(LDFLAGS) $(LDLIBS)
 
 clean:
@@ -177,3 +203,9 @@ clean_ocp_cython:
 	$(RM) acados_solver_lat.o
 	$(RM) acados_ocp_solver_pyx.so
 	$(RM) acados_ocp_solver_pyx.o
+
+clean_sim_cython:
+	$(RM) libacados_sim_solver_lat.so
+	$(RM) acados_sim_solver_lat.o
+	$(RM) acados_sim_solver_pyx.so
+	$(RM) acados_sim_solver_pyx.o

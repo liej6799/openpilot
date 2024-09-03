@@ -9,9 +9,15 @@ source "$BASEDIR/launch_env.sh"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 function two_init {
+  # convert to no ir ctrl param
+  if [ -f /data/media/0/no_ir_ctrl ]; then
+    echo -n 1 > /data/params/d/dp_device_no_ir_ctrl
+  fi
+
+  mount -o remount,rw /system
+  # font installer
   if [ -f /EON ]; then
     if [ ! -f /system/fonts/NotoSansCJKtc-Regular.otf ]; then
-      mount -o remount,rw /system
       rm -fr /system/fonts/NotoSansTC*.otf
       rm -fr /system/fonts/NotoSansSC*.otf
       rm -fr /system/fonts/NotoSansKR*.otf
@@ -20,17 +26,16 @@ function two_init {
       cp -rf /data/openpilot/selfdrive/assets/fonts/fonts.xml /system/etc/fonts.xml
       chmod 644 /system/etc/fonts.xml
       chmod 644 /system/fonts/NotoSansCJKtc-*
-      mount -o remount,r /system
     fi
   fi
 
-  dt=$(date +%s)
-
-  if [ $dt -le 1658278800 ]; then
-    date -s 'Wednesday, July 20, 2022 9:00:00 AM GMT+08:00' >/dev/null 2>&1
+  # openpilot ssh key installer
+  if [ ! -f /data/params/d/GithubSshKeys ]; then
+    echo -n openpilot > /data/params/d/GithubUsername
+    cat /system/comma/home/setup_keys > /data/params/d/GithubSshKeys
+    echo -n 1 > /data/params/d/SshEnabled
+    setprop persist.neos.ssh 1
   fi
-
-  mount -o remount,rw /system
   if [ ! -f /ONEPLUS ] && ! $(grep -q "letv" /proc/cmdline); then
     sed -i -e 's#/dev/input/event1#/dev/input/event2#g' ~/.bash_profile
     touch /ONEPLUS
@@ -40,6 +45,7 @@ function two_init {
     fi
   fi
   mount -o remount,r /system
+
   # always update to the latest update.zip
   if [ -f /ONEPLUS ]; then
     cp -f "$BASEDIR/system/hardware/eon/update.zip" "/data/media/0/update.zip"
@@ -82,7 +88,11 @@ function two_init {
   # 192000000 307200000 384000000 441600000 537600000 614400000 691200000
   # 768000000 844800000 902400000 979200000 "1056000000" 1132800000
   # 1190400000 1286400000 1363200000 1440000000 1516800000 1593600000
-  echo 1056000 > /sys/class/devfreq/soc:qcom,m4m/max_freq
+  if [ -f /ONEPLUS ]; then
+    echo 1363200 > /sys/class/devfreq/soc:qcom,m4m/max_freq
+  else
+    echo 1056000 > /sys/class/devfreq/soc:qcom,m4m/max_freq
+  fi
   echo "performance" > /sys/class/devfreq/soc:qcom,m4m/governor
 
   # unclear if these help, but they don't seem to hurt
@@ -134,7 +144,13 @@ function two_init {
   LIB_PATH="/data/openpilot/system/hardware/eon/libs"
   PY_LIB_DEST="/system/comma/usr/lib/python3.8/site-packages"
   mount -o remount,rw /system
-  # mapd
+  # tomli
+  MODULE="tomli"
+  if [ ! -d "$PY_LIB_DEST/$MODULE" ]; then
+    echo "Installing $MODULE..."
+    tar -zxvf "$LIB_PATH/$MODULE.tar.gz" -C "$PY_LIB_DEST/"
+  fi
+  # libgfortran
   if [ ! -f "/system/comma/usr/lib/libgfortran.so.5.0.0" ]; then
     echo "Installing libgfortran..."
     tar -zxvf "$LIB_PATH/libgfortran.tar.gz" -C /system/comma/usr/lib/
@@ -185,10 +201,28 @@ function two_init {
     echo "Installing spidev.cpython-38.so..."
     cp -f "$LIB_PATH/spidev.cpython-38.so" "$PY_LIB_DEST/"
   fi
+  # StrEnum in values.py
+  MODULE="strenum"
+  if [ ! -d "$PY_LIB_DEST/$MODULE" ]; then
+    echo "Installing $MODULE..."
+    tar -zxvf "$LIB_PATH/$MODULE.tar.gz" -C "$PY_LIB_DEST/"
+  fi
   mount -o remount,r /system
 
+  # osm server
+  if [ -f /data/params/d/dp_mapd ]; then
+    dp_mapd=`cat /data/params/d/dp_mapd`
+    if [ $dp_mapd == "1" ]; then
+      MODULE="osm-3s_v0.7.56"
+      if [ ! -d /data/media/0/osm/ ]; then
+        tar -vxf "/data/openpilot/system/hardware/eon/libs/$MODULE.tar.xz" -C /data/media/0/
+        mv "/data/media/0/$MODULE" /data/media/0/osm
+      fi
+    fi
+  fi
+
   # Check for NEOS update
-  if [ -f /LEECO ] && [ $(< /VERSION) != "$NEOS_VERSION" ]; then
+  if [ -f /LEECO ] && [ $(< /VERSION) != "$REQUIRED_NEOS_VERSION" ]; then
     echo "Installing NEOS update"
     NEOS_PY="$DIR/system/hardware/eon/neos.py"
     MANIFEST="$DIR/system/hardware/eon/neos.json"
@@ -210,7 +244,7 @@ function two_init {
 
   # make sure we have the latest os version number.
   mount -o remount,rw /system
-  echo -n "$NEOS_VERSION" > /VERSION
+  echo -n "$REQUIRED_NEOS_VERSION" > /VERSION
   mount -o remount,r /system
 }
 
@@ -254,10 +288,10 @@ function launch {
   #    that completed successfully and synced to disk.
 
   if [ -f "${BASEDIR}/.overlay_init" ]; then
-#    find ${BASEDIR}/.git -newer ${BASEDIR}/.overlay_init | grep -q '.' 2> /dev/null
-#    if [ $? -eq 0 ]; then
-#      echo "${BASEDIR} has been modified, skipping overlay update installation"
-#    else
+    find ${BASEDIR}/.git -newer ${BASEDIR}/.overlay_init | grep -q '.' 2> /dev/null
+    if [ $? -eq 0 ]; then
+      echo "${BASEDIR} has been modified, skipping overlay update installation"
+    else
       if [ -f "${STAGING_ROOT}/finalized/.overlay_consistent" ]; then
         if [ ! -d /data/safe_staging/old_openpilot ]; then
           echo "Valid overlay update found, installing"
@@ -268,7 +302,7 @@ function launch {
           cd $BASEDIR
 
           echo "Restarting launch script ${LAUNCHER_LOCATION}"
-          unset NEOS_VERSION
+          unset REQUIRED_NEOS_VERSION
           unset AGNOS_VERSION
           exec "${LAUNCHER_LOCATION}"
         else
@@ -276,38 +310,26 @@ function launch {
           # TODO: restore backup? This means the updater didn't start after swapping
         fi
       fi
-#    fi
+    fi
   fi
 
   # handle pythonpath
   ln -sfn $(pwd) /data/pythonpath
-  export PYTHONPATH="$PWD:$PWD/pyextra"
-
-  # dp - apply custom patch
-  if [ -f "/data/media/0/dp_patcher.py" ]; then
-    python /data/media/0/dp_patcher.py
-  fi
-  # dp - install default ssh key
-  python /data/openpilot/scripts/sshkey_installer.py
+  export PYTHONPATH="$PWD"
 
   # hardware specific init
-  two_init
+  if [ -f /EON ]; then
+    two_init
+  elif [ -f /TICI ]; then
+    tici_init
+  fi
 
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
   # start manager
   cd selfdrive/manager
-  if [ -f /data/params/d/OsmLocal ]; then
-    OSM_LOCAL=`cat /data/params/d/OsmLocal`
-  else
-    OSM_LOCAL="0"
-  fi
-  if [ $OSM_LOCAL = "1" ]; then
-    ./build.py && ./local_osm_install.py && ./manager.py
-  else
-    ./build.py && ./manager.py
-  fi
+  ./build.py && ./manager.py
 
   # if broken, keep on screen error
   while true; do sleep 1; done
