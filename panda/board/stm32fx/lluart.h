@@ -29,6 +29,12 @@ void uart_rx_ring(uart_ring *q){
     uint8_t c = q->uart->DR;  // This read after reading SR clears a bunch of interrupts
 
     uint16_t next_w_ptr = (q->w_ptr_rx + 1U) % q->rx_fifo_size;
+
+    if ((next_w_ptr == q->r_ptr_rx) && q->overwrite) {
+      // overwrite mode: drop oldest byte
+      q->r_ptr_rx = (q->r_ptr_rx + 1U) % q->rx_fifo_size;
+    }
+
     // Do not overwrite buffer data
     if (next_w_ptr != q->r_ptr_rx) {
       q->elems_rx[q->w_ptr_rx] = c;
@@ -177,17 +183,17 @@ void dma_rx_init(uart_ring *q) {
   }
 }
 
-#define __DIV(_PCLK_, _BAUD_)                    (((_PCLK_) * 25U) / (4U * (_BAUD_)))
-#define __DIVMANT(_PCLK_, _BAUD_)                (__DIV((_PCLK_), (_BAUD_)) / 100U)
-#define __DIVFRAQ(_PCLK_, _BAUD_)                ((((__DIV((_PCLK_), (_BAUD_)) - (__DIVMANT((_PCLK_), (_BAUD_)) * 100U)) * 16U) + 50U) / 100U)
-#define __USART_BRR(_PCLK_, _BAUD_)              ((__DIVMANT((_PCLK_), (_BAUD_)) << 4) | (__DIVFRAQ((_PCLK_), (_BAUD_)) & 0x0FU))
+#define DIV_(_PCLK_, _BAUD_)                    (((_PCLK_) * 25U) / (4U * (_BAUD_)))
+#define DIVMANT_(_PCLK_, _BAUD_)                (DIV_((_PCLK_), (_BAUD_)) / 100U)
+#define DIVFRAQ_(_PCLK_, _BAUD_)                ((((DIV_((_PCLK_), (_BAUD_)) - (DIVMANT_((_PCLK_), (_BAUD_)) * 100U)) * 16U) + 50U) / 100U)
+#define USART_BRR_(_PCLK_, _BAUD_)              ((DIVMANT_((_PCLK_), (_BAUD_)) << 4) | (DIVFRAQ_((_PCLK_), (_BAUD_)) & 0x0FU))
 
 void uart_set_baud(USART_TypeDef *u, unsigned int baud) {
   if (u == USART1) {
     // USART1 is on APB2
-    u->BRR = __USART_BRR(48000000U, baud);
+    u->BRR = USART_BRR_(48000000U, baud);
   } else {
-    u->BRR = __USART_BRR(24000000U, baud);
+    u->BRR = USART_BRR_(24000000U, baud);
   }
 }
 

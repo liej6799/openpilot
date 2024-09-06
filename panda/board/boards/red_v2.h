@@ -22,7 +22,7 @@ const board board_red_v2 = {
   .has_canfd = true,
   .has_rtc_battery = true,
   .fan_max_rpm = 0U,
-  .adc_scale = 5539U,
+  .avdd_mV = 3300U,
   .fan_stall_recovery = false,
   .fan_enable_cooldown_time = 0U,
   .init = red_panda_v2_init,
@@ -37,5 +37,6 @@ const board board_red_v2 = {
   .set_fan_enabled = unused_set_fan_enabled,
   .set_ir_power = unused_set_ir_power,
   .set_phone_power = unused_set_phone_power,
-  .set_siren = unused_set_siren
+  .set_siren = unused_set_siren,
+  .read_som_gpio = unused_read_som_gpio
 };

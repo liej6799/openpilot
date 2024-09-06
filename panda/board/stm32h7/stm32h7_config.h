@@ -30,9 +30,6 @@ separate IRQs for RX and TX.
 
 #define MAX_LED_FADE 10240U
 
-// Threshold voltage (mV) for either of the SBUs to be below before deciding harness is connected
-#define HARNESS_CONNECTED_THRESHOLD 40000U
-
 // There are 163 external interrupt sources (see stm32f735xx.h)
 #define NUM_INTERRUPTS 163U
 
@@ -44,8 +41,16 @@ separate IRQs for RX and TX.
 #define INTERRUPT_TIMER_IRQ TIM6_DAC_IRQn
 #define INTERRUPT_TIMER TIM6
 
+#define IND_WDG IWDG1
+
 #define PROVISION_CHUNK_ADDRESS 0x080FFFE0U
 #define DEVICE_SERIAL_NUMBER_ADDRESS 0x080FFFC0U
+
+#define LOGGING_FLASH_SECTOR_A 5U
+#define LOGGING_FLASH_SECTOR_B 6U
+#define LOGGING_FLASH_BASE_A 0x080A0000U
+#define LOGGING_FLASH_BASE_B 0x080C0000U
+#define LOGGING_FLASH_SECTOR_SIZE 0x20000U
 
 #include "can_definitions.h"
 #include "comms_definitions.h"
@@ -67,7 +72,8 @@ separate IRQs for RX and TX.
 #include "stm32h7/peripherals.h"
 #include "stm32h7/interrupt_handlers.h"
 #include "drivers/timers.h"
-#include "stm32h7/lladc.h"
+#include "drivers/watchdog.h"
+#include "stm32h7/llflash.h"
 
 #if !defined(BOOTSTUB) && defined(PANDA)
   #include "drivers/uart.h"
@@ -81,9 +87,7 @@ separate IRQs for RX and TX.
   #include "stm32h7/llexti.h"
 #endif
 
-#ifdef BOOTSTUB
-  #include "stm32h7/llflash.h"
-#else
+#ifndef BOOTSTUB
   #include "stm32h7/llfdcan.h"
 #endif
 
