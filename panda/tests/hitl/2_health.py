@@ -2,7 +2,33 @@ import time
 import pytest
 
 from panda import Panda
+from panda_jungle import PandaJungle  # pylint: disable=import-error
+from panda.tests.hitl.conftest import PandaGroup
 
+
+def test_ignition(p, panda_jungle):
+  # Set harness orientation to #2, since the ignition line is on the wrong SBU bus :/
+  panda_jungle.set_harness_orientation(PandaJungle.HARNESS_ORIENTATION_2)
+  p.reset()
+
+  for ign in (True, False):
+    panda_jungle.set_ignition(ign)
+    time.sleep(0.1)
+    assert p.health()['ignition_line'] == ign
+
+
+@pytest.mark.test_panda_types(PandaGroup.GEN2)
+def test_orientation_detection(p, panda_jungle):
+  seen_orientations = []
+  for i in range(3):
+    panda_jungle.set_harness_orientation(i)
+    p.reset()
+
+    detected_harness_orientation = p.health()['car_harness_status']
+    print(f"Detected orientation: {detected_harness_orientation}")
+    if (i == 0 and detected_harness_orientation != 0) or detected_harness_orientation in seen_orientations:
+      assert False
+    seen_orientations.append(detected_harness_orientation)
 
 @pytest.mark.skip_panda_types((Panda.HW_TYPE_DOS, ))
 def test_voltage(p):

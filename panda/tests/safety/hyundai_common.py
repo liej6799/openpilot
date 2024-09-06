@@ -1,3 +1,4 @@
+from typing import Tuple
 import unittest
 
 import panda.tests.safety.common as common
@@ -76,8 +77,8 @@ class HyundaiButtonBase:
 class HyundaiLongitudinalBase(common.LongitudinalAccelSafetyTest):
   # pylint: disable=no-member,abstract-method
 
-  DISABLED_ECU_UDS_MSG: tuple[int, int]
-  DISABLED_ECU_ACTUATION_MSG: tuple[int, int]
+  DISABLED_ECU_UDS_MSG: Tuple[int, int]
+  DISABLED_ECU_ACTUATION_MSG: Tuple[int, int]
 
   @classmethod
   def setUpClass(cls):
@@ -85,7 +86,7 @@ class HyundaiLongitudinalBase(common.LongitudinalAccelSafetyTest):
       cls.safety = None
       raise unittest.SkipTest
 
-  # override these tests from PandaCarSafetyTest, hyundai longitudinal uses button enable
+  # override these tests from PandaSafetyTest, hyundai longitudinal uses button enable
   def test_disable_control_allowed_from_cruise(self):
     pass
 
@@ -140,10 +141,10 @@ class HyundaiLongitudinalBase(common.LongitudinalAccelSafetyTest):
 
     addr, bus = self.DISABLED_ECU_UDS_MSG
     tester_present = libpanda_py.make_CANPacket(addr, bus, b"\x02\x3E\x80\x00\x00\x00\x00\x00")
-    self.assertTrue(self._tx(tester_present))
+    self.assertTrue(self.safety.safety_tx_hook(tester_present))
 
     not_tester_present = libpanda_py.make_CANPacket(addr, bus, b"\x03\xAA\xAA\x00\x00\x00\x00\x00")
-    self.assertFalse(self._tx(not_tester_present))
+    self.assertFalse(self.safety.safety_tx_hook(not_tester_present))
 
   def test_disabled_ecu_alive(self):
     """

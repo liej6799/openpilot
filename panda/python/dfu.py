@@ -1,21 +1,21 @@
-import os
 import usb1
 import struct
 import binascii
+from typing import List, Optional
 
 from .base import BaseSTBootloaderHandle
 from .spi import STBootloaderSPIHandle, PandaSpiException
 from .usb import STBootloaderUSBHandle
-from .constants import FW_PATH, McuType
+from .constants import McuType
 
 
 class PandaDFU:
-  def __init__(self, dfu_serial: str | None):
+  def __init__(self, dfu_serial: Optional[str]):
     # try USB, then SPI
-    handle: BaseSTBootloaderHandle | None
-    self._context, handle = PandaDFU.usb_connect(dfu_serial)
+    handle: Optional[BaseSTBootloaderHandle]
+    handle = PandaDFU.usb_connect(dfu_serial)
     if handle is None:
-      self._context, handle = PandaDFU.spi_connect(dfu_serial)
+      handle = PandaDFU.spi_connect(dfu_serial)
 
     if handle is None:
       raise Exception(f"failed to open DFU device {dfu_serial}")
@@ -23,21 +23,8 @@ class PandaDFU:
     self._handle: BaseSTBootloaderHandle = handle
     self._mcu_type: McuType = self._handle.get_mcu_type()
 
-  def __enter__(self):
-    return self
-
-  def __exit__(self, *args):
-    self.close()
-
-  def close(self):
-    if self._handle is not None:
-      self._handle.close()
-      self._handle = None
-      if self._context is not None:
-        self._context.close()
-
   @staticmethod
-  def usb_connect(dfu_serial: str | None):
+  def usb_connect(dfu_serial: Optional[str]) -> Optional[STBootloaderUSBHandle]:
     handle = None
     context = usb1.USBContext()
     context.open()
@@ -52,10 +39,10 @@ class PandaDFU:
           handle = STBootloaderUSBHandle(device, device.open())
           break
 
-    return context, handle
+    return handle
 
   @staticmethod
-  def spi_connect(dfu_serial: str | None):
+  def spi_connect(dfu_serial: Optional[str]) -> Optional[STBootloaderSPIHandle]:
     handle = None
     this_dfu_serial = None
 
@@ -68,10 +55,16 @@ class PandaDFU:
     if dfu_serial is not None and dfu_serial != this_dfu_serial:
       handle = None
 
-    return None, handle
+    return handle
 
   @staticmethod
-  def usb_list() -> list[str]:
+  def list() -> List[str]:
+    ret = PandaDFU.usb_list()
+    ret += PandaDFU.spi_list()
+    return list(set(ret))
+
+  @staticmethod
+  def usb_list() -> List[str]:
     dfu_serials = []
     try:
       with usb1.USBContext() as context:
@@ -86,9 +79,9 @@ class PandaDFU:
     return dfu_serials
 
   @staticmethod
-  def spi_list() -> list[str]:
+  def spi_list() -> List[str]:
     try:
-      _, h = PandaDFU.spi_connect(None)
+      h = PandaDFU.spi_connect(None)
       if h is not None:
         dfu_serial = PandaDFU.st_serial_to_dfu_serial(h.get_uid(), h.get_mcu_type())
         return [dfu_serial, ]
@@ -114,22 +107,13 @@ class PandaDFU:
 
   def program_bootstub(self, code_bootstub):
     self._handle.clear_status()
-
-    # erase all sectors
-    for i in range(len(self._mcu_type.config.sector_sizes)):
-      self._handle.erase_sector(i)
-
+    self._handle.erase_bootstub()
+    self._handle.erase_app()
     self._handle.program(self._mcu_type.config.bootstub_address, code_bootstub)
-
-  def recover(self):
-    fn = os.path.join(FW_PATH, self._mcu_type.config.bootstub_fn)
-    with open(fn, "rb") as f:
-      code = f.read()
-    self.program_bootstub(code)
     self.reset()
 
-  @staticmethod
-  def list() -> list[str]:
-    ret = PandaDFU.usb_list()
-    ret += PandaDFU.spi_list()
-    return list(set(ret))
+  def recover(self):
+    with open(self._mcu_type.config.bootstub_path, "rb") as f:
+      code = f.read()
+    self.program_bootstub(code)
+

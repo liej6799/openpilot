@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 from .constants import McuType
 
@@ -15,7 +16,7 @@ class BaseHandle(ABC):
     ...
 
   @abstractmethod
-  def controlWrite(self, request_type: int, request: int, value: int, index: int, data, timeout: int = TIMEOUT, expect_disconnect: bool = False):
+  def controlWrite(self, request_type: int, request: int, value: int, index: int, data, timeout: int = TIMEOUT) -> int:
     ...
 
   @abstractmethod
@@ -23,7 +24,7 @@ class BaseHandle(ABC):
     ...
 
   @abstractmethod
-  def bulkWrite(self, endpoint: int, data: bytes, timeout: int = TIMEOUT) -> int:
+  def bulkWrite(self, endpoint: int, data: List[int], timeout: int = TIMEOUT) -> int:
     ...
 
   @abstractmethod
@@ -53,9 +54,14 @@ class BaseSTBootloaderHandle(ABC):
     ...
 
   @abstractmethod
-  def erase_sector(self, sector: int) -> None:
+  def erase_app(self) -> None:
+    ...
+
+  @abstractmethod
+  def erase_bootstub(self) -> None:
     ...
 
   @abstractmethod
   def jump(self, address: int) -> None:
     ...
+

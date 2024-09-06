@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+import os
+import sys
 import struct
 import time
 
-from panda import Panda
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+from panda import Panda  # noqa: E402
 
 if __name__ == "__main__":
   p = Panda()
@@ -10,7 +13,7 @@ if __name__ == "__main__":
   print(p.health())
 
   t1 = time.time()
-  for _ in range(100):
+  for i in range(100):
     p.get_serial()
   t2 = time.time()
   print("100 requests took %.2f ms" % ((t2 - t1) * 1000))

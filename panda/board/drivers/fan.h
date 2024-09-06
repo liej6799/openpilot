@@ -18,6 +18,7 @@ const uint8_t FAN_STALL_THRESHOLD_MIN = 3U;
 const uint8_t FAN_STALL_THRESHOLD_MAX = 8U;
 
 
+#if 0
 void fan_set_power(uint8_t percentage) {
   fan_state.target_rpm = ((current_board->fan_max_rpm * CLAMP(percentage, 0U, 100U)) / 100U);
 }
@@ -93,3 +94,30 @@ void fan_tick(void) {
     current_board->set_fan_enabled(!fan_stalled && ((fan_state.target_rpm > 0U) || (fan_state.cooldown_counter > 0U)));
   }
 }
+#else
+void llfan_init(void);
+void fan_init(void) {
+  llfan_init();
+}
+
+// dp - C2 / EON Fan control logic
+void fan_set_power(uint8_t percentage){
+  fan_state.power = percentage;
+}
+
+void fan_tick(void){
+  if (current_board->fan_max_rpm > 0U) {
+    fan_state.stall_counter = 0U;
+    fan_state.error_integral = 0.0f;
+
+    // 4 interrupts per rotation
+    fan_state.rpm = fan_state.tach_counter * 15U;
+    fan_state.tach_counter = 0U;
+
+    // Enable fan if we want it to spin
+    current_board->set_fan_enabled(fan_state.power > 0U);
+
+    pwm_set(TIM3, 3, fan_state.power);
+  }
+}
+#endif

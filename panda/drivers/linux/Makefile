@@ -1,7 +1,8 @@
 VERSION=0.0.1
 obj-m+=panda.o
 
-all:	build install
+link:
+	sudo dkms add `pwd`
 
 build:
 	sudo dkms build panda/$(VERSION)
@@ -9,16 +10,9 @@ build:
 install:
 	sudo dkms install panda/$(VERSION)
 
-remove:
-	sudo dkms remove panda/$(VERSION) --all
+all:	build install
 
 uninstall:
 	sudo dkms uninstall panda/$(VERSION)
+	sudo dkms remove panda/$(VERSION) --all
 
-clean:	remove
-
-link:
-	sudo dkms add `pwd`
-
-unload:
-	sudo rmmod panda

@@ -17,11 +17,12 @@ MSG_ACC_GRA_ANZEIGE = 0x56A   # TX by OP, ACC HUD
 MSG_LDW_1 = 0x5BE             # TX by OP, Lane line recognition and text alerts
 
 
-class TestVolkswagenPqSafety(common.PandaCarSafetyTest, common.DriverTorqueSteeringSafetyTest):
+class TestVolkswagenPqSafety(common.PandaSafetyTest, common.DriverTorqueSteeringSafetyTest):
   cruise_engaged = False
 
   STANDSTILL_THRESHOLD = 0
-  RELAY_MALFUNCTION_ADDRS = {0: (MSG_HCA_1,)}
+  RELAY_MALFUNCTION_ADDR = MSG_HCA_1
+  RELAY_MALFUNCTION_BUS = 0
 
   MAX_RATE_UP = 6
   MAX_RATE_DOWN = 10
@@ -69,8 +70,8 @@ class TestVolkswagenPqSafety(common.PandaCarSafetyTest, common.DriverTorqueSteer
     return self.packer.make_can_msg_panda("Lenkhilfe_3", 0, values)
 
   # openpilot steering output torque
-  def _torque_cmd_msg(self, torque, steer_req=1, hca_status=5):
-    values = {"LM_Offset": abs(torque), "LM_OffSign": torque < 0, "HCA_Status": hca_status if steer_req else 3}
+  def _torque_cmd_msg(self, torque, steer_req=1):
+    values = {"LM_Offset": abs(torque), "LM_OffSign": torque < 0}
     return self.packer.make_can_msg_panda("HCA_1", 0, values)
 
   # ACC engagement and brake light switch status
@@ -188,12 +189,6 @@ class TestVolkswagenPqLongSafety(TestVolkswagenPqSafety, common.LongitudinalAcce
     self._rx(self._motor_5_msg(main_switch=False))
     self.assertFalse(self.safety.get_controls_allowed(), "controls allowed after ACC main switch off")
 
-  def test_torque_cmd_enable_variants(self):
-    # The EPS rack accepts either 5 or 7 for an enabled status, with different low speed tuning behavior
-    self.safety.set_controls_allowed(1)
-    for enabled_status in (5, 7):
-      self.assertTrue(self._tx(self._torque_cmd_msg(self.MAX_RATE_UP, steer_req=1, hca_status=enabled_status)),
-                      f"torque cmd rejected with {enabled_status=}")
 
 if __name__ == "__main__":
   unittest.main()

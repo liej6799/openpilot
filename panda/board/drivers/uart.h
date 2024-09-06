@@ -1,7 +1,8 @@
-// IRQs: USART2, USART3, UART5
+// IRQs: USART1, USART2, USART3, UART5
 
 // ***************************** Definitions *****************************
 #define FIFO_SIZE_INT 0x400U
+#define FIFO_SIZE_DMA 0x1000U
 
 typedef struct uart_ring {
   volatile uint16_t w_ptr_tx;
@@ -14,10 +15,10 @@ typedef struct uart_ring {
   uint32_t rx_fifo_size;
   USART_TypeDef *uart;
   void (*callback)(struct uart_ring*);
-  bool overwrite;
+  bool dma_rx;
 } uart_ring;
 
-#define UART_BUFFER(x, size_rx, size_tx, uart_ptr, callback_ptr, overwrite_mode) \
+#define UART_BUFFER(x, size_rx, size_tx, uart_ptr, callback_ptr, rx_dma) \
   uint8_t elems_rx_##x[size_rx]; \
   uint8_t elems_tx_##x[size_tx]; \
   uart_ring uart_ring_##x = {  \
@@ -31,7 +32,7 @@ typedef struct uart_ring {
     .rx_fifo_size = (size_rx), \
     .uart = (uart_ptr), \
     .callback = (callback_ptr), \
-    .overwrite = (overwrite_mode) \
+    .dma_rx = (rx_dma) \
   };
 
 // ***************************** Function prototypes *****************************
@@ -41,15 +42,23 @@ void uart_send_break(uart_ring *u);
 
 // ******************************** UART buffers ********************************
 
+// gps = USART1
+UART_BUFFER(gps, FIFO_SIZE_DMA, FIFO_SIZE_INT, USART1, NULL, true)
+
+// lin1, K-LINE = UART5
+// lin2, L-LINE = USART3
+UART_BUFFER(lin1, FIFO_SIZE_INT, FIFO_SIZE_INT, UART5, NULL, false)
+UART_BUFFER(lin2, FIFO_SIZE_INT, FIFO_SIZE_INT, USART3, NULL, false)
+
 // debug = USART2
-UART_BUFFER(debug, FIFO_SIZE_INT, FIFO_SIZE_INT, USART2, debug_ring_callback, true)
+UART_BUFFER(debug, FIFO_SIZE_INT, FIFO_SIZE_INT, USART2, debug_ring_callback, false)
 
 // SOM debug = UART7
 #ifdef STM32H7
-  UART_BUFFER(som_debug, FIFO_SIZE_INT, FIFO_SIZE_INT, UART7, NULL, true)
+  UART_BUFFER(som_debug, FIFO_SIZE_INT, FIFO_SIZE_INT, UART7, NULL, false)
 #else
   // UART7 is not available on F4
-  UART_BUFFER(som_debug, 1U, 1U, NULL, NULL, true)
+  UART_BUFFER(som_debug, 1U, 1U, NULL, NULL, false)
 #endif
 
 uart_ring *get_ring_by_number(int a) {
@@ -57,6 +66,15 @@ uart_ring *get_ring_by_number(int a) {
   switch(a) {
     case 0:
       ring = &uart_ring_debug;
+      break;
+    case 1:
+      ring = &uart_ring_gps;
+      break;
+    case 2:
+      ring = &uart_ring_lin1;
+      break;
+    case 3:
+      ring = &uart_ring_lin2;
       break;
     case 4:
       ring = &uart_ring_som_debug;
@@ -69,7 +87,7 @@ uart_ring *get_ring_by_number(int a) {
 }
 
 // ************************* Low-level buffer functions *************************
-bool get_char(uart_ring *q, char *elem) {
+bool getc(uart_ring *q, char *elem) {
   bool ret = false;
 
   ENTER_CRITICAL();
@@ -88,13 +106,7 @@ bool injectc(uart_ring *q, char elem) {
   uint16_t next_w_ptr;
 
   ENTER_CRITICAL();
-  next_w_ptr = (q->w_ptr_rx + 1U) % q->rx_fifo_size;
-
-  if ((next_w_ptr == q->r_ptr_rx) && q->overwrite) {
-    // overwrite mode: drop oldest byte
-    q->r_ptr_rx = (q->r_ptr_rx + 1U) % q->rx_fifo_size;
-  }
-
+  next_w_ptr = (q->w_ptr_rx + 1U) % q->tx_fifo_size;
   if (next_w_ptr != q->r_ptr_rx) {
     q->elems_rx[q->w_ptr_rx] = elem;
     q->w_ptr_rx = next_w_ptr;
@@ -105,18 +117,12 @@ bool injectc(uart_ring *q, char elem) {
   return ret;
 }
 
-bool put_char(uart_ring *q, char elem) {
+bool putc(uart_ring *q, char elem) {
   bool ret = false;
   uint16_t next_w_ptr;
 
   ENTER_CRITICAL();
   next_w_ptr = (q->w_ptr_tx + 1U) % q->tx_fifo_size;
-
-  if ((next_w_ptr == q->r_ptr_tx) && q->overwrite) {
-    // overwrite mode: drop oldest byte
-    q->r_ptr_tx = (q->r_ptr_tx + 1U) % q->tx_fifo_size;
-  }
-
   if (next_w_ptr != q->r_ptr_tx) {
     q->elems_tx[q->w_ptr_tx] = elem;
     q->w_ptr_tx = next_w_ptr;
@@ -127,6 +133,21 @@ bool put_char(uart_ring *q, char elem) {
   uart_tx_ring(q);
 
   return ret;
+}
+
+// Seems dangerous to use (might lock CPU if called with interrupts disabled f.e.)
+// TODO: Remove? Not used anyways
+void uart_flush(uart_ring *q) {
+  while (q->w_ptr_tx != q->r_ptr_tx) {
+    __WFI();
+  }
+}
+
+void uart_flush_sync(uart_ring *q) {
+  // empty the TX buffer
+  while (q->w_ptr_tx != q->r_ptr_tx) {
+    uart_tx_ring(q);
+  }
 }
 
 void clear_uart_buff(uart_ring *q) {

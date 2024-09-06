@@ -1,7 +1,7 @@
 #include "safety_hyundai_common.h"
 
 const SteeringLimits HYUNDAI_CANFD_STEERING_LIMITS = {
-  .max_steer = 330,
+  .max_steer = 270,
   .max_rt_delta = 112,
   .max_rt_interval = 250000,
   .max_rate_up = 2,
@@ -22,12 +22,6 @@ const CanMsg HYUNDAI_CANFD_HDA2_TX_MSGS[] = {
   {0x50, 0, 16},  // LKAS
   {0x1CF, 1, 8},  // CRUISE_BUTTON
   {0x2A4, 0, 24}, // CAM_0x2A4
-};
-
-const CanMsg HYUNDAI_CANFD_HDA2_ALT_STEERING_TX_MSGS[] = {
-  {0x110, 0, 32}, // LKAS_ALT
-  {0x1CF, 1, 8},  // CRUISE_BUTTON
-  {0x362, 0, 32}, // CAM_0x362
 };
 
 const CanMsg HYUNDAI_CANFD_HDA2_LONG_TX_MSGS[] = {
@@ -53,92 +47,80 @@ const CanMsg HYUNDAI_CANFD_HDA1_TX_MSGS[] = {
   {0x1E0, 0, 16}, // LFAHDA_CLUSTER
 };
 
-
-// *** Addresses checked in rx hook ***
-// EV, ICE, HYBRID: ACCELERATOR (0x35), ACCELERATOR_BRAKE_ALT (0x100), ACCELERATOR_ALT (0x105)
-#define HYUNDAI_CANFD_COMMON_RX_CHECKS(pt_bus)                                                                              \
-  {.msg = {{0x35, (pt_bus), 32, .check_checksum = true, .max_counter = 0xffU, .frequency = 100U},                   \
-           {0x100, (pt_bus), 32, .check_checksum = true, .max_counter = 0xffU, .frequency = 100U},                  \
-           {0x105, (pt_bus), 32, .check_checksum = true, .max_counter = 0xffU, .frequency = 100U}}},                \
-  {.msg = {{0x175, (pt_bus), 24, .check_checksum = true, .max_counter = 0xffU, .frequency = 50U}, { 0 }, { 0 }}},  \
-  {.msg = {{0xa0, (pt_bus), 24, .check_checksum = true, .max_counter = 0xffU, .frequency = 100U}, { 0 }, { 0 }}},   \
-  {.msg = {{0xea, (pt_bus), 24, .check_checksum = true, .max_counter = 0xffU, .frequency = 100U}, { 0 }, { 0 }}},   \
-
-#define HYUNDAI_CANFD_BUTTONS_ADDR_CHECK(pt_bus)                                                                            \
-  {.msg = {{0x1cf, (pt_bus), 8, .check_checksum = false, .max_counter = 0xfU, .frequency = 50U}, { 0 }, { 0 }}}, \
-
-#define HYUNDAI_CANFD_ALT_BUTTONS_ADDR_CHECK(pt_bus)                                                                            \
-  {.msg = {{0x1aa, (pt_bus), 16, .check_checksum = false, .max_counter = 0xffU, .frequency = 50U}, { 0 }, { 0 }}},   \
-
-// SCC_CONTROL (from ADAS unit or camera)
-#define HYUNDAI_CANFD_SCC_ADDR_CHECK(scc_bus)                                                                                 \
-  {.msg = {{0x1a0, (scc_bus), 32, .check_checksum = true, .max_counter = 0xffU, .frequency = 50U}, { 0 }, { 0 }}}, \
-
-
-// *** Non-HDA2 checks ***
-// Camera sends SCC messages on HDA1.
-// Both button messages exist on some platforms, so we ensure we track the correct one using flag
-RxCheck hyundai_canfd_rx_checks[] = {
-  HYUNDAI_CANFD_COMMON_RX_CHECKS(0)
-  HYUNDAI_CANFD_BUTTONS_ADDR_CHECK(0)
-  HYUNDAI_CANFD_SCC_ADDR_CHECK(2)
+AddrCheckStruct hyundai_canfd_addr_checks[] = {
+  {.msg = {{0x35, 1, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0x35, 0, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0x105, 0, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}}},
+  {.msg = {{0x175, 1, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 20000U},
+           {0x175, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 20000U}, { 0 }}},
+  {.msg = {{0xa0, 1, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0xa0, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}, { 0 }}},
+  {.msg = {{0xea, 1, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0xea, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}, { 0 }}},
+  {.msg = {{0x1a0, 1, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 20000U},
+           {0x1a0, 2, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 20000U}, { 0 }}},
+  {.msg = {{0x1cf, 1, 8, .check_checksum = false, .max_counter = 0xfU, .expected_timestep = 20000U},
+           {0x1cf, 0, 8, .check_checksum = false, .max_counter = 0xfU, .expected_timestep = 20000U},
+           {0x1aa, 0, 16, .check_checksum = false, .max_counter = 0xffU, .expected_timestep = 20000U}}},
 };
-RxCheck hyundai_canfd_alt_buttons_rx_checks[] = {
-  HYUNDAI_CANFD_COMMON_RX_CHECKS(0)
-  HYUNDAI_CANFD_ALT_BUTTONS_ADDR_CHECK(0)
-  HYUNDAI_CANFD_SCC_ADDR_CHECK(2)
-};
+#define HYUNDAI_CANFD_ADDR_CHECK_LEN (sizeof(hyundai_canfd_addr_checks) / sizeof(hyundai_canfd_addr_checks[0]))
 
-// Longitudinal checks for HDA1
-RxCheck hyundai_canfd_long_rx_checks[] = {
-  HYUNDAI_CANFD_COMMON_RX_CHECKS(0)
-  HYUNDAI_CANFD_BUTTONS_ADDR_CHECK(0)
+// 0x1a0 is on bus 0
+AddrCheckStruct hyundai_canfd_radar_scc_addr_checks[] = {
+  {.msg = {{0x35, 1, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0x35, 0, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0x105, 0, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}}},
+  {.msg = {{0x175, 1, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 20000U},
+           {0x175, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 20000U}, { 0 }}},
+  {.msg = {{0xa0, 1, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0xa0, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}, { 0 }}},
+  {.msg = {{0xea, 1, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0xea, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}, { 0 }}},
+  {.msg = {{0x1a0, 0, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 20000U}, { 0 }, { 0 }}},
+  {.msg = {{0x1cf, 1, 8, .check_checksum = false, .max_counter = 0xfU, .expected_timestep = 20000U},
+           {0x1cf, 0, 8, .check_checksum = false, .max_counter = 0xfU, .expected_timestep = 20000U},
+           {0x1aa, 0, 16, .check_checksum = false, .max_counter = 0xffU, .expected_timestep = 20000U}}},
 };
-RxCheck hyundai_canfd_long_alt_buttons_rx_checks[] = {
-  HYUNDAI_CANFD_COMMON_RX_CHECKS(0)
-  HYUNDAI_CANFD_ALT_BUTTONS_ADDR_CHECK(0)
+#define HYUNDAI_CANFD_RADAR_SCC_ADDR_CHECK_LEN (sizeof(hyundai_canfd_radar_scc_addr_checks) / sizeof(hyundai_canfd_radar_scc_addr_checks[0]))
+
+AddrCheckStruct hyundai_canfd_long_addr_checks[] = {
+  {.msg = {{0x35, 1, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0x35, 0, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0x105, 0, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}}},
+  {.msg = {{0x175, 1, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 20000U},
+           {0x175, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 20000U}, { 0 }}},
+  {.msg = {{0xa0, 1, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0xa0, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}, { 0 }}},
+  {.msg = {{0xea, 1, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U},
+           {0xea, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}, { 0 }}},
+  {.msg = {{0x1cf, 1, 8, .check_checksum = false, .max_counter = 0xfU, .expected_timestep = 20000U},
+           {0x1cf, 0, 8, .check_checksum = false, .max_counter = 0xfU, .expected_timestep = 20000U},
+           {0x1aa, 0, 16, .check_checksum = false, .max_counter = 0xffU, .expected_timestep = 20000U}}},
 };
+#define HYUNDAI_CANFD_LONG_ADDR_CHECK_LEN (sizeof(hyundai_canfd_long_addr_checks) / sizeof(hyundai_canfd_long_addr_checks[0]))
 
-// Radar sends SCC messages on these cars instead of camera
-RxCheck hyundai_canfd_radar_scc_rx_checks[] = {
-  HYUNDAI_CANFD_COMMON_RX_CHECKS(0)
-  HYUNDAI_CANFD_BUTTONS_ADDR_CHECK(0)
-  HYUNDAI_CANFD_SCC_ADDR_CHECK(0)
+AddrCheckStruct hyundai_canfd_ice_addr_checks[] = {
+  {.msg = {{0x100, 0, 32, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}, { 0 }, { 0 }}},
+  {.msg = {{0xa0, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}, { 0 }, { 0 }}},
+  {.msg = {{0xea, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 10000U}, { 0 }, { 0 }}},
+  {.msg = {{0x175, 0, 24, .check_checksum = true, .max_counter = 0xffU, .expected_timestep = 20000U}, { 0 }, { 0 }}},
+  {.msg = {{0x1aa, 0, 16, .check_checksum = false, .max_counter = 0xffU, .expected_timestep = 20000U}, { 0 }, { 0 }}},
 };
-RxCheck hyundai_canfd_radar_scc_alt_buttons_rx_checks[] = {
-  HYUNDAI_CANFD_COMMON_RX_CHECKS(0)
-  HYUNDAI_CANFD_ALT_BUTTONS_ADDR_CHECK(0)
-  HYUNDAI_CANFD_SCC_ADDR_CHECK(0)
-};
+#define HYUNDAI_CANFD_ICE_ADDR_CHECK_LEN (sizeof(hyundai_canfd_ice_addr_checks) / sizeof(hyundai_canfd_ice_addr_checks[0]))
+
+addr_checks hyundai_canfd_rx_checks = {hyundai_canfd_addr_checks, HYUNDAI_CANFD_ADDR_CHECK_LEN};
 
 
-// *** HDA2 checks ***
-// E-CAN is on bus 1, ADAS unit sends SCC messages on HDA2.
-// Does not use the alt buttons message
-RxCheck hyundai_canfd_hda2_rx_checks[] = {
-  HYUNDAI_CANFD_COMMON_RX_CHECKS(1)
-  HYUNDAI_CANFD_BUTTONS_ADDR_CHECK(1)
-  HYUNDAI_CANFD_SCC_ADDR_CHECK(1)
-};
-RxCheck hyundai_canfd_hda2_long_rx_checks[] = {
-  HYUNDAI_CANFD_COMMON_RX_CHECKS(1)
-  HYUNDAI_CANFD_BUTTONS_ADDR_CHECK(1)
-};
+uint16_t hyundai_canfd_crc_lut[256];
 
 
-
+const int HYUNDAI_PARAM_CANFD_HDA2 = 16;
 const int HYUNDAI_PARAM_CANFD_ALT_BUTTONS = 32;
-const int HYUNDAI_PARAM_CANFD_HDA2_ALT_STEERING = 128;
+bool hyundai_canfd_hda2 = false;
 bool hyundai_canfd_alt_buttons = false;
-bool hyundai_canfd_hda2_alt_steering = false;
 
-float hyundai_canfd_vego = 0.;
 
-int hyundai_canfd_hda2_get_lkas_addr(void) {
-  return hyundai_canfd_hda2_alt_steering ? 0x110 : 0x50;
-}
-
-static uint8_t hyundai_canfd_get_counter(const CANPacket_t *to_push) {
+static uint8_t hyundai_canfd_get_counter(CANPacket_t *to_push) {
   uint8_t ret = 0;
   if (GET_LEN(to_push) == 8U) {
     ret = GET_BYTE(to_push, 1) >> 4;
@@ -148,19 +130,52 @@ static uint8_t hyundai_canfd_get_counter(const CANPacket_t *to_push) {
   return ret;
 }
 
-static uint32_t hyundai_canfd_get_checksum(const CANPacket_t *to_push) {
+static uint32_t hyundai_canfd_get_checksum(CANPacket_t *to_push) {
   uint32_t chksum = GET_BYTE(to_push, 0) | (GET_BYTE(to_push, 1) << 8);
   return chksum;
 }
 
-static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
+static uint32_t hyundai_canfd_compute_checksum(CANPacket_t *to_push) {
+  int len = GET_LEN(to_push);
+  uint32_t address = GET_ADDR(to_push);
+
+  uint16_t crc = 0;
+
+  for (int i = 2; i < len; i++) {
+    crc = (crc << 8U) ^ hyundai_canfd_crc_lut[(crc >> 8U) ^ GET_BYTE(to_push, i)];
+  }
+
+  // Add address to crc
+  crc = (crc << 8U) ^ hyundai_canfd_crc_lut[(crc >> 8U) ^ ((address >> 0U) & 0xFFU)];
+  crc = (crc << 8U) ^ hyundai_canfd_crc_lut[(crc >> 8U) ^ ((address >> 8U) & 0xFFU)];
+
+  if (len == 8) {
+    crc ^= 0x5f29U;
+  } else if (len == 16) {
+    crc ^= 0x041dU;
+  } else if (len == 24) {
+    crc ^= 0x819dU;
+  } else if (len == 32) {
+    crc ^= 0x9f5bU;
+  } else {
+
+  }
+
+  return crc;
+}
+
+static int hyundai_canfd_rx_hook(CANPacket_t *to_push) {
+
+  bool valid = addr_safety_check(to_push, &hyundai_canfd_rx_checks,
+                                 hyundai_canfd_get_checksum, hyundai_canfd_compute_checksum, hyundai_canfd_get_counter, NULL);
+
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
   const int pt_bus = hyundai_canfd_hda2 ? 1 : 0;
   const int scc_bus = hyundai_camera_scc ? 2 : pt_bus;
 
-  if (bus == pt_bus) {
+  if (valid && (bus == pt_bus)) {
     // driver torque
     if (addr == 0xea) {
       int torque_driver_new = ((GET_BYTE(to_push, 11) & 0x1fU) << 8U) | GET_BYTE(to_push, 10);
@@ -171,7 +186,7 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
     // cruise buttons
     const int button_addr = hyundai_canfd_alt_buttons ? 0x1aa : 0x1cf;
     if (addr == button_addr) {
-      bool main_button = false;
+      int main_button = 0;
       int cruise_button = 0;
       if (addr == 0x1cf) {
         cruise_button = GET_BYTE(to_push, 2) & 0x7U;
@@ -187,37 +202,36 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
     if ((addr == 0x35) && hyundai_ev_gas_signal) {
       gas_pressed = GET_BYTE(to_push, 5) != 0U;
     } else if ((addr == 0x105) && hyundai_hybrid_gas_signal) {
-      gas_pressed = GET_BIT(to_push, 103U) || (GET_BYTE(to_push, 13) != 0U) || GET_BIT(to_push, 112U);
+      gas_pressed = (GET_BIT(to_push, 103U) != 0U) || (GET_BYTE(to_push, 13) != 0U) || (GET_BIT(to_push, 112U) != 0U);
     } else if ((addr == 0x100) && !hyundai_ev_gas_signal && !hyundai_hybrid_gas_signal) {
-      gas_pressed = GET_BIT(to_push, 176U);
+      gas_pressed = GET_BIT(to_push, 176U) != 0U;
     } else {
     }
 
     // brake press
     if (addr == 0x175) {
-      brake_pressed = GET_BIT(to_push, 81U);
+      brake_pressed = GET_BIT(to_push, 81U) != 0U;
     }
 
     // vehicle moving
     if (addr == 0xa0) {
-      uint32_t front_left_speed = GET_BYTES(to_push, 8, 2);
-      uint32_t rear_right_speed = GET_BYTES(to_push, 14, 2);
-      hyundai_canfd_vego = ((float)(front_left_speed + rear_right_speed) / 4.0f) * 0.277778f * 0.03125f;
-      vehicle_moving = (front_left_speed > HYUNDAI_STANDSTILL_THRSLD) || (rear_right_speed > HYUNDAI_STANDSTILL_THRSLD);
+      uint32_t speed = 0;
+      for (int i = 8; i < 15; i+=2) {
+        speed += GET_BYTE(to_push, i) | (GET_BYTE(to_push, i + 1) << 8U);
+      }
+      vehicle_moving = (speed / 4U) > HYUNDAI_STANDSTILL_THRSLD;
     }
   }
 
-  if (bus == scc_bus) {
+  if (valid && (bus == scc_bus)) {
     // cruise state
     if ((addr == 0x1a0) && !hyundai_longitudinal) {
-      // 1=enabled, 2=driver override
-      int cruise_status = ((GET_BYTE(to_push, 8) >> 4) & 0x7U);
-      bool cruise_engaged = (cruise_status == 1) || (cruise_status == 2);
+      bool cruise_engaged = ((GET_BYTE(to_push, 8) >> 4) & 0x3U) != 0U;
       hyundai_common_cruise_state_check(cruise_engaged);
     }
   }
 
-  const int steer_addr = hyundai_canfd_hda2 ? hyundai_canfd_hda2_get_lkas_addr() : 0x12a;
+  const int steer_addr = hyundai_canfd_hda2 ? 0x50 : 0x12a;
   bool stock_ecu_detected = (addr == steer_addr) && (bus == 0);
   if (hyundai_longitudinal) {
     // on HDA2, ensure ADRV ECU is still knocked out
@@ -227,56 +241,30 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
   }
   generic_rx_checks(stock_ecu_detected);
 
+  return valid;
 }
 
-static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send) {
-  bool tx = true;
+static int hyundai_canfd_tx_hook(CANPacket_t *to_send) {
+
+  int tx = 0;
   int addr = GET_ADDR(to_send);
 
+  if (hyundai_canfd_hda2 && !hyundai_longitudinal) {
+    tx = msg_allowed(to_send, HYUNDAI_CANFD_HDA2_TX_MSGS, sizeof(HYUNDAI_CANFD_HDA2_TX_MSGS)/sizeof(HYUNDAI_CANFD_HDA2_TX_MSGS[0]));
+  } else if (hyundai_canfd_hda2 && hyundai_longitudinal) {
+    tx = msg_allowed(to_send, HYUNDAI_CANFD_HDA2_LONG_TX_MSGS, sizeof(HYUNDAI_CANFD_HDA2_LONG_TX_MSGS)/sizeof(HYUNDAI_CANFD_HDA2_LONG_TX_MSGS[0]));
+  } else {
+    tx = msg_allowed(to_send, HYUNDAI_CANFD_HDA1_TX_MSGS, sizeof(HYUNDAI_CANFD_HDA1_TX_MSGS)/sizeof(HYUNDAI_CANFD_HDA1_TX_MSGS[0]));
+  }
+
   // steering
-  const int steer_addr = (hyundai_canfd_hda2 && !hyundai_longitudinal) ? hyundai_canfd_hda2_get_lkas_addr() : 0x12a;
+  const int steer_addr = (hyundai_canfd_hda2 && !hyundai_longitudinal) ? 0x50 : 0x12a;
   if (addr == steer_addr) {
-    bool alka_enabled = alternative_experience & ALT_EXP_ALKA;
     int desired_torque = (((GET_BYTE(to_send, 6) & 0xFU) << 7U) | (GET_BYTE(to_send, 5) >> 1U)) - 1024U;
-    bool steer_req = GET_BIT(to_send, 52U);
+    bool steer_req = GET_BIT(to_send, 52U) != 0U;
 
-    // 2m/s margin
-    if ((hyundai_canfd_vego < (11.f + 2.f))) {
-      bool violation = false;
-      uint32_t ts = microsecond_timer_get();
-
-      if (alka_enabled || controls_allowed) {
-        // *** global torque limit check ***
-        violation |= max_limit_check(desired_torque, 384, -384);
-
-        // ready to blend in limits
-        desired_torque_last = MAX(-330, MIN(desired_torque, 330));
-        rt_torque_last = desired_torque;
-        ts_torque_check_last = ts;
-      }
-
-      // no torque if controls is not allowed
-      if ((!alka_enabled && !controls_allowed) && (desired_torque != 0)) {
-        violation = true;
-      }
-
-      // reset to 0 if either controls is not allowed or there's a violation
-      if (violation || (!alka_enabled && !controls_allowed)) {
-        valid_steer_req_count = 0;
-        invalid_steer_req_count = 0;
-        desired_torque_last = 0;
-        rt_torque_last = 0;
-        ts_torque_check_last = ts;
-        ts_steer_req_mismatch_last = ts;
-      }
-
-      if (violation) {
-        tx = false;
-      }
-    } else {
-      if (steer_torque_cmd_checks(desired_torque, steer_req, HYUNDAI_CANFD_STEERING_LIMITS)) {
-        tx = false;
-      }
+    if (steer_torque_cmd_checks(desired_torque, steer_req, HYUNDAI_CANFD_STEERING_LIMITS)) {
+      tx = 0;
     }
   }
 
@@ -288,14 +276,14 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send) {
 
     bool allowed = (is_cancel && cruise_engaged_prev) || (is_resume && controls_allowed);
     if (!allowed) {
-      tx = false;
+      tx = 0;
     }
   }
 
   // UDS: only tester present ("\x02\x3E\x80\x00\x00\x00\x00\x00") allowed on diagnostics address
   if ((addr == 0x730) && hyundai_canfd_hda2) {
-    if ((GET_BYTES(to_send, 0, 4) != 0x00803E02U) || (GET_BYTES(to_send, 4, 4) != 0x0U)) {
-      tx = false;
+    if ((GET_BYTES_04(to_send) != 0x00803E02U) || (GET_BYTES_48(to_send) != 0x0U)) {
+      tx = 0;
     }
   }
 
@@ -317,7 +305,7 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send) {
     }
 
     if (violation) {
-      tx = false;
+      tx = 0;
     }
   }
 
@@ -332,17 +320,16 @@ static int hyundai_canfd_fwd_hook(int bus_num, int addr) {
   }
   if (bus_num == 2) {
     // LKAS for HDA2, LFA for HDA1
-    int hda2_lfa_block_addr = hyundai_canfd_hda2_alt_steering ? 0x362 : 0x2a4;
-    bool is_lkas_msg = ((addr == hyundai_canfd_hda2_get_lkas_addr()) || (addr == hda2_lfa_block_addr)) && hyundai_canfd_hda2;
-    bool is_lfa_msg = ((addr == 0x12a) && !hyundai_canfd_hda2);
+    int is_lkas_msg = (((addr == 0x50) || (addr == 0x2a4)) && hyundai_canfd_hda2);
+    int is_lfa_msg = ((addr == 0x12a) && !hyundai_canfd_hda2);
 
     // HUD icons
-    bool is_lfahda_msg = ((addr == 0x1e0) && !hyundai_canfd_hda2);
+    int is_lfahda_msg = ((addr == 0x1e0) && !hyundai_canfd_hda2);
 
     // CRUISE_INFO for non-HDA2, we send our own longitudinal commands
-    bool is_scc_msg = ((addr == 0x1a0) && hyundai_longitudinal && !hyundai_canfd_hda2);
+    int is_scc_msg = ((addr == 0x1a0) && hyundai_longitudinal && !hyundai_canfd_hda2);
 
-    bool block_msg = is_lkas_msg || is_lfa_msg || is_lfahda_msg || is_scc_msg;
+    int block_msg = is_lkas_msg || is_lfa_msg || is_lfahda_msg || is_scc_msg;
     if (!block_msg) {
       bus_fwd = 0;
     }
@@ -351,48 +338,37 @@ static int hyundai_canfd_fwd_hook(int bus_num, int addr) {
   return bus_fwd;
 }
 
-static safety_config hyundai_canfd_init(uint16_t param) {
+static const addr_checks* hyundai_canfd_init(uint16_t param) {
   hyundai_common_init(param);
 
   gen_crc_lookup_table_16(0x1021, hyundai_canfd_crc_lut);
+  hyundai_canfd_hda2 = GET_FLAG(param, HYUNDAI_PARAM_CANFD_HDA2);
   hyundai_canfd_alt_buttons = GET_FLAG(param, HYUNDAI_PARAM_CANFD_ALT_BUTTONS);
-  hyundai_canfd_hda2_alt_steering = GET_FLAG(param, HYUNDAI_PARAM_CANFD_HDA2_ALT_STEERING);
 
-  // no long for radar-SCC HDA1 yet
-  if (!hyundai_canfd_hda2 && !hyundai_camera_scc) {
+  // no long for ICE yet
+  if (!hyundai_ev_gas_signal && !hyundai_hybrid_gas_signal) {
     hyundai_longitudinal = false;
   }
 
-  safety_config ret;
   if (hyundai_longitudinal) {
-    if (hyundai_canfd_hda2) {
-      ret = BUILD_SAFETY_CFG(hyundai_canfd_hda2_long_rx_checks, HYUNDAI_CANFD_HDA2_LONG_TX_MSGS);
-    } else {
-      ret = hyundai_canfd_alt_buttons ? BUILD_SAFETY_CFG(hyundai_canfd_long_alt_buttons_rx_checks, HYUNDAI_CANFD_HDA1_TX_MSGS) : \
-                                        BUILD_SAFETY_CFG(hyundai_canfd_long_rx_checks, HYUNDAI_CANFD_HDA1_TX_MSGS);
-    }
+    hyundai_canfd_rx_checks = (addr_checks){hyundai_canfd_long_addr_checks, HYUNDAI_CANFD_LONG_ADDR_CHECK_LEN};
   } else {
-    if (hyundai_canfd_hda2) {
-      ret = hyundai_canfd_hda2_alt_steering ? BUILD_SAFETY_CFG(hyundai_canfd_hda2_rx_checks, HYUNDAI_CANFD_HDA2_ALT_STEERING_TX_MSGS) : \
-                                              BUILD_SAFETY_CFG(hyundai_canfd_hda2_rx_checks, HYUNDAI_CANFD_HDA2_TX_MSGS);
-    } else if (!hyundai_camera_scc) {
-      ret = hyundai_canfd_alt_buttons ? BUILD_SAFETY_CFG(hyundai_canfd_radar_scc_alt_buttons_rx_checks, HYUNDAI_CANFD_HDA1_TX_MSGS) : \
-                                        BUILD_SAFETY_CFG(hyundai_canfd_radar_scc_rx_checks, HYUNDAI_CANFD_HDA1_TX_MSGS);
+    if (!hyundai_ev_gas_signal && !hyundai_hybrid_gas_signal) {
+      hyundai_canfd_rx_checks = (addr_checks){hyundai_canfd_ice_addr_checks, HYUNDAI_CANFD_ICE_ADDR_CHECK_LEN};
+    } else if (!hyundai_camera_scc && !hyundai_canfd_hda2) {
+      hyundai_canfd_rx_checks = (addr_checks){hyundai_canfd_radar_scc_addr_checks, HYUNDAI_CANFD_RADAR_SCC_ADDR_CHECK_LEN};
     } else {
-      ret = hyundai_canfd_alt_buttons ? BUILD_SAFETY_CFG(hyundai_canfd_alt_buttons_rx_checks, HYUNDAI_CANFD_HDA1_TX_MSGS) : \
-                                        BUILD_SAFETY_CFG(hyundai_canfd_rx_checks, HYUNDAI_CANFD_HDA1_TX_MSGS);
+      hyundai_canfd_rx_checks = (addr_checks){hyundai_canfd_addr_checks, HYUNDAI_CANFD_ADDR_CHECK_LEN};
     }
   }
 
-  return ret;
+  return &hyundai_canfd_rx_checks;
 }
 
 const safety_hooks hyundai_canfd_hooks = {
   .init = hyundai_canfd_init,
   .rx = hyundai_canfd_rx_hook,
   .tx = hyundai_canfd_tx_hook,
+  .tx_lin = nooutput_tx_lin_hook,
   .fwd = hyundai_canfd_fwd_hook,
-  .get_counter = hyundai_canfd_get_counter,
-  .get_checksum = hyundai_canfd_get_checksum,
-  .compute_checksum = hyundai_common_canfd_compute_checksum,
 };

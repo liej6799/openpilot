@@ -2,7 +2,6 @@ typedef struct interrupt {
   IRQn_Type irq_type;
   void (*handler)(void);
   uint32_t call_counter;
-  uint32_t call_rate;
   uint32_t max_call_rate;   // Call rate is defined as the amount of calls each second
   uint32_t call_rate_fault;
 } interrupt;
@@ -18,12 +17,11 @@ void unused_interrupt_handler(void) {
 
 interrupt interrupts[NUM_INTERRUPTS];
 
-#define REGISTER_INTERRUPT(irq_num, func_ptr, call_rate_max, rate_fault) \
+#define REGISTER_INTERRUPT(irq_num, func_ptr, call_rate, rate_fault) \
   interrupts[irq_num].irq_type = (irq_num); \
   interrupts[irq_num].handler = (func_ptr);  \
   interrupts[irq_num].call_counter = 0U;   \
-  interrupts[irq_num].call_rate = 0U;   \
-  interrupts[irq_num].max_call_rate = (call_rate_max); \
+  interrupts[irq_num].max_call_rate = (call_rate); \
   interrupts[irq_num].call_rate_fault = (rate_fault);
 
 bool check_interrupt_rate = false;
@@ -48,7 +46,8 @@ void handle_interrupt(IRQn_Type irq_type){
   interrupts[irq_type].handler();
 
   // Check that the interrupts don't fire too often
-  if (check_interrupt_rate && (interrupts[irq_type].call_counter > interrupts[irq_type].max_call_rate)) {
+  if(check_interrupt_rate && (interrupts[irq_type].call_counter > interrupts[irq_type].max_call_rate)){
+    print("Interrupt 0x"); puth(irq_type); print(" fired too often (0x"); puth(interrupts[irq_type].call_counter); print("/s)!\n");
     fault_occurred(interrupts[irq_type].call_rate_fault);
   }
 
@@ -64,22 +63,16 @@ void handle_interrupt(IRQn_Type irq_type){
 
 // Every second
 void interrupt_timer_handler(void) {
-  if (INTERRUPT_TIMER->SR != 0U) {
-    for (uint16_t i = 0U; i < NUM_INTERRUPTS; i++) {
-      // Log IRQ call rate faults
-      if (check_interrupt_rate && (interrupts[i].call_counter > interrupts[i].max_call_rate)) {
-        print("Interrupt 0x"); puth(i); print(" fired too often (0x"); puth(interrupts[i].call_counter); print("/s)!\n");
-      }
-
-      // Reset interrupt counters
-      interrupts[i].call_rate = interrupts[i].call_counter;
+  if (INTERRUPT_TIMER->SR != 0) {
+    // Reset interrupt counters
+    for(uint16_t i=0U; i<NUM_INTERRUPTS; i++){
       interrupts[i].call_counter = 0U;
     }
 
     // Calculate interrupt load
     // The bootstub does not have the FPU enabled, so can't do float operations.
-#if !defined(BOOTSTUB)
-    interrupt_load = ((busy_time + idle_time) > 0U) ? ((float) (((float) busy_time) / (busy_time + idle_time))) : 0.0f;
+#if !defined(PEDAL) && !defined(BOOTSTUB)
+    interrupt_load = ((busy_time + idle_time) > 0U) ? ((float) busy_time) / (busy_time + idle_time) : 0.0f;
 #endif
     idle_time = 0U;
     busy_time = 0U;

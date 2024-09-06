@@ -5,11 +5,13 @@
 
 
 import os
+import sys
 import time
 import random
 import argparse
 
-from panda import Panda
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+from panda import Panda  # noqa: E402
 
 def get_test_string():
   return b"test" + os.urandom(10)
@@ -27,7 +29,8 @@ def run_test(sleep_duration):
 
   # make sure two pandas are connected
   if len(pandas) != 2:
-    raise Exception("Connect white/grey and black panda to run this test!")
+    print("Connect white/grey and black panda to run this test!")
+    assert False
 
   # connect
   pandas[0] = Panda(pandas[0])
@@ -47,7 +50,8 @@ def run_test(sleep_duration):
     black_panda = pandas[1]
     other_panda = pandas[0]
   else:
-    raise Exception("Connect white/grey and black panda to run this test!")
+    print("Connect white/grey and black panda to run this test!")
+    assert False
 
   # disable safety modes
   black_panda.set_safety_mode(Panda.SAFETY_ALLOUTPUT)
@@ -65,7 +69,8 @@ def run_test(sleep_duration):
 
     if not test_buses(black_panda, other_panda, (0, False, [0])):
       open_errors += 1
-      raise Exception("Open error")
+      print("Open error")
+      assert False
 
     # Switch off relay
     black_panda.set_safety_mode(Panda.SAFETY_SILENT)
@@ -73,7 +78,8 @@ def run_test(sleep_duration):
 
     if not test_buses(black_panda, other_panda, (0, False, [0, 2])):
       closed_errors += 1
-      raise Exception("Close error")
+      print("Close error")
+      assert False
 
     counter += 1
     print("Number of cycles:", counter, "Open errors:", open_errors, "Closed errors:", closed_errors, "Content errors:", content_errors)
@@ -86,7 +92,7 @@ def test_buses(black_panda, other_panda, test_obj):
   other_panda.send_heartbeat()
 
   # Set OBD on send panda
-  other_panda.set_obd(True if obd else None)
+  other_panda.set_gmlan(True if obd else None)
 
   # clear and flush
   other_panda.can_clear(send_bus)
@@ -131,5 +137,5 @@ if __name__ == "__main__":
     while True:
       run_test(sleep_duration=args.sleep)
   else:
-    for _ in range(args.n):
+    for i in range(args.n):
       run_test(sleep_duration=args.sleep)
