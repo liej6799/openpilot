@@ -15,9 +15,6 @@
 #define BUS_RADAR  1
 #define BUS_CAM  2
 
-const int WL_STANDSTILL_THRESHOLD = 10;  // 0.311kph
-
-
 const CanMsg WULING_TX_MSGS[] = {
     {STEERING_LKAS, 0, 8}, 
     {BRAKE_DATA, 0, 8},
