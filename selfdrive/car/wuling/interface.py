@@ -7,7 +7,6 @@ from selfdrive.car import STD_CARGO_KG,scale_tire_stiffness,create_button_event,
 from selfdrive.car.interfaces import CarInterfaceBase
 from selfdrive.car.wuling.values import CAR, CruiseButtons, PREGLOBAL_CARS, CarControllerParams, CanBus
 from common.params import Params
-from common.op_params import opParams
 
 ButtonType = car.CarState.ButtonEvent.Type
 TransmissionType = car.CarParams.TransmissionType
@@ -38,9 +37,7 @@ class CarInterface(CarInterfaceBase):
     ret.autoResumeSng = False
     ret.notCar = False
     # ret.lateralTuning.init('pid')
-    
-    op_params = opParams("wuling car_interface.py for lateral override")
-
+  
     ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.wuling)]
 
     ret.mass = 1950. + STD_CARGO_KG
