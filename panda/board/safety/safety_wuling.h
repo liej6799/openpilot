@@ -80,6 +80,7 @@ static int wuling_fwd_hook(int bus, int addr) {
 }
 
 static safety_config wuling_init(uint16_t param) {
+  UNUSED(param);
   return BUILD_SAFETY_CFG(wl_addr_checks, WULING_TX_MSGS);
 }
 
