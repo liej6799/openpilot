@@ -244,9 +244,7 @@ def get_car(logcan, sendcan, experimental_long_allowed, num_pandas=1):
     CP.carFw = car_fw
     CP.fingerprintSource = source
     CP.fuzzyFingerprint = not exact_match
-    
-    return CarInterface(CP, CarController, CarState), CP
-  except KeyError as err:
-    print("Error get car param %s" % err)
 
+    return CarInterface(CP, CarController, CarState), CP
+  except KeyError:
     return None, None

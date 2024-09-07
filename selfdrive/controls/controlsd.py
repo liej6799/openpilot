@@ -115,7 +115,6 @@ class Controls:
     else:
       self.CI, self.CP = CI, CI.CP
 
-    print("Car param %s" % self.CP)
     self.joystick_mode = self.params.get_bool("JoystickDebugMode") or self.CP.notCar
 
     # set alternative experiences from parameters
@@ -180,18 +179,17 @@ class Controls:
     self.VM = VehicleModel(self.CP)
 
     self.LaC: LatControl
-    # if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
-    self.LaC = LatControlAngle(self.CP, self.CI)
-    # elif self.CP.lateralTuning.which() == 'pid':
-    #   self.LaC = LatControlPID(self.CP, self.CI)
-    # elif self.CP.lateralTuning.which() == 'indi':
-    #   self.LaC = LatControlINDI(self.CP, self.CI)
-    # elif self.CP.lateralTuning.which() == 'torque':
-    #   self.LaC = LatControlTorque(self.CP, self.CI)
-    # elif self.CP.lateralTuning.which() == 'lqr':
-    #   self.LaC = LatControlLQR(self.CP, self.CI)
+    if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
+      self.LaC = LatControlAngle(self.CP, self.CI)
+    elif self.CP.lateralTuning.which() == 'pid':
+      self.LaC = LatControlPID(self.CP, self.CI)
+    elif self.CP.lateralTuning.which() == 'indi':
+      self.LaC = LatControlINDI(self.CP, self.CI)
+    elif self.CP.lateralTuning.which() == 'torque':
+      self.LaC = LatControlTorque(self.CP, self.CI)
+    elif self.CP.lateralTuning.which() == 'lqr':
+      self.LaC = LatControlLQR(self.CP, self.CI)
 
-    print("Lateral Type : %s" % self.CP.lateralTuning.which())
     # dp, keep the original LaC for alt lac ctrl
     self.LaC_default = self.LaC
 
@@ -218,11 +216,6 @@ class Controls:
     self.experimental_mode = False
     self.v_cruise_helper = VCruiseHelper(self.CP)
 
-
-    self.params_check_last_t = 0.0
-    self.params_check_freq = 0.3
-    self.op_params_override_lateral = True
-    
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
     self.can_log_mono_time = 0
@@ -272,7 +265,15 @@ class Controls:
           if type(self.LaC) == type(self.LaC_default):
             self.LaC_default =  self.LaC
           self.dp_lateral_alt_active = True
-          self.LaC = LatControlAngle(self.CP, self.CI)
+          if getattr(self.CP.latTuneCollection.pid, 'kpV') and self.sm['dragonConf'].dpLateralAltCtrl == 1 and not isinstance(self.LaC, LatControlPID):
+            self.CP.lateralTuning.pid = self.CP.latTuneCollection.pid
+            self.LaC = LatControlPID(self.CP, self.CI)
+          elif self.sm['dragonConf'].dpLateralAltCtrl == 2 and not isinstance(self.LaC, LatControlLQR):
+            self.CP.lateralTuning.lqr = self.CP.latTuneCollection.lqr
+            self.LaC = LatControlLQR(self.CP, self.CI)
+          elif self.sm['dragonConf'].dpLateralAltCtrl == 3 and not isinstance(self.LaC, LatControlTorque):
+            self.CP.lateralTuning.torque = self.CP.latTuneCollection.torque
+            self.LaC = LatControlTorque(self.CP, self.CI)
           self.LaC.reset()
       self.dp_lateral_alt_v_cruise_kph_prev = self.dp_lateral_alt_v_cruise_kph
 
@@ -305,10 +306,10 @@ class Controls:
     if self.read_only:
       return
 
-    # # Block resume if cruise never previously enabled
-    # resume_pressed = any(be.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for be in CS.buttonEvents)
-    # if not self.CP.pcmCruise and not self.v_cruise_helper.v_cruise_initialized and resume_pressed:
-    #   self.events.add(EventName.resumeBlocked)
+    # Block resume if cruise never previously enabled
+    resume_pressed = any(be.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for be in CS.buttonEvents)
+    if not self.CP.pcmCruise and not self.v_cruise_helper.v_cruise_initialized and resume_pressed:
+      self.events.add(EventName.resumeBlocked)
 
     # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
     if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
@@ -330,13 +331,6 @@ class Controls:
     if CS.canValid:
       self.events.add_from_msg(CS.events)
 
-    # if self.CP.lateralTuning.which() == 'pid':
-    #   t = sec_since_boot()
-    #   if t - self.params_check_last_t > self.params_check_freq:
-    #     if self.op_params_override_lateral:
-    #       self.LaC.update_op_params()
-    #     self.params_check_last_t = t
-      
     # Create events for temperature, disk space, and memory
     if self.dp_temp_check and self.sm['deviceState'].thermalStatus >= ThermalStatus.red:
       self.events.add(EventName.overheat)
