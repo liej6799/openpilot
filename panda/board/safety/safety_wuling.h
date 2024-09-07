@@ -13,7 +13,11 @@
 #define BUS_RADAR  1
 #define BUS_CAM  2
 
-const CanMsg WULING_TX_MSGS[] = {{ENGINE_DATA, 0, 8}, {LKAS_HUD, 0, 8}};
+const CanMsg WULING_TX_MSGS[] = {
+    {STEERING_LKAS, 0, 8}, 
+    {BRAKE_DATA, 0, 8},
+    {ACC_DATA, 0, 8}
+};
 
 AddrCheckStruct wl_addr_checks[] = {
   // {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
