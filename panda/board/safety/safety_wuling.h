@@ -24,7 +24,7 @@ const CanMsg WULING_TX_MSGS[] = {
 };
 
 RxCheck wl_addr_checks[] = {
-  {.msg = {{WHEEL_DATA,   0, 4, .frequency = 100U}, { 0 }, { 0 }}},
+  {.msg = {{WHEEL_DATA,   0, 6, .frequency = 100U}, { 0 }, { 0 }}},
   {.msg = {{STEER_DATA,   0, 8, .frequency = 100U}, { 0 }, { 0 }}},
   {.msg = {{ENGINE_DATA,  0, 8, .frequency = 100U}, { 0 }, { 0 }}},
   {.msg = {{GAS_DATA,     0, 8, .frequency = 100U}, { 0 }, { 0 }}}
