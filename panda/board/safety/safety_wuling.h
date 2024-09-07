@@ -56,9 +56,17 @@ static void wuling_rx_hook(const CANPacket_t *to_push) {
   }
 }
 
-static bool wuling_tx_hook(CANPacket_t *to_send) {
-  bool tx = true;
-  UNUSED(to_send);
+static bool wuling_tx_hook(const CANPacket_t *to_send) {
+  bool tx = true;   
+  int addr = GET_ADDR(to_send);
+  int bus = GET_BUS(to_send);
+
+  // Check if msg is sent on the main BUS
+
+  UNUSED(addr);
+  UNUSED(bus);
+
+  // 1 allows the message through
   return tx;
 }
 
