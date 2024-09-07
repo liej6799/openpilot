@@ -23,6 +23,8 @@ const CanMsg WULING_TX_MSGS[] = {
 };
 
 AddrCheckStruct wl_addr_checks[] = {
+ 
+  {.msg = {{STEER_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
   {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
   {.msg = {{GAS_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
 };
