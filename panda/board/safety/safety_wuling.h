@@ -23,7 +23,7 @@ const CanMsg WULING_TX_MSGS[] = {
 };
 
 AddrCheckStruct wl_addr_checks[] = {
- 
+  // {.msg = {{WHEEL_DATA, 0, 4, .expected_timestep = 100000U}, { 0 }, { 0 }}},
   {.msg = {{STEER_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
   {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
   {.msg = {{GAS_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
@@ -75,10 +75,15 @@ static int wuling_tx_hook(CANPacket_t *to_send) {
   int addr = GET_ADDR(to_send);
   int bus = GET_BUS(to_send);
 
-  // Check if msg is sent on the main BUS
-
   UNUSED(addr);
   UNUSED(bus);
+
+  if (!msg_allowed(to_send, WULING_TX_MSGS, sizeof(WULING_TX_MSGS) / sizeof(WULING_TX_MSGS[0]))) {
+    tx = 0;
+  }
+
+  // Check if msg is sent on the main BUS
+
   controls_allowed = 1;
 
   // 1 allows the message through
@@ -93,7 +98,7 @@ static int wuling_fwd_hook(int bus, int addr) {
   if (bus == BUS_MAIN) {
     bus_fwd = BUS_CAM;
   } else if (bus == BUS_CAM) {
-    bool block =  (addr == STEERING_LKAS);
+     bool block =  (addr == STEERING_LKAS || addr == BRAKE_DATA || addr == ACC_DATA);
     if (!block) {
       bus_fwd = BUS_MAIN;
     }
