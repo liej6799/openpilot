@@ -7,6 +7,9 @@
 #define ACC_DATA      0x263 // BLOCK DASHBOARD SHOW CAMERA ERROR. CANT ENABLE ACC
 #define TEST_DATA_1   0x370 // BLOCK DASHBOARD SHOW CAMERA ERROR. CANT ENABLE ACC
 #define TEST_DATA_2   0x373 // DASHBAORD SHOW LKAS ERROR. STILL CAN ENABLE ACC
+#define WHEEL_DATA   0x348
+#define STEER_DATA   0x1e5
+#define GAS_DATA     0x191
 
 // CAN bus numbers
 #define BUS_MAIN 0
@@ -20,9 +23,10 @@ const CanMsg WULING_TX_MSGS[] = {
 };
 
 AddrCheckStruct wl_addr_checks[] = {
-  // {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
-  // {.msg = {{BRAKE_DATA, 0, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
-  // {.msg = {{GAS_DATA, 0, 8, .expected_timestep = 50000U}, { 0 }, { 0 }}},
+  {.msg = {{WHEEL_DATA, 0, 4, .expected_timestep = 100000U}, { 0 }, { 0 }}},
+  {.msg = {{STEER_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
+  {.msg = {{ENGINE_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
+  {.msg = {{GAS_DATA, 0, 8, .expected_timestep = 100000U}, { 0 }, { 0 }}},
 };
 
 #define WL_RX_CHECK_LEN (sizeof(wl_addr_checks) / sizeof(wl_addr_checks[0]))
