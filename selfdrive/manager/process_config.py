@@ -42,7 +42,7 @@ procs = [
 
   DaemonProcess("manage_athenad", "selfdrive.athena.manage_athenad", "AthenadPid"),
   # NativeProcess("dmonitoringmodeld", "selfdrive/modeld", ["./dmonitoringmodeld"], enabled=(not PC or WEBCAM), callback=driverview),
-  NativeProcess("encoderd", "system/loggerd", ["./encoderd"]),
+  # NativeProcess("encoderd", "system/loggerd", ["./encoderd"]),
   # NativeProcess("loggerd", "system/loggerd", ["./loggerd"], onroad=False, callback=logging),
   NativeProcess("modeld", "selfdrive/modeld", ["./modeld"]),
   # NativeProcess("mapsd", "selfdrive/navd", ["./map_renderer"], enabled=False),
@@ -90,12 +90,12 @@ procs = [
   PythonProcess("otisserv", "selfdrive.dragonpilot.otisserv", offroad=True),
   NativeProcess("sensord", "system/sensord", ["./sensord"], enabled=not PC, offroad=True, sigkill=EON),
   NativeProcess("ubloxd", "system/ubloxd", ["./ubloxd"], onroad=False, callback=ublox),
-  NativeProcess("logcatd", "selfdrive/logcatd", ["./logcatd"]),
-  NativeProcess("proclogd", "selfdrive/proclogd", ["./proclogd"]),
-  PythonProcess("loggerd", "selfdrive/loggerd", ["./loggerd"]),
+  # NativeProcess("logcatd", "selfdrive/logcatd", ["./logcatd"]),
+  # NativeProcess("proclogd", "selfdrive/proclogd", ["./proclogd"]),
+  # PythonProcess("loggerd", "selfdrive/loggerd", ["./loggerd"]),
   # PythonProcess("deleter", "selfdrive.loggerd.deleter", offroad=True),
   # PythonProcess("uploader", "selfdrive.loggerd.uploader", offroad=True),
-  PythonProcess("logmessaged", "system.logmessaged", offroad=True),
+  # PythonProcess("logmessaged", "system.logmessaged", offroad=True),
 ]
 
 managed_processes = {p.name: p for p in procs}
