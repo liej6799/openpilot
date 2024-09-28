@@ -69,6 +69,7 @@ class CarController:
       idx = (self.frame/5) % 4
       acc_enabled = CC.longActive
       can_sends.append(wulingcan.create_acc_hud_control(self.packer_pt, idx, acc_enabled, set_speed))
+      can_sends.append(wulingcan.create_lkas_hud_control(self.packer_pt, idx, acc_enabled))
 
        
     new_actuators = actuators.copy()

@@ -99,7 +99,7 @@ BO_ 880 ASCMActiveCruiseControlStatus: 8 K124_ASCM
  SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
  SG_ ACC_ENABLED_1 : 39|4@0+ (1,0) [0|15] "" XXX
  SG_ ACC_ENABLED_2 : 53|6@0+ (1,0) [0|1] "" XXX
-
+ SG_ ACC_ENABLED_3 : 54|1@0+ (1,0) [0|1] "" XXX
  
 
 BO_ 1001 ECMVehicleSpeed: 8 K20_ECM
@@ -128,7 +128,10 @@ BO_ 549 STEERING_LKA: 8 XXX
 BO_ 883 LkasHud: 8 K20_ECM
  SG_ LKAS_STATE : 10|1@0+ (1,0) [0|1] "" NEO
  SG_ LKA_ACTIVE : 1|1@0+ (1,0) [0|1] "" NEO
-
+ SG_ COUNTER : 7|2@0+ (1,0) [0|3] "" XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
+ SG_ ALWAYS_108 : 39|8@0+ (1,0) [0|255] "" XXX
+ 
 BO_ 611 AccStatus: 8 XXX
  SG_ ALWAYS_ON_1 : 5|6@0+ (1,0) [0|63] "" XXX
  SG_ COUNTER : 7|2@0+ (1,0) [0|3] "" XXX
