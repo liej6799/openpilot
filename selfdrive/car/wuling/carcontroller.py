@@ -64,9 +64,9 @@ class CarController:
       can_sends.append(wulingcan.create_brake_command(self.packer_pt, apply_stop, idx, apply_brake))
       can_sends.append(wulingcan.create_gas_command(self.packer_pt, idx, acc_enabled, apply_start, apply_gas))
 
-    elif (self.frame % P.HUD_STEP) == 0:
+    if (self.frame % P.HUD_STEP) == 0:
       set_speed = int(round(hud_v_cruise * CV.MS_TO_KPH))
-      idx = (self.frame/2) % 4
+      idx = (self.frame/5) % 4
       can_sends.append(wulingcan.create_acc_hud_control(self.packer_pt, idx, set_speed))
 
        

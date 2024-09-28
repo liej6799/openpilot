@@ -18,7 +18,9 @@
 const CanMsg WULING_TX_MSGS[] = {
     {STEERING_LKAS, 0, 8}, 
     {BRAKE_DATA, 0, 8},
-    {ACC_DATA, 0, 8}
+    {ACC_DATA, 0, 8},
+    {TEST_DATA_1, 0, 8},
+    {TEST_DATA_2, 0, 8},
 };
 
 AddrCheckStruct wl_addr_checks[] = {
@@ -98,7 +100,7 @@ static int wuling_fwd_hook(int bus, int addr) {
   if (bus == BUS_MAIN) {
     bus_fwd = BUS_CAM;
   } else if (bus == BUS_CAM) {
-     bool block =  (addr == STEERING_LKAS || addr == BRAKE_DATA || addr == ACC_DATA);
+     bool block =  (addr == STEERING_LKAS || addr == BRAKE_DATA || addr == ACC_DATA || addr == TEST_DATA_1 || addr == TEST_DATA_2);
     if (!block) {
       bus_fwd = BUS_MAIN;
     }
