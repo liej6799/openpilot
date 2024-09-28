@@ -67,9 +67,9 @@ class CarController:
     if (self.frame % P.HUD_STEP) == 0:
       set_speed = int(round(hud_v_cruise * CV.MS_TO_KPH))
       idx = (self.frame/5) % 4
-      acc_enabled = CC.longActive
-      can_sends.append(wulingcan.create_acc_hud_control(self.packer_pt, idx, acc_enabled, set_speed))
-      can_sends.append(wulingcan.create_lkas_hud_control(self.packer_pt, idx, acc_enabled))
+      cc_enabled = CC.enabled
+      can_sends.append(wulingcan.create_acc_hud_control(self.packer_pt, idx, cc_enabled, set_speed))
+      can_sends.append(wulingcan.create_lkas_hud_control(self.packer_pt, idx, cc_enabled))
 
        
     new_actuators = actuators.copy()
