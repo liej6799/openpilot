@@ -105,7 +105,7 @@ class CarState(CarStateBase):
     
     ret.parkingBrake = bool(pt_cp.vl["EPBStatus"]["EPBSTATUS"])
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBSTATUS"]
-    self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACCSTATE"]
+    self.pcm_acc_status = pt_cp.vl["ASCMActiveCruiseControlStatus"]["ACC_ENABLED_2"]
     
     # print('Cruise State Available: ', pt_cp.vl["AccStatus"]["CruiseMainOn"])
     # print('Cruise State Enabled: ', pt_cp.vl["AccStatus"]["CruiseState"])
@@ -158,7 +158,7 @@ class CarState(CarStateBase):
       signals += [
         ("COUNTER", "STEERING_LKA"),
         ("ACCBUTTON", "ASCMActiveCruiseControlStatus"),
-        ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
+        ("ACC_ENABLED_2", "ASCMActiveCruiseControlStatus"),
         ("CruiseMainOn", "AccStatus"),
         ("CruiseState", "AccStatus"),
         ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
@@ -206,7 +206,7 @@ class CarState(CarStateBase):
       ("AVH_STATUS", "EPBStatus"),
       
       ("ACCBUTTON", "ASCMActiveCruiseControlStatus"),
-      ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
+      ("ACC_ENABLED_2", "ASCMActiveCruiseControlStatus"),
       ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
       ("ACCResumeAlert", "ASCMActiveCruiseControlStatus"),
       ("COUNTER", "ASCMActiveCruiseControlStatus"),

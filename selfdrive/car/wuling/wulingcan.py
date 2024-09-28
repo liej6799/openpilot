@@ -85,27 +85,6 @@ def create_brake_command(packer, apply_brake, idx, brake_value):
 #  SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
  
 
-def create_acc_dashboard_command(packer, acc_engaged, idx, target_speed_kph, resume_button, lead_car_in_sight, fcw):
-  # Not a bit shift, dash can round up based on low 4 bits.
-  target_speed = int(target_speed_kph) & 0xfff
-
-  values = {
-    "ACCAlwaysOne" : 1,
-    "COUNTER_1" : idx,
-    "COUNTER_2" : (idx+1) % 4,
-    "ACCSTATE" : acc_engaged,
-    "ACCResumeButton" : resume_button,
-    "ACCSpeedSetpoint" : target_speed,
-    "ACCGapLevel" : 6 * acc_engaged,  # 3 "far", 0 "inactive"
-    "ACCCmdActive" : acc_engaged,
-    "ACCAlwaysOne2" : 3,
-    "ACCLeadCar" : lead_car_in_sight,
-    "SET_ME_X16" : 0x16,
-    "FCWAlert": 0x3 if fcw else 0
-  }
-
-  return packer.make_can_msg("ASCMActiveCruiseControlStatus", 0, values)
-
 
 def create_resume_cmd(packer, idx, resume):
   values = {
@@ -170,6 +149,10 @@ def create_acc_hud_control(packer, idx, target_speed_kph):
   # target_speed=30
   values = {
     "ACCSpeedSetpoint": 30,
+    "ALWAYS_208": 208,
+    "ALWAYS_6": 6, 
+    "ACC_ENABLED_1": 1, 
+    "ACC_ENABLED_2": 32, 
     "COUNTER": idx,
   }
   
