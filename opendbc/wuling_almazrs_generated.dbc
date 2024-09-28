@@ -89,19 +89,16 @@ BO_ 608 BrakeCMD: 8 XXX
  SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 880 ASCMActiveCruiseControlStatus: 8 K124_ASCM
- SG_ FCWAlert : 41|2@0+ (1,0) [0|3] "" XXX
- SG_ ACCAlwaysOne : 15|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ ACCAlwaysOne2 : 13|2@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ ALWAYS_6 : 0|6@1+ (1,0) [0|7] "" XXX
+ SG_ ALWAYS_208 : 15|8@0+ (1,0) [0|255] "" XXX
  SG_ ACCResumeButton : 33|1@0+ (1,0) [0|1] "" XXX
  SG_ ACCResumeAlert : 32|1@0+ (1,0) [0|1] "" XXX
  SG_ ACCBUTTON : 35|2@0+ (1,0) [0|1] "" XXX
- SG_ ACCLeadCar : 44|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ ACCSpeedSetpoint : 19|12@0+ (1,0) [0|200] "km/h" NEO
- SG_ ACCGapLevel : 0|3@1+ (1,0) [0|7] "" XXX
- SG_ ACCCmdActive : 23|1@0+ (1,0) [0|0] "" NEO
- SG_ ACCSTATE : 53|1@0+ (1,0) [0|1] "" XXX
+ SG_ ACCSpeedSetpoint : 31|8@0+ (1,0) [0|200] "km/h" NEO
  SG_ COUNTER : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
+ SG_ ACC_ENABLED_1 : 39|4@0+ (1,0) [0|15] "" XXX
+ SG_ ACC_ENABLED_2 : 53|6@0+ (1,0) [0|1] "" XXX
 
  
 
