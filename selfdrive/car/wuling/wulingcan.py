@@ -144,16 +144,16 @@ def create_resume_button(bus, active, steer):
 
 
 
-def create_acc_hud_control(packer, idx, target_speed_kph):
+def create_acc_hud_control(packer, idx, acc_req, target_speed_kph):
   target_speed = min(target_speed_kph, 255)
   print("create_acc")
   # target_speed=30
   values = {
-    "ACCSpeedSetpoint": 30,
+    "ACCSpeedSetpoint": target_speed,
     "ALWAYS_208": 208,
     "ALWAYS_6": 6, 
-    "ACC_ENABLED_1": 1, 
-    "ACC_ENABLED_2": 32, 
+    "ACC_ENABLED_1": 1 if acc_req else 0, 
+    "ACC_ENABLED_2": 32 if acc_req else 0, 
     "COUNTER": idx,
   }
   
