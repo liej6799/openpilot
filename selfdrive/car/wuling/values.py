@@ -13,6 +13,8 @@ class CarControllerParams:
 
   STEER_STEP = 2  # control frames per command
   BUTTONS_STEP = 2
+  HUD_STEP = 5
+
   
   STEER_MAX = 350  # Safety limit, not LKA max. Trucks use 600.
   STEER_DELTA_UP = 3      # 3 is stock. 100 is fine. 200 is too much it seems

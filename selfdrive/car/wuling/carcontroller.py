@@ -29,6 +29,10 @@ class CarController:
     # Send CAN commands.
     can_sends = []
     actuators = CC.actuators
+    hud_control = CC.hudControl
+    hud_alert = hud_control.visualAlert
+    hud_v_cruise = hud_control.setSpeed
+
     
     if CC.latActive:
       apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
@@ -59,6 +63,11 @@ class CarController:
       can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, idx, lkas_enabled))
       can_sends.append(wulingcan.create_brake_command(self.packer_pt, apply_stop, idx, apply_brake))
       can_sends.append(wulingcan.create_gas_command(self.packer_pt, idx, acc_enabled, apply_start, apply_gas))
+
+    else if (self.frame % P.HUD_STEP) == 0:
+      set_speed = int(round(hud_v_cruise * CV.MS_TO_KPH))
+      idx = (self.frame/2) % 4
+      can_sends.append(wulingcan.create_acc_hud_control(self.packer_pt, idx, set_speed))
 
        
     new_actuators = actuators.copy()

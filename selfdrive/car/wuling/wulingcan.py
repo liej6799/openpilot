@@ -162,3 +162,22 @@ def create_lka_icon_command(bus, active, critical, steer):
 def create_resume_button(bus, active, steer):
   dat = b"\x48\x08\x00\x00\x00\x00\x00\x50"
   return make_can_msg(0x1e1, dat, bus)
+
+
+
+def create_acc_hud_control(packer, idx, target_speed_kph):
+  target_speed = min(target_speed_kph, 255)
+  # target_speed=30
+    values = {
+    "ACCSpeedSetpoint": 30,
+    "COUNTER": idx,
+  }
+  
+  values["COUNTER"] = (values["COUNTER"] + 1) % 0x11
+  
+  dat = packer.make_can_msg("ASCMActiveCruiseControlStatus", 0, values)[2]
+
+  crc = wuling_checksum(dat[:-1])
+  values["CHECKSUM"] = crc
+
+  return packer.make_can_msg("ASCMActiveCruiseControlStatus", 0, values)
