@@ -137,7 +137,7 @@ class CarState(CarStateBase):
 
     ret.cruiseState.standstill = ret.cruiseState.enabled == 0 and ret.cruiseState.available != 0
     self.lkas_status = 0
-    self.crz_btns_counter = pt_cp.vl["ASCMActiveCruiseControlStatus"]["COUNTER_1"];
+    self.crz_btns_counter = pt_cp.vl["ASCMActiveCruiseControlStatus"]["COUNTER"]
     ret.brakeLightsDEPRECATED = bool(ret.brakePressed or ret.brakeHoldActive)
 
     # self.steeringTorqueSamples.append(ret.steeringTorque)
@@ -163,7 +163,7 @@ class CarState(CarStateBase):
         ("CruiseState", "AccStatus"),
         ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
         ("ACCResumeAlert", "ASCMActiveCruiseControlStatus"),
-        ("COUNTER_1", "ASCMActiveCruiseControlStatus"),
+        ("COUNTER", "ASCMActiveCruiseControlStatus"),
         ("LKAS_STATE", "LkasHud"),
         ("LKA_ACTIVE", "LkasHud"),
       ]
@@ -209,7 +209,7 @@ class CarState(CarStateBase):
       ("ACCSTATE", "ASCMActiveCruiseControlStatus"),
       ("ACCSpeedSetpoint", "ASCMActiveCruiseControlStatus"),
       ("ACCResumeAlert", "ASCMActiveCruiseControlStatus"),
-      ("COUNTER_1", "ASCMActiveCruiseControlStatus"),
+      ("COUNTER", "ASCMActiveCruiseControlStatus"),
       
       ("TRANSMISSION_STATE", "ECMPRDNL"),
       ("LKAS_STATE", "LkasHud"),
