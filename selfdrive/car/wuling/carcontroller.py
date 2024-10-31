@@ -58,10 +58,13 @@ class CarController:
       apply_start = actuators.longControlState == LongCtrlState.starting
       
       idx = (self.frame/2) % 4
-
+      
+      brake = 0
+      if apply_brake > 20:
+        brake = 255
       
       can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, idx, lkas_enabled))
-      can_sends.append(wulingcan.create_brake_command(self.packer_pt, apply_stop, idx, apply_brake))
+      can_sends.append(wulingcan.create_brake_command(self.packer_pt, apply_stop, idx, brake))
       can_sends.append(wulingcan.create_gas_command(self.packer_pt, idx, acc_enabled, apply_start, apply_gas))
 
     if (self.frame % P.HUD_STEP) == 0:
