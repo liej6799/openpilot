@@ -42,10 +42,12 @@ class CarController:
      
     if CC.longActive:
       apply_gas = int(round(interp(actuators.accel, P.GAS_LOOKUP_BP, P.GAS_LOOKUP_V)))
-      apply_brake = int(round(interp(actuators.accel, P.BRAKE_LOOKUP_BP, P.BRAKE_LOOKUP_V)))
+      brake_value = int(round(interp(actuators.accel, P.BRAKE_LOOKUP_BP, P.BRAKE_LOOKUP_V)))
+      apply_stop = 1
     else:
+      apply_stop = 0
       apply_gas = 1696
-      apply_brake = 0
+      brake_value = 0
     
     self.apply_angle_last = apply_angle
     
@@ -54,14 +56,13 @@ class CarController:
     elif (self.frame % P.STEER_STEP) == 0:
       lkas_enabled = CC.latActive
       acc_enabled = CC.longActive
-      apply_stop = actuators.longControlState == LongCtrlState.stopping
       apply_start = actuators.longControlState == LongCtrlState.starting
       
       idx = (self.frame/2) % 4
 
       
       can_sends.append(wulingcan.create_steering_control(self.packer_pt, apply_angle, idx, lkas_enabled))
-      can_sends.append(wulingcan.create_brake_command(self.packer_pt, apply_stop, idx, apply_brake))
+      can_sends.append(wulingcan.create_brake_command(self.packer_pt, apply_stop, idx, brake_value))
       can_sends.append(wulingcan.create_gas_command(self.packer_pt, idx, acc_enabled, apply_start, apply_gas))
 
     if (self.frame % P.HUD_STEP) == 0:
@@ -74,7 +75,7 @@ class CarController:
        
     new_actuators = actuators.copy()
     new_actuators.steeringAngleDeg = apply_angle
-    new_actuators.brake = apply_brake
+    new_actuators.brake = brake_value
     new_actuators.gas = apply_gas
     
     self.frame += 1
