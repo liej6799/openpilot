@@ -43,7 +43,6 @@ class CarController:
     if CC.longActive:
       apply_gas = int(round(interp(actuators.accel, P.GAS_LOOKUP_BP, P.GAS_LOOKUP_V)))
       brake_value = int(round(interp(actuators.accel, P.BRAKE_LOOKUP_BP, P.BRAKE_LOOKUP_V)))
-      apply_stop = 1
     else:
       apply_stop = 0
       apply_gas = 1696
@@ -56,6 +55,7 @@ class CarController:
     elif (self.frame % P.STEER_STEP) == 0:
       lkas_enabled = CC.latActive
       acc_enabled = CC.longActive
+      apply_stop = actuators.longControlState == LongCtrlState.stopping
       apply_start = actuators.longControlState == LongCtrlState.starting
       
       idx = (self.frame/2) % 4
