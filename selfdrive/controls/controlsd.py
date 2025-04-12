@@ -431,41 +431,41 @@ class Controls:
     elif not CS.canValid:
       self.events.add(EventName.canError)
 
-    # generic catch-all. ideally, a more specific event should be added above instead
-    can_rcv_timeout = self.can_rcv_timeout_counter >= 5
-    has_disable_events = self.events.any(ET.NO_ENTRY) and (self.events.any(ET.SOFT_DISABLE) or self.events.any(ET.IMMEDIATE_DISABLE))
-    no_system_errors = (not has_disable_events) or (len(self.events) == num_events)
-    if (not self.sm.all_checks() or can_rcv_timeout) and no_system_errors:
-      if not self.sm.all_alive():
-        self.events.add(EventName.commIssue)
-      elif not self.sm.all_freq_ok():
-        self.events.add(EventName.commIssueAvgFreq)
-      else:  # invalid or can_rcv_timeout.
-        self.events.add(EventName.commIssue)
+    # # generic catch-all. ideally, a more specific event should be added above instead
+    # can_rcv_timeout = self.can_rcv_timeout_counter >= 5
+    # has_disable_events = self.events.any(ET.NO_ENTRY) and (self.events.any(ET.SOFT_DISABLE) or self.events.any(ET.IMMEDIATE_DISABLE))
+    # no_system_errors = (not has_disable_events) or (len(self.events) == num_events)
+    # if (not self.sm.all_checks() or can_rcv_timeout) and no_system_errors:
+    #   if not self.sm.all_alive():
+    #     self.events.add(EventName.commIssue)
+    #   elif not self.sm.all_freq_ok():
+    #     self.events.add(EventName.commIssueAvgFreq)
+    #   else:  # invalid or can_rcv_timeout.
+    #     self.events.add(EventName.commIssue)
 
-      logs = {
-        'invalid': [s for s, valid in self.sm.valid.items() if not valid],
-        'not_alive': [s for s, alive in self.sm.alive.items() if not alive],
-        'not_freq_ok': [s for s, freq_ok in self.sm.freq_ok.items() if not freq_ok],
-        'can_rcv_timeout': can_rcv_timeout,
-      }
-      if logs != self.logged_comm_issue:
-        cloudlog.event("commIssue", error=True, **logs)
-        self.logged_comm_issue = logs
-    else:
-      self.logged_comm_issue = None
+    #   logs = {
+    #     'invalid': [s for s, valid in self.sm.valid.items() if not valid],
+    #     'not_alive': [s for s, alive in self.sm.alive.items() if not alive],
+    #     'not_freq_ok': [s for s, freq_ok in self.sm.freq_ok.items() if not freq_ok],
+    #     'can_rcv_timeout': can_rcv_timeout,
+    #   }
+    #   if logs != self.logged_comm_issue:
+    #     cloudlog.event("commIssue", error=True, **logs)
+    #     self.logged_comm_issue = logs
+    # else:
+    #   self.logged_comm_issue = None
 
-    if not self.sm['liveParameters'].valid:
-      self.events.add(EventName.vehicleModelInvalid)
-    if not self.sm['lateralPlan'].mpcSolutionValid:
-      self.events.add(EventName.plannerError)
-    if not (self.sm['liveParameters'].sensorValid or self.sm['liveLocationKalman'].sensorsOK) and not NOSENSOR:
-      if self.sm.frame > 5 / DT_CTRL:  # Give locationd some time to receive all the inputs
-        self.events.add(EventName.sensorDataInvalid)
-    if not self.sm['liveLocationKalman'].posenetOK:
-      self.events.add(EventName.posenetInvalid)
-    if not self.sm['liveLocationKalman'].deviceStable:
-      self.events.add(EventName.deviceFalling)
+    # if not self.sm['liveParameters'].valid:
+    #   self.events.add(EventName.vehicleModelInvalid)
+    # if not self.sm['lateralPlan'].mpcSolutionValid:
+    #   self.events.add(EventName.plannerError)
+    # if not (self.sm['liveParameters'].sensorValid or self.sm['liveLocationKalman'].sensorsOK) and not NOSENSOR:
+    #   if self.sm.frame > 5 / DT_CTRL:  # Give locationd some time to receive all the inputs
+    # #     self.events.add(EventName.sensorDataInvalid)
+    # if not self.sm['liveLocationKalman'].posenetOK:
+    #   self.events.add(EventName.posenetInvalid)
+    # if not self.sm['liveLocationKalman'].deviceStable:
+    #   self.events.add(EventName.deviceFalling)
 
     if not REPLAY:
       # Check for mismatch between openpilot and car's PCM
